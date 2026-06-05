@@ -1,5 +1,5 @@
 // Base URL pointing to the backend (empty string or VITE_API_URL)
-const BASE_URL = import.meta.env.VITE_API_URL || '';
+const BASE_URL =renttobuy-production.up.railway.app;
 
 // Global cache for CSRF Token
 let csrfTokenCache = null;
