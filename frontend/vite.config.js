@@ -7,24 +7,29 @@ import { defineConfig } from 'vite';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export default defineConfig(() => {
-  return {
-    root: __dirname,
-    plugins: [react(), tailwindcss()],
-    resolve: {
-      alias: {
-        '@': path.resolve(__dirname, './src'),
-      },
+export default defineConfig({
+  root: __dirname,
+
+  plugins: [
+    react(),
+    tailwindcss(),
+  ],
+
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
     },
-    build: {
-      outDir: path.resolve(__dirname, '../dist'),
-      emptyOutDir: true,
-    },
-    server: {
-      hmr: process.env.DISABLE_HMR !== 'true',
-      watch: process.env.DISABLE_HMR === 'true' ? null : {},
-      port: 3000,
-      host: '0.0.0.0',
-    },
-  };
+  },
+
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+  },
+
+  server: {
+    host: '0.0.0.0',
+    port: 3000,
+    hmr: process.env.DISABLE_HMR !== 'true',
+    watch: process.env.DISABLE_HMR === 'true' ? null : {},
+  },
 });
