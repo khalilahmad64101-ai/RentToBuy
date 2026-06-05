@@ -3,7 +3,6 @@ import cookieParser from 'cookie-parser';
 import path from 'path';
 import os from 'os';
 import fs from 'fs';
-import { createServer as createViteServer } from 'vite';
 import apiRouter from './routes/api.js';
 import {
   corsMiddleware,
@@ -67,6 +66,7 @@ export async function createApp() {
       ? path.resolve(process.cwd(), 'frontend') 
       : path.resolve(process.cwd(), '..', 'frontend');
     
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       root: frontendDir,
