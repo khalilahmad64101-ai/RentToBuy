@@ -3,22 +3,30 @@ import mongoose from 'mongoose';
 let isConnected = false;
 
 export async function connectDatabase() {
+  // 1. Environment variable se URI nikaalein
   const uri = (process.env.MONGO_URI || process.env.MONGODB_URI || "").trim();
+
+  // 2. Agar URI missing hai, toh seedha error throw karein taaki app aage na chale
   if (!uri) {
-    console.log('[Database] Active Storage: Local file-system and memory engine (JSON simulated fallback database).');
-    return;
+    console.error('[Database Error] MongoDB Connection String (URI) is missing in environment variables!');
+    throw new Error('Database connection failed: No MongoDB URI provided.');
   }
 
   try {
     console.log('[Database] Connecting to MongoDB database...');
-    // Simple 2s timeout to prevent hanging startup
+    
+    // 3. MongoDB se connect karein (timeout hata diya hai taaki pakka connect ho, ya aap rkh bhi sakte hain)
     await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 2000,
+      serverSelectionTimeoutMS: 5000, // 5 seconds ka timeout diya hai taaki connect hone ka poora mauka mile
     });
+
     isConnected = true;
     console.log('[Database] MongoDB connection established successfully.');
   } catch (err) {
-    console.log('[Database] Storage: Under backup fallback mode. Local file-system storage active.');
+    // 4. Agar connection fail ho jaye, toh crash/error handle karein, koi fallback nahi
+    console.error('[Database Error] Failed to connect to MongoDB:', err.message);
+    isConnected = false;
+    throw err; // Isse app ko pata chal jayega ki DB connect nahi hua
   }
 }
 
