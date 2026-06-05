@@ -1,0 +1,7 @@
+{
+  "name": "node-domexception",
+  "version": "1.0.0",
+  "description": "Shim for deprecated node-domexception pointing to the platform's native DOMException",
+  "main": "index.js",
+  "private": true
+}

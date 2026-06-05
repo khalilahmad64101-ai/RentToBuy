@@ -1,0 +1,8 @@
+{
+  "name": "Rent2Buy Cars",
+  "description": "Rent to buy vehicle marketplace and portal with fleet category explorer, secure login, and document upload system.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

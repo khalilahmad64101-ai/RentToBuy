@@ -1,0 +1,25 @@
+# Node and Dependency modules
+node_modules/
+**/node_modules/
+
+# Production builds
+dist/
+**/dist/
+build/
+**/build/
+
+# Local env & secret configuration files
+.env
+.env.local
+.env.*.local
+*.env
+**/backend/.env
+
+# Temporary IDE / OS metadata
+.DS_Store
+.vscode/
+.idea/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

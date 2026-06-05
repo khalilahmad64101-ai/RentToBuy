@@ -1,0 +1,56 @@
+{
+  "name": "rent2buy-fullstack",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "overrides": {
+    "node-domexception": "file:./node-domexception-shim"
+  },
+  "scripts": {
+    "dev": "tsx backend/server.js",
+    "start": "node dist/server.cjs",
+    "build": "vite build --config frontend/vite.config.js && esbuild backend/server.js --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "lint": "echo 'Skipping TS validation as codebase is fully JavaScript'"
+  },
+  "dependencies": {
+    "@google/genai": "^1.29.0",
+    "@hookform/resolvers": "^5.4.0",
+    "bcrypt": "^5.1.1",
+    "clsx": "^2.1.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "google-auth-library": "^9.15.0",
+    "helmet": "^8.0.0",
+    "hpp": "^0.2.3",
+    "jsonwebtoken": "^9.0.2",
+    "lucide-react": "^0.546.0",
+    "mongoose": "^8.10.0",
+    "motion": "^12.23.24",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.10.0",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
+    "react-hook-form": "^7.77.0",
+    "react-router-dom": "^7.15.1",
+    "recharts": "^3.8.1",
+    "tailwind-merge": "^2.6.1",
+    "validator": "^13.12.0",
+    "zod": "^3.24.2",
+    "zxcvbn": "^4.4.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.14",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "@vitejs/plugin-react": "^5.0.4",
+    "autoprefixer": "^10.4.21",
+    "esbuild": "^0.25.0",
+    "tailwindcss": "^4.1.14",
+    "tsx": "^4.21.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.3"
+  }
+}

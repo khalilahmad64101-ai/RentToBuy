@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Production output if bundled
+dist/
+
+# Local sensitive environment variables file
+.env
+*.env
+
+# Multi-user temporary upload files or database storage files
+uploads/
+
+# Debug and execution logs
+logs/
+*.log
+npm-debug.log*
+
+# System
+.DS_Store
