@@ -76,14 +76,6 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(user),
     }),
-    sendSignupOTP: (user) => apiRequest('/auth/signup-send-otp', {
-      method: 'POST',
-      body: JSON.stringify(user),
-    }),
-    verifySignupOTP: (payload) => apiRequest('/auth/signup-verify-otp', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    }),
     googleLogin: (token) => apiRequest('/auth/google', {
       method: 'POST',
       body: JSON.stringify({ credential: token }),

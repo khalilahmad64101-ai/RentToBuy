@@ -75,9 +75,7 @@ router.get('/config/google-client-id', (req, res) => {
 // 2. AUTHENTICATION & PROFILE ROUTES
 // ==========================================
 router.post('/auth/login', authController.login);
-router.post('/auth/signup-send-otp', authController.signupSendOtp);
-router.post('/auth/signup-verify-otp', authController.signupVerifyOtp);
-router.post('/auth/signup', authController.legacySignup);
+router.post('/auth/signup', authController.signup);
 router.post('/auth/google', authController.googleSignin);
 router.post('/auth/logout', authController.logout);
 router.put('/auth/profile', authController.editProfile);

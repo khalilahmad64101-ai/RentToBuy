@@ -77,20 +77,6 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const verifyAndSignup = async (email, otpCode) => {
-    setError(null);
-    try {
-      const response = await api.auth.verifySignupOTP({ email, otpCode });
-      setUser(response.user);
-      localStorage.setItem('rent2buy_user', JSON.stringify(response.user));
-      await syncDriverData(response.user.email);
-      return response.user;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    }
-  };
-
   const googleLogin = async (credentialToken) => {
     setError(null);
     try {
@@ -144,7 +130,6 @@ export function AuthProvider({ children }) {
         error,
         login,
         signup,
-        verifyAndSignup,
         googleLogin,
         logout,
         updateProfile,

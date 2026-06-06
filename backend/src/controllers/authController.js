@@ -1,7 +1,6 @@
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import { OAuth2Client } from 'google-auth-library';
-import nodemailer from 'nodemailer';
 import { 
   loadJson, 
   saveJson, 
@@ -11,76 +10,6 @@ import {
   AGREEMENTS_FILE, 
   PAYMENTS_FILE 
 } from '../utils/storage.js';
-
-// TEMPORARILY DISABLED OTP SYSTEM
-// TODO: Re-enable when SMTP service is configured
-/*
-// In-memory caching pool for pending verification codes
-// Holds: { otp, expiresAt, fullName, phone, password }
-const pendingOtps = {};
-
-let nodemailerTransporter = null;
-
-function getEmailTransporter() {
-  if (nodemailerTransporter) return nodemailerTransporter;
-
-  const emailUser = process.env.EMAIL_USER;
-  const emailPass = process.env.EMAIL_PASS;
-
-  if (!emailUser || !emailPass) {
-    console.warn("[SMTP-WARNING] EMAIL_USER or EMAIL_PASS environment variables are not configured. Emails will not be sent physically.");
-    return null;
-  }
-
-  try {
-    nodemailerTransporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: emailUser,
-        pass: emailPass,
-      },
-    });
-    return nodemailerTransporter;
-  } catch (error) {
-    console.error("[SMTP-ERROR] Failed to construct Nodemailer transporter:", error);
-    return null;
-  }
-}
-
-async function sendOtpEmail(email, otp) {
-  const transporter = getEmailTransporter();
-  if (!transporter) {
-    console.log(`[SMTP-INFO] Real email send skipped because SMTP credentials are not set. Retrieved OTP code is: ${otp}`);
-    return;
-  }
-
-  try {
-    await transporter.sendMail({
-      from: `"Rent2Buy Car Leasings" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "Verification Code - Rent2Buy",
-      html: `
-        <div style="font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">
-          <h2 style="color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Rent2Buy Driver Profile Verification</h2>
-          <p style="color: #475569; font-size: 14px; line-height: 1.5;">
-            Thank you for registering your interest with Rent2Buy Car Leasings Manchester. Please verify your email address to complete your driver application form setup.
-          </p>
-          <p style="color: #475569; font-size: 14px;">Your 6-digit confirmation security PIN code is:</p>
-          <div style="background-color: #f8fafc; border: 1px dashed #cbd5e1; padding: 15px; margin: 20px 0; text-align: center; border-radius: 8px;">
-            <span style="font-size: 32px; font-weight: 900; letter-spacing: 6px; color: #CDA275; font-family: monospace;">\${otp}</span>
-          </div>
-          <p style="color: #64748b; font-size: 12px; margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
-            This verification token will expire in 5 minutes. If you did not request this code, please ignore this email.
-          </p>
-        </div>
-      `,
-    });
-    console.log(`[SMTP] Verification email sent successfully to \${email}`);
-  } catch (error) {
-    console.error(`[SMTP-ERR] Failed to dispatch email to \${email}:`, error);
-  }
-}
-*/
 
 export const login = async (req, res) => {
   const usersStore = loadJson(USERS_FILE, []);
@@ -129,9 +58,9 @@ export const login = async (req, res) => {
   }
 };
 
-export const signupSendOtp = async (req, res) => {
+export const signup = async (req, res) => {
   const usersStore = loadJson(USERS_FILE, []);
-  const { email, password, fullName, phone } = req.body;
+  const { email, password, fullName, phone, role } = req.body;
 
   const backendSignupSchema = z.object({
     fullName: z.string()
@@ -170,171 +99,12 @@ export const signupSendOtp = async (req, res) => {
   }
 
   try {
-    // TEMPORARILY DISABLED OTP SYSTEM
-    // TODO: Re-enable when SMTP service is configured
-    /*
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = Date.now() + 5 * 60 * 1000;
-
-    pendingOtps[email.toLowerCase().trim()] = {
-      otp,
-      expiresAt,
-      fullName: fullName.trim(),
-      phone: phone.trim(),
-      password
-    };
-
-    console.log(`[SECURE-AUTH-OTP] Generated registration OTP for ${email}: ${otp}`);
-
-    const emailsStore = loadJson(EMAILS_FILE, []);
-    emailsStore.push({
-      id: `EMAIL-${Math.floor(1000 + Math.random() * 9000)}`,
-      userEmail: email.toLowerCase().trim(),
-      subject: "R2Buy Register PIN Code Assigned",
-      content: `Your verification code is: ${otp}. It will expire in 5 minutes. Use it to complete your driver registration profile.`,
-      dateSent: new Date().toISOString().split('T')[0],
-      attachmentUrl: null
-    });
-    saveJson(EMAILS_FILE, emailsStore);
-
-    // Call async nodemailer function without blocking express response (or we can await it)
-    await sendOtpEmail(email.toLowerCase().trim(), otp);
-    */
-
-    // Reusing the existing signup logic: Hash password and directly save registered user
     const hashedPassword = await bcrypt.hash(password, 12);
 
     const newUser = {
       email: email.toLowerCase().trim(),
       fullName: fullName.trim(),
       phone: phone.trim(),
-      role: "user",
-      passwordHash: hashedPassword
-    };
-
-    usersStore.push(newUser);
-    saveJson(USERS_FILE, usersStore);
-
-    console.log(`[DIRECT REGISTER - BYPASSED OTP] Directly registered user: ${email}`);
-
-    res.json({
-      success: true,
-      message: "Security verification bypassed. Custom active register account established. Please type any 6 digits to verify.",
-      otpSent: true
-    });
-
-  } catch (err) {
-    console.error("OTP generation issue / direct register failure:", err);
-    res.status(500).json({ error: "Failed to generate verification session. Please retry." });
-  }
-};
-
-export const signupVerifyOtp = async (req, res) => {
-  const usersStore = loadJson(USERS_FILE, []);
-  const { email, otpCode } = req.body;
-
-  if (!email || !otpCode) {
-    return res.status(400).json({ error: "Missing identity credentials or verification PIN code." });
-  }
-
-  const cleanEmail = email.toLowerCase().trim();
-  
-  // TEMPORARILY DISABLED OTP SYSTEM
-  // TODO: Re-enable when SMTP service is configured
-  /*
-  const cachedData = pendingOtps[cleanEmail];
-
-  if (!cachedData) {
-    return res.status(400).json({ error: "Verification session expired or not found. Please resubmit signup details to send a new code." });
-  }
-
-  if (Date.now() > cachedData.expiresAt) {
-    delete pendingOtps[cleanEmail];
-    return res.status(400).json({ error: "The entered verification seed has expired. Please try again." });
-  }
-
-  if (cachedData.otp !== otpCode.trim()) {
-    return res.status(400).json({ error: "Incorrect 6-digit confirmation PIN code. Check your inbox." });
-  }
-  */
-
-  try {
-    /*
-    const hashedPassword = await bcrypt.hash(cachedData.password, 12);
-
-    const newUser = {
-      email: cleanEmail,
-      fullName: cachedData.fullName,
-      phone: cachedData.phone,
-      role: "user",
-      passwordHash: hashedPassword
-    };
-
-    usersStore.push(newUser);
-    saveJson(USERS_FILE, usersStore);
-
-    delete pendingOtps[cleanEmail];
-    */
-
-    // Retrieve the already registered user account directly from usersStore during search
-    const registeredUser = usersStore.find(u => u.email.toLowerCase() === cleanEmail);
-    if (!registeredUser) {
-      return res.status(404).json({ error: "Registration driver profile was not found. Please sign up again." });
-    }
-
-    return res.json({
-      message: "Profile verified and registered successfully!",
-      user: {
-        email: registeredUser.email,
-        fullName: registeredUser.fullName,
-        role: registeredUser.role,
-        phone: registeredUser.phone
-      }
-    });
-
-  } catch (err) {
-    console.error("Verify OTP processing issue / bypassed verify issue:", err);
-    return res.status(500).json({ error: "An internal server error occurred while configuring your account." });
-  }
-};
-
-export const legacySignup = async (req, res) => {
-  const usersStore = loadJson(USERS_FILE, []);
-  const { email, password, fullName, phone, role } = req.body;
-
-  const backendSignupSchema = z.object({
-    fullName: z.string()
-      .min(3, "Full Name must be at least 3 characters")
-      .max(50, "Full Name must not exceed 50 characters")
-      .regex(/^[^0-9]*$/, "Full Name cannot contain numbers"),
-    email: z.string().email("Please provide a valid email address"),
-    phone: z.string().regex(/^(\+44|0)7\d{9}$/, "Must be a valid UK mobile number starting with 07 or +447").optional().or(z.literal('')),
-    password: z.string()
-      .min(8, "Password must be at least 8 characters")
-      .regex(/[A-Z]/, "Password must contain at least 1 uppercase letter")
-      .regex(/[a-z]/, "Password must contain at least 1 lowercase letter")
-      .regex(/[0-9]/, "Password must contain at least 1 number")
-      .regex(/[!@#$%^&*(),.?":{}|<>]/, "Password must contain at least 1 special character"),
-  });
-
-  const validationResult = backendSignupSchema.safeParse({ email, password, fullName, phone });
-  if (!validationResult.success) {
-    const defaultError = validationResult.error.issues[0]?.message || "Validation failed";
-    return res.status(400).json({ error: defaultError });
-  }
-
-  const exists = usersStore.some(u => u.email.toLowerCase() === email.toLowerCase());
-  if (exists) {
-    return res.status(409).json({ error: "Email already registered in system" });
-  }
-
-  try {
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    const newUser = {
-      email: email.toLowerCase().trim(),
-      fullName: fullName.trim(),
-      phone: phone ? phone.trim() : "",
       role: role || "user",
       passwordHash: hashedPassword
     };
@@ -342,7 +112,7 @@ export const legacySignup = async (req, res) => {
     saveJson(USERS_FILE, usersStore);
 
     return res.json({
-      message: "Profile registered successfully with secure verification!",
+      message: "Profile registered successfully!",
       user: {
         email: newUser.email,
         fullName: newUser.fullName,
@@ -355,6 +125,7 @@ export const legacySignup = async (req, res) => {
     return res.status(500).json({ error: "An internal server error occurred while configuring your credentials." });
   }
 };
+
 
 export const googleSignin = async (req, res) => {
   const usersStore = loadJson(USERS_FILE, []);
