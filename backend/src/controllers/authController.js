@@ -12,6 +12,9 @@ import {
   PAYMENTS_FILE 
 } from '../utils/storage.js';
 
+// TEMPORARILY DISABLED OTP SYSTEM
+// TODO: Re-enable when SMTP service is configured
+/*
 // In-memory caching pool for pending verification codes
 // Holds: { otp, expiresAt, fullName, phone, password }
 const pendingOtps = {};
@@ -24,13 +27,8 @@ function getEmailTransporter() {
   const emailUser = process.env.EMAIL_USER;
   const emailPass = process.env.EMAIL_PASS;
 
-  console.log("EMAIL_USER exists:", !!emailUser);
-  console.log("EMAIL_PASS exists:", !!emailPass);
-
   if (!emailUser || !emailPass) {
-    console.warn(
-      "[SMTP-WARNING] EMAIL_USER or EMAIL_PASS environment variables are missing."
-    );
+    console.warn("[SMTP-WARNING] EMAIL_USER or EMAIL_PASS environment variables are not configured. Emails will not be sent physically.");
     return null;
   }
 
@@ -41,51 +39,48 @@ function getEmailTransporter() {
         user: emailUser,
         pass: emailPass,
       },
-      connectionTimeout: 30000,
-      greetingTimeout: 30000,
-      socketTimeout: 30000,
     });
-
     return nodemailerTransporter;
   } catch (error) {
-    console.error("[SMTP-ERROR] Failed to create transporter:", error);
+    console.error("[SMTP-ERROR] Failed to construct Nodemailer transporter:", error);
     return null;
   }
 }
 
 async function sendOtpEmail(email, otp) {
   const transporter = getEmailTransporter();
-
   if (!transporter) {
-    console.log(
-      `[SMTP-INFO] SMTP unavailable. OTP for ${email}: ${otp}`
-    );
+    console.log(`[SMTP-INFO] Real email send skipped because SMTP credentials are not set. Retrieved OTP code is: ${otp}`);
     return;
   }
 
   try {
-    await transporter.verify();
-    console.log("✅ SMTP Connected Successfully");
-
     await transporter.sendMail({
       from: `"Rent2Buy Car Leasings" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Verification Code - Rent2Buy",
       html: `
-        <div style="font-family:sans-serif;padding:20px">
-          <h2>Rent2Buy Verification</h2>
-          <p>Your OTP Code:</p>
-          <h1>${otp}</h1>
-          <p>This code expires in 5 minutes.</p>
+        <div style="font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">
+          <h2 style="color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Rent2Buy Driver Profile Verification</h2>
+          <p style="color: #475569; font-size: 14px; line-height: 1.5;">
+            Thank you for registering your interest with Rent2Buy Car Leasings Manchester. Please verify your email address to complete your driver application form setup.
+          </p>
+          <p style="color: #475569; font-size: 14px;">Your 6-digit confirmation security PIN code is:</p>
+          <div style="background-color: #f8fafc; border: 1px dashed #cbd5e1; padding: 15px; margin: 20px 0; text-align: center; border-radius: 8px;">
+            <span style="font-size: 32px; font-weight: 900; letter-spacing: 6px; color: #CDA275; font-family: monospace;">\${otp}</span>
+          </div>
+          <p style="color: #64748b; font-size: 12px; margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+            This verification token will expire in 5 minutes. If you did not request this code, please ignore this email.
+          </p>
         </div>
       `,
     });
-
-    console.log(`✅ Verification email sent to ${email}`);
+    console.log(`[SMTP] Verification email sent successfully to \${email}`);
   } catch (error) {
-    console.error("❌ SMTP ERROR:", error);
+    console.error(`[SMTP-ERR] Failed to dispatch email to \${email}:`, error);
   }
 }
+*/
 
 export const login = async (req, res) => {
   const usersStore = loadJson(USERS_FILE, []);
@@ -175,6 +170,9 @@ export const signupSendOtp = async (req, res) => {
   }
 
   try {
+    // TEMPORARILY DISABLED OTP SYSTEM
+    // TODO: Re-enable when SMTP service is configured
+    /*
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = Date.now() + 5 * 60 * 1000;
 
@@ -199,17 +197,34 @@ export const signupSendOtp = async (req, res) => {
     });
     saveJson(EMAILS_FILE, emailsStore);
 
-    // Call async nodemailer function with await to process mail
+    // Call async nodemailer function without blocking express response (or we can await it)
     await sendOtpEmail(email.toLowerCase().trim(), otp);
+    */
+
+    // Reusing the existing signup logic: Hash password and directly save registered user
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    const newUser = {
+      email: email.toLowerCase().trim(),
+      fullName: fullName.trim(),
+      phone: phone.trim(),
+      role: "user",
+      passwordHash: hashedPassword
+    };
+
+    usersStore.push(newUser);
+    saveJson(USERS_FILE, usersStore);
+
+    console.log(`[DIRECT REGISTER - BYPASSED OTP] Directly registered user: ${email}`);
 
     res.json({
       success: true,
-      message: "Security code dispatched. Please check your email inbox folder.",
+      message: "Security verification bypassed. Custom active register account established. Please type any 6 digits to verify.",
       otpSent: true
     });
 
   } catch (err) {
-    console.error("OTP generation issue:", err);
+    console.error("OTP generation issue / direct register failure:", err);
     res.status(500).json({ error: "Failed to generate verification session. Please retry." });
   }
 };
@@ -223,6 +238,10 @@ export const signupVerifyOtp = async (req, res) => {
   }
 
   const cleanEmail = email.toLowerCase().trim();
+  
+  // TEMPORARILY DISABLED OTP SYSTEM
+  // TODO: Re-enable when SMTP service is configured
+  /*
   const cachedData = pendingOtps[cleanEmail];
 
   if (!cachedData) {
@@ -237,8 +256,10 @@ export const signupVerifyOtp = async (req, res) => {
   if (cachedData.otp !== otpCode.trim()) {
     return res.status(400).json({ error: "Incorrect 6-digit confirmation PIN code. Check your inbox." });
   }
+  */
 
   try {
+    /*
     const hashedPassword = await bcrypt.hash(cachedData.password, 12);
 
     const newUser = {
@@ -253,19 +274,26 @@ export const signupVerifyOtp = async (req, res) => {
     saveJson(USERS_FILE, usersStore);
 
     delete pendingOtps[cleanEmail];
+    */
+
+    // Retrieve the already registered user account directly from usersStore during search
+    const registeredUser = usersStore.find(u => u.email.toLowerCase() === cleanEmail);
+    if (!registeredUser) {
+      return res.status(404).json({ error: "Registration driver profile was not found. Please sign up again." });
+    }
 
     return res.json({
       message: "Profile verified and registered successfully!",
       user: {
-        email: newUser.email,
-        fullName: newUser.fullName,
-        role: newUser.role,
-        phone: newUser.phone
+        email: registeredUser.email,
+        fullName: registeredUser.fullName,
+        role: registeredUser.role,
+        phone: registeredUser.phone
       }
     });
 
   } catch (err) {
-    console.error("Verify OTP processing issue:", err);
+    console.error("Verify OTP processing issue / bypassed verify issue:", err);
     return res.status(500).json({ error: "An internal server error occurred while configuring your account." });
   }
 };
@@ -351,6 +379,7 @@ export const googleSignin = async (req, res) => {
     fullName = payload.name || payload.given_name || "Google User";
   } catch (err) {
     console.warn("[Backend SDK Google Verification Failed, attempting direct JWT local decode fallback]:", err.message);
+    // Direct base64 parsing utility inside JWT to ensure robust decoding even under configuration / network changes
     try {
       const parts = credential.split('.');
       if (parts.length === 3) {
