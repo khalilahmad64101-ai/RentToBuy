@@ -1,7 +1,7 @@
 import { User } from '../models/User.js';
 import { Car } from '../models/Car.js';
 import { Application } from '../models/Application.js';
-import { Agreement } from '../models/Agreement.js';
+import { Agreement } from '../models/Aggreement.js';
 import { Payment } from '../models/Payment.js';
 import { Inquiry } from '../models/Inquiry.js';
 
