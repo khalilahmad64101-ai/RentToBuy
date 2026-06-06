@@ -1,6 +1,3 @@
-// TEMPORARILY DISABLED MONGODB
-// TODO: Re-enable MongoDB before production deployment
-/*
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
@@ -13,8 +10,14 @@ const userSchema = new mongoose.Schema({
   blocked: { type: Boolean, default: false }
 }, { timestamps: true });
 
+// Always ensure virtuals or custom JSON mapping returns clean representations
+userSchema.set('toJSON', {
+  virtuals: true,
+  transform: (doc, ret) => {
+    ret.id = ret._id.toString();
+    delete ret.__v;
+    return ret;
+  }
+});
+
 export const User = mongoose.models.User || mongoose.model('User', userSchema);
-*/
-
-export const User = null;
-

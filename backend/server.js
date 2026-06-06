@@ -15,12 +15,14 @@ if (fs.existsSync(envPath)) {
 }
 
 import { connectDatabase } from "./src/config/db.js";
+import { seedDefaultCars } from "./src/config/seed.js";
 import { createApp } from "./src/app.js";
 
 const PORT = process.env.PORT || 3000;
 
 async function startServer() {
   await connectDatabase();
+  await seedDefaultCars();
 
   const app = await createApp();
 

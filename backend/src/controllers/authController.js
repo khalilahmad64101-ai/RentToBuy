@@ -1,33 +1,34 @@
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import { OAuth2Client } from 'google-auth-library';
-import { 
-  loadJson, 
-  saveJson, 
-  USERS_FILE, 
-  EMAILS_FILE, 
-  APPLICATIONS_FILE, 
-  AGREEMENTS_FILE, 
-  PAYMENTS_FILE 
-} from '../utils/storage.js';
+import { User } from '../models/User.js';
+import { Application } from '../models/Application.js';
+import { Agreement } from '../models/Agreement.js';
+import { Payment } from '../models/Payment.js';
+
+// ADMIN_EMAIL Configurable Parameter - Requirement 17, 18, 19, 20
+const getAdminEmail = () => {
+  return (process.env.ADMIN_EMAIL || "khalilahmad64101@gmail.com").toLowerCase().trim();
+};
 
 export const login = async (req, res) => {
-  const usersStore = loadJson(USERS_FILE, []);
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ error: "Missing identity credentials" });
-  }
-
-  const existingUser = usersStore.find(u => u.email.toLowerCase() === email.toLowerCase().trim());
-  if (!existingUser) {
-    return res.status(401).json({ error: "No profile active for this email address" });
-  }
-
-  if (existingUser.blocked) {
-    return res.status(403).json({ error: "Access suspended. Please contact our Manchester Support Hub (support@r2buy.com) regarding security checks." });
-  }
-
   try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: "Missing identity credentials" });
+    }
+
+    const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
+    if (!existingUser) {
+      return res.status(401).json({ error: "No profile active for this email address" });
+    }
+
+    if (existingUser.blocked) {
+      return res.status(403).json({
+        error: "Access suspended. Please contact our Manchester Support Hub (support@r2buy.com) regarding security checks."
+      });
+    }
+
     const isMockHash = existingUser.passwordHash === "user123_dummy" || existingUser.passwordHash === "google_dummy";
     
     if (isMockHash) {
@@ -48,7 +49,8 @@ export const login = async (req, res) => {
         email: existingUser.email,
         fullName: existingUser.fullName,
         role: existingUser.role,
-        phone: existingUser.phone || ""
+        phone: existingUser.phone || "",
+        address: existingUser.address || ""
       }
     });
 
@@ -59,57 +61,64 @@ export const login = async (req, res) => {
 };
 
 export const signup = async (req, res) => {
-  const usersStore = loadJson(USERS_FILE, []);
-  const { email, password, fullName, phone, role } = req.body;
-
-  const backendSignupSchema = z.object({
-    fullName: z.string()
-      .min(3, "Full Name must be at least 3 characters")
-      .max(50, "Full Name must not exceed 50 characters")
-      .regex(/^[^0-9]*$/, "Full Name cannot contain numbers"),
-    email: z.string().email("Please provide a valid email address"),
-    phone: z.string().regex(/^(\+44|0)7\d{9}$/, "Must be a valid UK mobile number starting with 07 or +447"),
-    password: z.string()
-      .min(8, "Password must be at least 8 characters")
-      .regex(/[A-Z]/, "Password must contain at least 1 uppercase letter")
-      .regex(/[a-z]/, "Password must contain at least 1 lowercase letter")
-      .regex(/[0-9]/, "Password must contain at least 1 number")
-      .regex(/[!@#$%^&*(),.?":{}|<>]/, "Password must contain at least 1 special character"),
-  });
-
-  const validationResult = backendSignupSchema.safeParse({ email, password, fullName, phone });
-  if (!validationResult.success) {
-    const defaultError = validationResult.error.issues[0]?.message || "Validation failed";
-    return res.status(400).json({ error: defaultError });
-  }
-
-  const disposableDomains = [
-    'tempmail.com', '10minutemail.com', 'guerrillamail.com', 'temp-mail.org', 
-    'yopmail.com', 'dispostable.com', 'mailinator.com', 'trashmail.com',
-    'tempmailaddress.com', 'sharklasers.com', 'getairmail.com', '10minutemail.co.uk'
-  ];
-  const emailDomain = email.split('@')[1]?.toLowerCase().trim();
-  if (disposableDomains.includes(emailDomain)) {
-    return res.status(400).json({ error: "Disposable or junk email domains are blocked for security purposes. Please register with a verified personal or business domain." });
-  }
-
-  const exists = usersStore.some(u => u.email.toLowerCase() === email.toLowerCase().trim());
-  if (exists) {
-    return res.status(409).json({ error: "Email already registered in system" });
-  }
-
   try {
+    const { email, password, fullName, phone, role } = req.body;
+
+    const backendSignupSchema = z.object({
+      fullName: z.string()
+        .min(3, "Full Name must be at least 3 characters")
+        .max(50, "Full Name must not exceed 50 characters")
+        .regex(/^[^0-9]*$/, "Full Name cannot contain numbers"),
+      email: z.string().email("Please provide a valid email address"),
+      phone: z.string().regex(/^(\+44|0)7\d{9}$/, "Must be a valid UK mobile number starting with 07 or +447"),
+      password: z.string()
+        .min(8, "Password must be at least 8 characters")
+        .regex(/[A-Z]/, "Password must contain at least 1 uppercase letter")
+        .regex(/[a-z]/, "Password must contain at least 1 lowercase letter")
+        .regex(/[0-9]/, "Password must contain at least 1 number")
+        .regex(/[!@#$%^&*(),.?":{}|<>]/, "Password must contain at least 1 special character"),
+    });
+
+    const validationResult = backendSignupSchema.safeParse({ email, password, fullName, phone });
+    if (!validationResult.success) {
+      const defaultError = validationResult.error.issues[0]?.message || "Validation failed";
+      return res.status(400).json({ error: defaultError });
+    }
+
+    const disposableDomains = [
+      'tempmail.com', '10minutemail.com', 'guerrillamail.com', 'temp-mail.org', 
+      'yopmail.com', 'dispostable.com', 'mailinator.com', 'trashmail.com',
+      'tempmailaddress.com', 'sharklasers.com', 'getairmail.com', '10minutemail.co.uk'
+    ];
+    const emailDomain = email.split('@')[1]?.toLowerCase().trim();
+    if (disposableDomains.includes(emailDomain)) {
+      return res.status(400).json({ error: "Disposable or junk email domains are blocked for security purposes. Please register with a verified personal or business domain." });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const exists = await User.findOne({ email: normalizedEmail });
+    if (exists) {
+      return res.status(409).json({ error: "Email already registered in system" });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    const newUser = {
-      email: email.toLowerCase().trim(),
+    // Auto assign admin if matched ADMIN_EMAIL - Requirement 18 & 20
+    let assignedRole = role || 'user';
+    if (normalizedEmail === getAdminEmail()) {
+      assignedRole = 'admin';
+      console.log(`[Signup Admin Bypass] Automatically assigned ADMIN role for email matching ${getAdminEmail()}`);
+    }
+
+    const newUser = new User({
+      email: normalizedEmail,
       fullName: fullName.trim(),
       phone: phone.trim(),
-      role: role || "user",
+      role: assignedRole,
       passwordHash: hashedPassword
-    };
-    usersStore.push(newUser);
-    saveJson(USERS_FILE, usersStore);
+    });
+
+    await newUser.save();
 
     return res.json({
       message: "Profile registered successfully!",
@@ -126,11 +135,8 @@ export const signup = async (req, res) => {
   }
 };
 
-
 export const googleSignin = async (req, res) => {
-  const usersStore = loadJson(USERS_FILE, []);
   const { credential } = req.body;
-  
   if (!credential) {
     return res.status(400).json({ error: "Missing identity token credential." });
   }
@@ -150,7 +156,6 @@ export const googleSignin = async (req, res) => {
     fullName = payload.name || payload.given_name || "Google User";
   } catch (err) {
     console.warn("[Backend SDK Google Verification Failed, attempting direct JWT local decode fallback]:", err.message);
-    // Direct base64 parsing utility inside JWT to ensure robust decoding even under configuration / network changes
     try {
       const parts = credential.split('.');
       if (parts.length === 3) {
@@ -168,28 +173,40 @@ export const googleSignin = async (req, res) => {
     return res.status(400).json({ error: "Invalid Google credential token or verification mismatch." });
   }
 
-  let userObj = usersStore.find(u => u.email.toLowerCase() === email.toLowerCase());
-  if (!userObj) {
-    userObj = {
-      email: email.toLowerCase(),
-      fullName: fullName,
-      role: "user",
-      passwordHash: "google_dummy",
-      phone: ""
-    };
-    usersStore.push(userObj);
-    saveJson(USERS_FILE, usersStore);
-  }
+  try {
+    const normalizedEmail = email.toLowerCase().trim();
+    let userObj = await User.findOne({ email: normalizedEmail });
+    if (!userObj) {
+      // Auto assign admin if Google email matches ADMIN_EMAIL config
+      let assignedRole = 'user';
+      if (normalizedEmail === getAdminEmail()) {
+        assignedRole = 'admin';
+        console.log(`[Google Signup Admin Bypass] Auto assigned ADMIN role for email matched ${getAdminEmail()}`);
+      }
 
-  res.json({
-    message: "Sign-in verified via Google Secure Gateway",
-    user: {
-      email: userObj.email,
-      fullName: userObj.fullName,
-      role: userObj.role,
-      phone: userObj.phone || ""
+      userObj = new User({
+        email: normalizedEmail,
+        fullName: fullName,
+        role: assignedRole,
+        passwordHash: "google_dummy",
+        phone: ""
+      });
+      await userObj.save();
     }
-  });
+
+    res.json({
+      message: "Sign-in verified via Google Secure Gateway",
+      user: {
+        email: userObj.email,
+        fullName: userObj.fullName,
+        role: userObj.role,
+        phone: userObj.phone || ""
+      }
+    });
+  } catch (err) {
+    console.error("Google sign in MongoDB operations failed:", err);
+    res.status(500).json({ error: "Failed to persist account data during Google authentication." });
+  }
 };
 
 export const logout = (req, res) => {
@@ -197,91 +214,99 @@ export const logout = (req, res) => {
   res.json({ status: "success", message: "Logged out from Manchester dispatch centers" });
 };
 
-export const editProfile = (req, res) => {
-  const usersStore = loadJson(USERS_FILE, []);
-  const { email, fullName, phone, address, password } = req.body;
-  const loggedUser = usersStore.find(u => u.email.toLowerCase() === email.toLowerCase());
-  if (!loggedUser) {
-    return res.status(404).json({ error: "User record identity mismatch" });
-  }
-  if (fullName !== undefined) {
-    loggedUser.fullName = fullName;
-  }
-  if (phone !== undefined) {
-    loggedUser.phone = phone;
-  }
-  if (address !== undefined) {
-    loggedUser.address = address;
-  }
-  if (password !== undefined && password !== "") {
-    loggedUser.passwordHash = password;
-  }
-  saveJson(USERS_FILE, usersStore);
-  res.json({
-    message: "Identity profiles refreshed!",
-    user: {
-      email: loggedUser.email,
-      fullName: loggedUser.fullName,
-      role: loggedUser.role,
-      phone: loggedUser.phone || "",
-      address: loggedUser.address || ""
+export const editProfile = async (req, res) => {
+  try {
+    const { email, fullName, phone, address, password } = req.body;
+    const normalizedEmail = email.toLowerCase().trim();
+    const loggedUser = await User.findOne({ email: normalizedEmail });
+    if (!loggedUser) {
+      return res.status(404).json({ error: "User record identity mismatch" });
     }
-  });
+
+    if (fullName !== undefined) {
+      loggedUser.fullName = fullName;
+    }
+    if (phone !== undefined) {
+      loggedUser.phone = phone;
+    }
+    if (address !== undefined) {
+      loggedUser.address = address;
+    }
+    if (password !== undefined && password !== "") {
+      const isDummy = password === "user123_dummy" || password === "google_dummy";
+      loggedUser.passwordHash = isDummy ? password : await bcrypt.hash(password, 12);
+    }
+
+    await loggedUser.save();
+    res.json({
+      message: "Identity profiles refreshed!",
+      user: {
+        email: loggedUser.email,
+        fullName: loggedUser.fullName,
+        role: loggedUser.role,
+        phone: loggedUser.phone || "",
+        address: loggedUser.address || ""
+      }
+    });
+  } catch (err) {
+    console.error("editProfile error:", err);
+    res.status(500).json({ error: "Failed to update profile coordinates." });
+  }
 };
 
-export const getUserData = (req, res) => {
-  const { email } = req.query;
-  if (!email) {
-    return res.status(400).json({ error: "Query parameters email identifier missing" });
-  }
-
-  const usersStore = loadJson(USERS_FILE, []);
-  const applicationsStore = loadJson(APPLICATIONS_FILE, []);
-  const agreementsStore = loadJson(AGREEMENTS_FILE, []);
-  const paymentsStore = loadJson(PAYMENTS_FILE, []);
-
-  const activeEmail = email.toLowerCase();
-  const driverProfile = usersStore.find(u => u.email.toLowerCase() === activeEmail) || {
-    email: activeEmail,
-    fullName: "Simulated Guest Profile",
-    role: "user"
-  };
-
-  const driverApps = applicationsStore.filter(a => a.userEmail.toLowerCase() === activeEmail);
-  
-  const approvedApps = driverApps.filter(a => a.step === 4);
-  let updatedAgreements = false;
-  approvedApps.forEach((app) => {
-    const hasAgr = agreementsStore.some(ag => ag.userEmail.toLowerCase() === activeEmail && ag.carName.includes(app.carName.split(' - ')[0]));
-    if (!hasAgr) {
-      agreementsStore.push({
-        id: `AGR-${Math.floor(Math.random() * 8999 + 1000)}`,
-        userEmail: activeEmail,
-        carName: app.carName.split(' - ')[0],
-        weeklyRate: 45,
-        startDate: new Date().toISOString().split('T')[0],
-        endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        paidContributions: 45,
-        remainingMonths: 12
-      });
-      updatedAgreements = true;
+export const getUserData = async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ error: "Query parameters email identifier missing" });
     }
-  });
-  if (updatedAgreements) {
-    saveJson(AGREEMENTS_FILE, agreementsStore);
+
+    const activeEmail = email.toLowerCase().trim();
+    let driverProfile = await User.findOne({ email: activeEmail });
+    if (!driverProfile) {
+      driverProfile = {
+        email: activeEmail,
+        fullName: "Simulated Guest Profile",
+        role: "user"
+      };
+    }
+
+    const driverApps = await Application.find({ userEmail: activeEmail }).sort({ createdAt: -1 });
+    
+    const approvedApps = driverApps.filter(a => a.step === 4);
+    for (const app of approvedApps) {
+      const cleanCarName = app.carName.split(' - ')[0];
+      const hasAgr = await Agreement.findOne({
+        userEmail: activeEmail,
+        carName: { $regex: new RegExp(cleanCarName, "i") }
+      });
+      if (!hasAgr) {
+        const newAgr = new Agreement({
+          userEmail: activeEmail,
+          carName: cleanCarName,
+          weeklyRate: 45,
+          paidContributions: 45,
+          remainingMonths: 12
+        });
+        await newAgr.save();
+      }
+    }
+
+    const driverAgreements = await Agreement.find({ userEmail: activeEmail }).sort({ createdAt: -1 });
+    const driverPayments = await Payment.find({ userEmail: activeEmail }).sort({ createdAt: -1 });
+
+    res.json({
+      user: {
+        email: driverProfile.email,
+        fullName: driverProfile.fullName,
+        role: driverProfile.role,
+      },
+      applications: driverApps,
+      agreements: driverAgreements,
+      payments: driverPayments,
+    });
+  } catch (err) {
+    console.error("getUserData error:", err);
+    res.status(500).json({ error: "Failed to assemble personal profile dossier from MongoDB clusters." });
   }
-
-  const driverAgreements = agreementsStore.filter(a => a.userEmail.toLowerCase() === activeEmail);
-  const driverPayments = paymentsStore.filter(p => p.userEmail.toLowerCase() === activeEmail);
-
-  res.json({
-    user: {
-      email: driverProfile.email,
-      fullName: driverProfile.fullName,
-      role: driverProfile.role,
-    },
-    applications: driverApps,
-    agreements: driverAgreements,
-    payments: driverPayments,
-  });
 };
