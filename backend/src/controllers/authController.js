@@ -24,67 +24,66 @@ function getEmailTransporter() {
   const emailUser = process.env.EMAIL_USER;
   const emailPass = process.env.EMAIL_PASS;
 
+  console.log("EMAIL_USER exists:", !!emailUser);
+  console.log("EMAIL_PASS exists:", !!emailPass);
+
   if (!emailUser || !emailPass) {
-    console.warn("[SMTP-WARNING] EMAIL_USER or EMAIL_PASS environment variables are not configured. Emails will not be sent physically.");
+    console.warn(
+      "[SMTP-WARNING] EMAIL_USER or EMAIL_PASS environment variables are missing."
+    );
     return null;
   }
 
   try {
-    // ✅ SWITCHED TO PORT 587 WITH TLS BYPASS FOR RAILWAY PRODUCTION
     nodemailerTransporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587,         // TLS Port (Open on Railway networks)
-      secure: false,     // Must be false for port 587
+      service: "gmail",
       auth: {
         user: emailUser,
-        pass: emailPass, // 16-character App Password
+        pass: emailPass,
       },
-      tls: {
-        rejectUnauthorized: false, // Prevents security blocking on cloud hosting
-      },
-      connectionTimeout: 15000, // 15 seconds timeouts
-      greetingTimeout: 15000,
-      socketTimeout: 20000,
+      connectionTimeout: 30000,
+      greetingTimeout: 30000,
+      socketTimeout: 30000,
     });
+
     return nodemailerTransporter;
   } catch (error) {
-    console.error("[SMTP-ERROR] Failed to construct Nodemailer transporter:", error);
+    console.error("[SMTP-ERROR] Failed to create transporter:", error);
     return null;
   }
 }
 
 async function sendOtpEmail(email, otp) {
   const transporter = getEmailTransporter();
+
   if (!transporter) {
-    console.log(`[SMTP-INFO] Real email send skipped because SMTP credentials are not set. Retrieved OTP code is: ${otp}`);
+    console.log(
+      `[SMTP-INFO] SMTP unavailable. OTP for ${email}: ${otp}`
+    );
     return;
   }
 
   try {
+    await transporter.verify();
+    console.log("✅ SMTP Connected Successfully");
+
     await transporter.sendMail({
       from: `"Rent2Buy Car Leasings" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Verification Code - Rent2Buy",
       html: `
-        <div style="font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">
-          <h2 style="color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Rent2Buy Driver Profile Verification</h2>
-          <p style="color: #475569; font-size: 14px; line-height: 1.5;">
-            Thank you for registering your interest with Rent2Buy Car Leasings Manchester. Please verify your email address to complete your driver application form setup.
-          </p>
-          <p style="color: #475569; font-size: 14px;">Your 6-digit confirmation security PIN code is:</p>
-          <div style="background-color: #f8fafc; border: 1px dashed #cbd5e1; padding: 15px; margin: 20px 0; text-align: center; border-radius: 8px;">
-            <span style="font-size: 32px; font-weight: 900; letter-spacing: 6px; color: #CDA275; font-family: monospace;">${otp}</span>
-          </div>
-          <p style="color: #64748b; font-size: 12px; margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
-            This verification token will expire in 5 minutes. If you did not request this code, please ignore this email.
-          </p>
+        <div style="font-family:sans-serif;padding:20px">
+          <h2>Rent2Buy Verification</h2>
+          <p>Your OTP Code:</p>
+          <h1>${otp}</h1>
+          <p>This code expires in 5 minutes.</p>
         </div>
       `,
     });
-    console.log(`[SMTP] Verification email sent successfully to ${email}`);
+
+    console.log(`✅ Verification email sent to ${email}`);
   } catch (error) {
-    // ✅ FALLBACK: Agar Railway incident ki wajah se timeout ho, to request block na ho aur logs me OTP mil jaye
-    console.error(`[SMTP-ERR] Failed to dispatch email to ${email} due to network timeout. FALLBACK DISPLAY - OTP IS: ${otp}`);
+    console.error("❌ SMTP ERROR:", error);
   }
 }
 
