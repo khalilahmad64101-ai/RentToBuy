@@ -30,18 +30,21 @@ function getEmailTransporter() {
   }
 
   try {
-    // ✅ IMPROVED SMTP CONFIGURATION FOR PRODUCTION (RAILWAY)
+    // ✅ SWITCHED TO PORT 587 WITH TLS BYPASS FOR RAILWAY PRODUCTION
     nodemailerTransporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
-      port: 465,         // Secure SSL port for Gmail
-      secure: true,      // true for port 465
+      port: 587,         // TLS Port (Open on Railway networks)
+      secure: false,     // Must be false for port 587
       auth: {
         user: emailUser,
         pass: emailPass, // 16-character App Password
       },
-      connectionTimeout: 10000, // 10 seconds timeout to prevent infinite loading
-      greetingTimeout: 10000,
-      socketTimeout: 15000,
+      tls: {
+        rejectUnauthorized: false, // Prevents security blocking on cloud hosting
+      },
+      connectionTimeout: 15000, // 15 seconds timeouts
+      greetingTimeout: 15000,
+      socketTimeout: 20000,
     });
     return nodemailerTransporter;
   } catch (error) {
