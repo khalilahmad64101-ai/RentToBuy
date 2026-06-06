@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { OAuth2Client } from 'google-auth-library';
 import { User } from '../models/User.js';
 import { Application } from '../models/Application.js';
-import { Agreement } from '../models/Agreement.js';
+import { Agreement } from '../models/Aggreement.js';
 import { Payment } from '../models/Payment.js';
 
 // ADMIN_EMAIL Configurable Parameter - Requirement 17, 18, 19, 20
