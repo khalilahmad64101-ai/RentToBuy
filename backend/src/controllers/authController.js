@@ -83,7 +83,8 @@ async function sendOtpEmail(email, otp) {
     });
     console.log(`[SMTP] Verification email sent successfully to ${email}`);
   } catch (error) {
-    console.error(`[SMTP-ERR] Failed to dispatch email to ${email}:`, error);
+    // ✅ FALLBACK: Agar Railway incident ki wajah se timeout ho, to request block na ho aur logs me OTP mil jaye
+    console.error(`[SMTP-ERR] Failed to dispatch email to ${email} due to network timeout. FALLBACK DISPLAY - OTP IS: ${otp}`);
   }
 }
 
