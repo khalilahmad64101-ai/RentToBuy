@@ -72,12 +72,12 @@ export function CarCard({ car }) {
         <div className="grid grid-cols-2 gap-2 mt-auto pt-2">
           <Link to={`/cars/${id}`}>
             <Button variant="secondary" size="sm" className="w-full text-xs">
-              View Fleet Specs
+              Details
             </Button>
           </Link>
           <Link to={`/apply?carId=${id}`}>
             <Button variant="primary" size="sm" className="w-full text-xs font-semibold">
-              Apply to Lease
+              Apply
             </Button>
           </Link>
         </div>

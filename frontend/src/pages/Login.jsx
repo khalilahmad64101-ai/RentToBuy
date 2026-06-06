@@ -192,32 +192,11 @@ export function Login() {
           </div>
         </div>
 
-        {/* Fast login helpers */}
-        <div className="border-t border-gray-100 pt-5 space-y-2">
-          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block text-center">DEMO FAST PORTAL SESSIONS</span>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <button
-              onClick={() => handleFastLogin('user@example.com', 'password123')}
-              className="p-2 border border-indigo-100 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-left font-sans text-[11px]"
-            >
-              <strong className="block text-indigo-900 font-semibold">Lease Driver</strong>
-              user@example.com
-            </button>
-            <button
-              onClick={() => handleFastLogin('admin@example.com', 'admin123')}
-              className="p-2 border border-amber-100 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 text-left font-sans text-[11px]"
-            >
-              <strong className="block text-amber-900 font-semibold">Fleet Underwriter</strong>
-              admin@example.com
-            </button>
-          </div>
-        </div>
-
         {/* Redirect sign up */}
         <div className="text-center text-xs text-gray-500 pt-2 pb-1">
           New to are fleet?{' '}
           <Link to="/signup" className="text-indigo-600 font-semibold hover:underline">
-            Register your driver licence here
+            Register here
           </Link>
         </div>
       </div>
