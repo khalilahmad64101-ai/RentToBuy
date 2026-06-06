@@ -30,12 +30,18 @@ function getEmailTransporter() {
   }
 
   try {
+    // ✅ IMPROVED SMTP CONFIGURATION FOR PRODUCTION (RAILWAY)
     nodemailerTransporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 465,         // Secure SSL port for Gmail
+      secure: true,      // true for port 465
       auth: {
         user: emailUser,
-        pass: emailPass,
+        pass: emailPass, // 16-character App Password
       },
+      connectionTimeout: 10000, // 10 seconds timeout to prevent infinite loading
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
     });
     return nodemailerTransporter;
   } catch (error) {
@@ -190,7 +196,7 @@ export const signupSendOtp = async (req, res) => {
     });
     saveJson(EMAILS_FILE, emailsStore);
 
-    // Call async nodemailer function without blocking express response (or we can await it)
+    // Call async nodemailer function with await to process mail
     await sendOtpEmail(email.toLowerCase().trim(), otp);
 
     res.json({
@@ -342,7 +348,6 @@ export const googleSignin = async (req, res) => {
     fullName = payload.name || payload.given_name || "Google User";
   } catch (err) {
     console.warn("[Backend SDK Google Verification Failed, attempting direct JWT local decode fallback]:", err.message);
-    // Direct base64 parsing utility inside JWT to ensure robust decoding even under configuration / network changes
     try {
       const parts = credential.split('.');
       if (parts.length === 3) {
