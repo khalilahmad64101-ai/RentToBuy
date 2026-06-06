@@ -1,3 +1,6 @@
+// TEMPORARILY DISABLED MONGODB
+// TODO: Re-enable MongoDB before production deployment
+/*
 import mongoose from 'mongoose';
 
 const carSchema = new mongoose.Schema({
@@ -18,3 +21,7 @@ const carSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 export const Car = mongoose.models.Car || mongoose.model('Car', carSchema);
+*/
+
+export const Car = null;
+
