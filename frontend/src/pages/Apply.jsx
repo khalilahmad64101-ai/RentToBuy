@@ -70,6 +70,7 @@ export function Apply() {
   const [submitting, setSubmitting] = useState(false);
   const [uploadError, setUploadError] = useState(null);
   const [appError, setAppError] = useState(null);
+  const [appliedSuccess, setAppliedSuccess] = useState(false);
 
   const [activeCameraStream, setActiveCameraStream] = useState(null);
   const [cameraActiveType, setCameraActiveType] = useState(null);
@@ -378,18 +379,69 @@ export function Apply() {
 
       // 4. Force state sync and routing
       if (syncDriverData) {
-        await syncDriverData(emailAddress);
+        try {
+          await syncDriverData(emailAddress);
+        } catch (syncErr) {
+          console.warn('[Sync Warning] Driver data sync error:', syncErr);
+        }
       }
-      navigate('/dashboard?applied=success');
-    } catch (err) {
-      setAppError(err.message || 'Application database routing error occurred.');
-    } finally {
+
+      // Display the success message with status change and disable any loading/simulated uploading indicator.
+      setAppliedSuccess(true);
       setSubmitting(false);
+      setUploadProgress(0);
+
+      // Redirect user to Dashboard after slight interactive delay so they can read the success state clearly!
+      setTimeout(() => {
+        navigate('/dashboard?applied=success');
+      }, 2000);
+
+    } catch (err) {
+      console.error("[Apply Submit Error]:", err);
+      setAppError(err.message || 'Application database routing error occurred.');
+      setSubmitting(false);
+      setUploadProgress(0);
+    } finally {
+      // Ensure that submitting has been set to false
+      setSubmitting(false);
+      setUploadProgress(0);
     }
   };
 
   if (carsLoading) {
     return <Loader label="Retrieving current stock models..." />;
+  }
+
+  if (appliedSuccess) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-16 text-center space-y-6 animate-fade-in" id="apply-success-view">
+        <div className="flex justify-center">
+          <div className="p-4 bg-emerald-50 rounded-full text-emerald-500 animate-bounce">
+            <CheckCircle2 className="w-16 h-16" />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <h1 className="font-sans font-semibold text-2xl text-gray-900 tracking-tight">
+            Application Submitted!
+          </h1>
+          <p className="text-sm text-gray-500 leading-relaxed">
+            Your Rent-to-Buy application and underwriting documents have been submitted successfully.
+          </p>
+        </div>
+        <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100 text-emerald-800 text-xs font-semibold">
+          Application submitted successfully. Redirecting you to your workspace...
+        </div>
+        <div className="pt-4">
+          <Button
+            onClick={() => navigate('/dashboard?applied=success')}
+            variant="primary"
+            className="w-full font-bold py-2.5 shadow"
+          >
+            Go to Dashboard Now
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
