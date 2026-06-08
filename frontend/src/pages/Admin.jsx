@@ -41,8 +41,16 @@ import {
   FileCheck
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useSEO } from '../hooks/useSEO';
 
 export function Admin() {
+  useSEO({
+    title: 'Security Terminal | Heathrow Administrative Operations | R2BuyCar',
+    description: 'Manage active fleet inventories, modify vehicle listings, resolve support queue inquiries, and approve/reject lease candidate underwriting applications from the centralized security terminal.',
+    keywords: 'R2BuyCar terminal administration, lease back-office clearance hub',
+    ogType: 'article'
+  });
+
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -88,6 +96,7 @@ export function Admin() {
   const [carMileage, setCarMileage] = useState('15,000 miles');
   const [carImage, setCarImage] = useState('https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&q=80&w=800');
   const [carImages, setCarImages] = useState(Array(10).fill(''));
+  const [carFeaturesStr, setCarFeaturesStr] = useState('Air Conditioning, Parking Sensors, Bluetooth, Adaptive Cruise, Heated Seats');
   const [carDescription, setCarDescription] = useState('This fuel-efficient EV vehicle is primed and prepared for Heathrow Airport dispatch networks. Includes servicing logs and active road tax profiles.');
   const [carStatus, setCarStatus] = useState('Available');
 
@@ -167,6 +176,7 @@ export function Admin() {
     setCarMileage('15,000 miles');
     setCarImage('https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&q=80&w=800');
     setCarImages(Array(10).fill(''));
+    setCarFeaturesStr('Air Conditioning, Parking Sensors, Bluetooth, Adaptive Cruise, Heated Seats');
     setCarDescription('Fuel efficient electric hybrid primed and checked for prompt Heathrow delivery networks. Includes full breakdown protection and road taxes.');
     setCarStatus('Available');
     setCarViewMode('add');
@@ -189,6 +199,8 @@ export function Admin() {
     const existingImgs = Array.isArray(car.images) && car.images.length > 0 ? car.images : [];
     const formattedImgs = Array(10).fill('').map((_, idx) => existingImgs[idx] || '');
     setCarImages(formattedImgs);
+
+    setCarFeaturesStr(Array.isArray(car.features) ? car.features.join(', ') : car.features || '');
 
     setCarDescription(car.description || '');
     setCarStatus(car.status || 'Available');
@@ -216,6 +228,7 @@ export function Admin() {
       mileage: carMileage,
       image: carImage,
       images: carImages.filter(img => img.trim() !== ''), // Filter out empty strings
+      features: carFeaturesStr.split(',').map(f => f.trim()).filter(f => f !== ''),
       description: carDescription,
       status: carStatus
     };
@@ -946,6 +959,22 @@ export function Admin() {
                           </div>
                         </div>
 
+                        {/* Fleet High-Light Features */}
+                        <div>
+                          <label className="block text-slate-450 font-semibold mb-1 uppercase tracking-wide">Vehicle Features (Comma Separated)</label>
+                          <span className="block text-[10px] text-zinc-400 mb-2 font-sans">
+                            Enter the high-quality features that are displayed as feature icons on the fleet cards (e.g. Air Conditioning, Parking Sensors, GPS Navigation, Bluetooth, Backup Camera, Leather Seats, Electric Range).
+                          </span>
+                          <input
+                            type="text"
+                            required
+                            value={carFeaturesStr}
+                            onChange={(e) => setCarFeaturesStr(e.target.value)}
+                            className="w-full text-xs py-2.5 px-3 border border-slate-800 bg-slate-900 text-white rounded-lg placeholder-slate-500 font-sans"
+                            placeholder="Air Conditioning, Parking Sensors, Bluetooth, Adaptive Cruise, Heated Seats"
+                          />
+                        </div>
+
                         {/* 10 Multi-Angle Grid Images */}
                         <div className="bg-slate-900 border border-slate-800 p-4.5 rounded-xl space-y-3.5">
                           <div>
@@ -1110,7 +1139,7 @@ export function Admin() {
                                   {/* Credentials document previews */}
                           <div className="space-y-2.5">
                             <span className="block text-[10px] text-slate-450 uppercase font-black tracking-widest">Submitted Identity Certificates</span>
-                            <div className="grid grid-cols-3 gap-3">
+                            <div className="grid grid-cols-4 gap-3">
                               
                               <div className="bg-slate-900 border border-slate-800 p-2 rounded-xl space-y-1.5 text-center flex flex-col justify-between">
                                 <span className="block text-[9.5px] text-slate-300 font-bold">Driving Licence (Front)</span>
@@ -1167,6 +1196,26 @@ export function Admin() {
                                   </>
                                 ) : (
                                   <div className="w-full aspect-video rounded bg-slate-950 flex flex-col items-center justify-center text-slate-500 border border-slate-850 py-3">
+                                    <span className="text-[10px] font-mono">N/A</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="bg-slate-900 border border-slate-800 p-2 rounded-xl space-y-1.5 text-center flex flex-col justify-between">
+                                <span className="block text-[9.5px] text-slate-300 font-bold">Floor Plan / Support Files</span>
+                                {(selectedApp.floorPlanUrl && !selectedApp.floorPlanUrl.includes('unsplash.com')) || (selectedApp.applyDetails?.floorPlanUrl && !selectedApp.applyDetails.floorPlanUrl.includes('unsplash.com')) ? (
+                                  <>
+                                    <img 
+                                      src={getImageUrl(selectedApp.floorPlanUrl || selectedApp.applyDetails?.floorPlanUrl)} 
+                                      alt="Floor Plan / Docs" 
+                                      className="w-full aspect-video object-cover rounded bg-slate-950 hover:opacity-90 transition-opacity cursor-pointer duration-200"
+                                      referrerPolicy="no-referrer"
+                                      onClick={() => window.open(getImageUrl(selectedApp.floorPlanUrl || selectedApp.applyDetails?.floorPlanUrl), '_blank')}
+                                    />
+                                    <a href={getImageUrl(selectedApp.floorPlanUrl || selectedApp.applyDetails?.floorPlanUrl)} target="_blank" rel="noreferrer" className="text-[9px] text-amber-400 hover:underline block pt-1 font-bold">Examine Fullscreen ↗</a>
+                                  </>
+                                ) : (
+                                  <div className="w-full aspect-video rounded bg-slate-950 flex flex-col items-center justify-center text-slate-505 border border-slate-850 py-3">
                                     <span className="text-[10px] font-mono">N/A</span>
                                   </div>
                                 )}

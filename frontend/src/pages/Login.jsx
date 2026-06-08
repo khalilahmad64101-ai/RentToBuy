@@ -4,8 +4,15 @@ import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/Button';
 import { Mail, Lock, Car, Sparkles, Eye, EyeOff } from 'lucide-react';
 import { api } from '../services/api';
+import { useSEO } from '../hooks/useSEO';
 
 export function Login() {
+  useSEO({
+    title: 'Driver Login | Manage Your Lease & Underwriting | R2BuyCar',
+    description: 'Log in to your R2BuyCar secure driver portal. Access your lease active pipeline trackers, download motor certificates of insurance, or settle contributions.',
+    keywords: 'R2BuyCar driver portal login, lease dashboard access, rent to buy log in'
+  });
+
   const { login, googleLogin } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -192,11 +199,32 @@ export function Login() {
           </div>
         </div>
 
+        {/* Fast login helpers */}
+        <div className="border-t border-gray-100 pt-5 space-y-2">
+          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block text-center">DEMO FAST PORTAL SESSIONS</span>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <button
+              onClick={() => handleFastLogin('user@example.com', 'password123')}
+              className="p-2 border border-brand-primary/20 rounded-lg bg-brand-primary/5 hover:bg-brand-primary/10 text-brand-secondary text-left font-sans text-[11px]"
+            >
+              <strong className="block text-brand-secondary font-extrabold pb-0.5">Lease Driver</strong>
+              user@example.com
+            </button>
+            <button
+              onClick={() => handleFastLogin('admin@example.com', 'admin123')}
+              className="p-2 border border-amber-100 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 text-left font-sans text-[11px]"
+            >
+              <strong className="block text-amber-900 font-semibold">Fleet Underwriter</strong>
+              admin@example.com
+            </button>
+          </div>
+        </div>
+
         {/* Redirect sign up */}
         <div className="text-center text-xs text-gray-500 pt-2 pb-1">
           New to are fleet?{' '}
-          <Link to="/signup" className="text-indigo-600 font-semibold hover:underline">
-            Register here
+          <Link to="/signup" className="text-brand-primary font-bold hover:underline">
+            Register your driver licence here
           </Link>
         </div>
       </div>

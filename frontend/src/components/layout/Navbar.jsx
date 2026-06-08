@@ -94,23 +94,23 @@ export function Navbar() {
           {/* Logo Brand matching image 100% same to same */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center group focus:outline-none" id="branding-link">
-              {/* Dark circle with gold/beige car icon inside */}
-              <div className="w-10 h-10 rounded-full bg-[#111A2E] flex items-center justify-center mr-2 shadow-sm transition-transform group-hover:scale-105">
-                <Car className="h-5 w-5 text-[#CDA275]" strokeWidth={2.5} />
+              {/* Dark blue circle with bright green car icon inside */}
+              <div className="w-10 h-10 rounded-full bg-brand-secondary flex items-center justify-center mr-2 shadow-sm transition-transform group-hover:scale-105">
+                <Car className="h-5 w-5 text-brand-primary" strokeWidth={2.5} />
               </div>
               
-              {/* Text elements: RENT (black/dark-blue), 2GO (bold accent blue), BUYCARZ badge */}
+              {/* Text elements: R2 (dark blue), BuyCar (bright green), rent to buy badge */}
               <div className="flex items-center">
-                <span className="font-extrabold text-[#111A2E] text-base min-[360px]:text-[22px] tracking-tight">
-                  RENT
+                <span className="font-extrabold text-brand-secondary text-base min-[360px]:text-[22px] tracking-tight">
+                  R2
                 </span>
-                <span className="font-extrabold text-[#2563EB] text-base min-[360px]:text-[22px] tracking-tight ml-0.5">
-                  2GO
+                <span className="font-extrabold text-brand-primary text-base min-[360px]:text-[22px] tracking-tight ml-0.5">
+                  BuyCar
                 </span>
                 
-                {/* Gold BUYCARZ rounded badge with dark navy text */}
-                <span className="ml-1 min-[360px]:ml-2 px-1.5 py-0.5 min-[360px]:px-2.5 min-[360px]:py-1 text-[8px] min-[360px]:text-[10px] font-black bg-[#CDA275] text-[#111A2E] tracking-widest rounded-md uppercase align-middle whitespace-nowrap shadow-xs">
-                  BUYCARZ
+                {/* Bright green rounded badge with white text */}
+                <span className="ml-1 min-[360px]:ml-2 px-1.5 py-0.5 min-[360px]:px-2.5 min-[360px]:py-1 text-[8px] min-[360px]:text-[10px] font-black bg-brand-primary text-white tracking-widest rounded-md uppercase align-middle whitespace-nowrap shadow-xs">
+                  RENT-TO-BUY
                 </span>
               </div>
             </Link>
@@ -124,7 +124,7 @@ export function Navbar() {
                 to={link.path}
                 className={`h-full inline-flex items-center px-0.5 border-b-[3px] font-sans font-extrabold text-[13px] tracking-wide transition-all ${
                   isActive(link.path)
-                    ? 'border-[#2563EB] text-[#2563EB]'
+                    ? 'border-brand-primary text-brand-secondary'
                     : 'border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-200'
                 }`}
               >
@@ -141,7 +141,7 @@ export function Navbar() {
                 setPayMessage(null);
                 setPaymentModalOpen(true);
               }}
-              className="flex items-center gap-2 px-4.5 py-2 px-5 bg-white border border-[#CDA275] hover:bg-[#FAF8F5] text-[#111A2E] font-extrabold text-xs uppercase tracking-wider rounded-md transition-all duration-200 cursor-pointer shadow-xs whitespace-nowrap"
+              className="flex items-center gap-2 px-5 py-2 bg-white border border-brand-primary hover:bg-brand-primary/5 text-brand-secondary font-extrabold text-xs uppercase tracking-wider rounded-md transition-all duration-200 cursor-pointer shadow-xs whitespace-nowrap"
             >
               <span>PAYMENTS</span>
             </button>
@@ -151,7 +151,7 @@ export function Navbar() {
               <div className="relative">
                 <button
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-[#111A2E] hover:bg-[#1D2B4A] text-white font-extrabold text-xs uppercase tracking-wider rounded-md transition-all duration-200 cursor-pointer shadow-sm whitespace-nowrap"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-brand-secondary hover:bg-brand-secondary-hover text-white font-extrabold text-xs uppercase tracking-wider rounded-md transition-all duration-200 cursor-pointer shadow-sm whitespace-nowrap"
                 >
                   <span>👤</span>
                   <span>PROFILE</span>
@@ -163,14 +163,14 @@ export function Navbar() {
                   <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-100 py-1.5 z-10 animate-fade-in">
                     <div className="px-4 py-2 border-b border-gray-50">
                       <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Driver Account</p>
-                      <p className="font-bold text-sm text-[#111A2E] truncate mt-0.5">{user.fullName || user.email}</p>
-                      <p className="text-[10px] text-[#2563EB] font-bold mt-0.5">{user.role?.toUpperCase()} ACCESS</p>
+                      <p className="font-bold text-sm text-brand-secondary truncate mt-0.5">{user.fullName || user.email}</p>
+                      <p className="text-[10px] text-brand-primary font-bold mt-0.5">{user.role?.toUpperCase()} ACCESS</p>
                     </div>
                     
                     <Link
                       to="/dashboard"
                       onClick={() => setUserDropdownOpen(false)}
-                      className="flex items-center px-4 py-2 text-sm text-[#111A2E] font-bold hover:bg-slate-50 transition-colors"
+                      className="flex items-center px-4 py-2 text-sm text-brand-secondary font-bold hover:bg-slate-50 transition-colors"
                     >
                       <Layers className="w-4 h-4 mr-2 text-slate-400" />
                       My Portal Dashboard
@@ -202,7 +202,7 @@ export function Navbar() {
             ) : (
               <Link to="/login">
                 <button
-                  className="flex items-center gap-2 px-5 py-2.5 bg-[#111A2E] hover:bg-[#1D2B4A] text-white font-extrabold text-xs uppercase tracking-wider rounded-md transition-all duration-200 cursor-pointer shadow-sm whitespace-nowrap"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-brand-secondary hover:bg-brand-secondary-hover text-white font-extrabold text-xs uppercase tracking-wider rounded-md transition-all duration-200 cursor-pointer shadow-sm whitespace-nowrap"
                 >
                   <span>👤</span>
                   <span>PROFILE</span>
@@ -216,7 +216,7 @@ export function Navbar() {
             {user ? (
               <Link
                 to="/dashboard"
-                className="w-10 h-10 rounded-full bg-[#111A2E] flex items-center justify-center text-xs font-black text-[#CDA275] border-2 border-[#CDA275]/30 hover:bg-[#1D2B4A] transition-all shadow-sm"
+                className="w-10 h-10 rounded-full bg-brand-secondary text-white font-black text-xs border-2 border-brand-primary flex items-center justify-center hover:bg-brand-secondary-hover transition-all shadow-sm"
                 title="My Driver Dashboard"
               >
                 {user.fullName ? user.fullName.substring(0, 2).toUpperCase() : '👤'}
@@ -224,7 +224,7 @@ export function Navbar() {
             ) : (
               <Link
                 to="/login"
-                className="w-10 h-10 rounded-full bg-[#111A2E] flex items-center justify-center text-xs text-white hover:bg-[#1D2B4A] border border-slate-200 transition-all shadow-sm"
+                className="w-10 h-10 rounded-full bg-brand-secondary text-white hover:bg-brand-secondary-hover border-2 border-brand-primary flex items-center justify-center text-xs transition-all shadow-sm"
                 title="Sign In / Profile"
               >
                 👤
@@ -244,14 +244,14 @@ export function Navbar() {
           onClick={() => setMobileMenuOpen(false)}
           className={`flex-1 flex flex-col items-center justify-center h-full transition-all relative ${
             isActive('/') && !mobileMenuOpen && !paymentModalOpen
-              ? 'text-[#2563EB]' 
+              ? 'text-brand-primary' 
               : 'text-slate-400 hover:text-slate-600'
           }`}
         >
           <Home className="w-[21px] h-[21px]" strokeWidth={isActive('/') && !mobileMenuOpen && !paymentModalOpen ? 2.5 : 2} />
           <span className="text-[9px] font-black tracking-wide mt-1 uppercase">Home</span>
           {isActive('/') && !mobileMenuOpen && !paymentModalOpen && (
-            <span className="absolute top-0 w-8 h-[3px] bg-[#2563EB] rounded-b-md"></span>
+            <span className="absolute top-0 w-8 h-[3px] bg-brand-primary rounded-b-md"></span>
           )}
         </Link>
 
@@ -261,14 +261,14 @@ export function Navbar() {
           onClick={() => setMobileMenuOpen(false)}
           className={`flex-1 flex flex-col items-center justify-center h-full transition-all relative ${
             isActive('/cars') && !mobileMenuOpen && !paymentModalOpen
-              ? 'text-[#2563EB]' 
+              ? 'text-brand-primary' 
               : 'text-slate-400 hover:text-slate-600'
           }`}
         >
           <Car className="w-[21px] h-[21px]" strokeWidth={isActive('/cars') && !mobileMenuOpen && !paymentModalOpen ? 2.5 : 2} />
           <span className="text-[9px] font-black tracking-wide mt-1 uppercase">Cars</span>
           {isActive('/cars') && !mobileMenuOpen && !paymentModalOpen && (
-            <span className="absolute top-0 w-8 h-[3px] bg-[#2563EB] rounded-b-md"></span>
+            <span className="absolute top-0 w-8 h-[3px] bg-brand-primary rounded-b-md"></span>
           )}
         </Link>
 
@@ -278,14 +278,14 @@ export function Navbar() {
           onClick={() => setMobileMenuOpen(false)}
           className={`flex-1 flex flex-col items-center justify-center h-full transition-all relative ${
             isActive('/track-ride') && !mobileMenuOpen && !paymentModalOpen
-              ? 'text-[#2563EB]' 
+              ? 'text-brand-primary' 
               : 'text-slate-400 hover:text-slate-600'
           }`}
         >
           <MapPin className="w-[21px] h-[21px]" strokeWidth={isActive('/track-ride') && !mobileMenuOpen && !paymentModalOpen ? 2.5 : 2} />
           <span className="text-[9px] font-black tracking-wide mt-1 uppercase">Track</span>
           {isActive('/track-ride') && !mobileMenuOpen && !paymentModalOpen && (
-            <span className="absolute top-0 w-8 h-[3px] bg-[#2563EB] rounded-b-md"></span>
+            <span className="absolute top-0 w-8 h-[3px] bg-brand-primary rounded-b-md"></span>
           )}
         </Link>
 
@@ -298,14 +298,14 @@ export function Navbar() {
           }}
           className={`flex-1 flex flex-col items-center justify-center h-full transition-all relative bg-transparent border-none outline-none cursor-pointer ${
             paymentModalOpen 
-              ? 'text-[#2563EB]' 
+              ? 'text-brand-primary' 
               : 'text-slate-400 hover:text-slate-600'
           }`}
         >
           <CreditCard className="w-[21px] h-[21px]" strokeWidth={paymentModalOpen ? 2.5 : 2} />
           <span className="text-[9px] font-black tracking-wide mt-1 uppercase">Pay</span>
           {paymentModalOpen && (
-            <span className="absolute top-0 w-8 h-[3px] bg-[#2563EB] rounded-b-md"></span>
+            <span className="absolute top-0 w-8 h-[3px] bg-brand-primary rounded-b-md"></span>
           )}
         </button>
 
@@ -314,7 +314,7 @@ export function Navbar() {
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className={`flex-1 flex flex-col items-center justify-center h-full transition-all relative bg-transparent border-none outline-none cursor-pointer ${
             mobileMenuOpen 
-              ? 'text-[#2563EB]' 
+              ? 'text-brand-primary' 
               : 'text-slate-400 hover:text-slate-600'
           }`}
         >
@@ -325,7 +325,7 @@ export function Navbar() {
           )}
           <span className="text-[9px] font-black tracking-wide mt-1 uppercase">Menu</span>
           {mobileMenuOpen && (
-            <span className="absolute top-0 w-8 h-[3px] bg-[#2563EB] rounded-b-md"></span>
+            <span className="absolute top-0 w-8 h-[3px] bg-brand-primary rounded-b-md"></span>
           )}
         </button>
 
@@ -339,9 +339,9 @@ export function Navbar() {
           <div className="px-6 pt-6 pb-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/40">
             <div>
               <h3 className="font-extrabold text-sm tracking-wider uppercase text-white">Menu Shortcuts</h3>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Rent2Go Premium Fleet Options</p>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">R2BuyCar Premium Fleet Options</p>
             </div>
-            <span className="px-2.5 py-1 text-[9px] font-black bg-[#CDA275] text-[#111A2E] tracking-widest rounded-md uppercase whitespace-nowrap shadow-xs align-middle">
+            <span className="px-2.5 py-1 text-[9px] font-black bg-brand-primary text-brand-secondary tracking-widest rounded-md uppercase whitespace-nowrap shadow-xs align-middle">
               VIP HUB
             </span>
           </div>
@@ -350,12 +350,12 @@ export function Navbar() {
           {user ? (
             <div className="px-6 py-5 bg-slate-950/40 border-b border-slate-800 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#CDA275] text-[#111A2E] font-black text-sm flex items-center justify-center shadow-md">
+                <div className="w-10 h-10 rounded-full bg-brand-primary text-brand-secondary font-black text-sm flex items-center justify-center shadow-md">
                   {user.fullName ? user.fullName.substring(0, 2).toUpperCase() : 'DR'}
                 </div>
                 <div className="min-w-0">
                   <p className="font-black text-sm text-white truncate leading-none">{user.fullName || user.email}</p>
-                  <p className="text-[9.5px] text-[#2563EB] font-black tracking-widest uppercase mt-1">{user.role?.toUpperCase()} PORTAL ACCESS</p>
+                  <p className="text-[9.5px] text-brand-primary font-black tracking-widest uppercase mt-1">{user.role?.toUpperCase()} PORTAL ACCESS</p>
                 </div>
               </div>
               <button 
@@ -367,13 +367,13 @@ export function Navbar() {
               </button>
             </div>
           ) : (
-            <div className="px-6 py-5 bg-gradient-to-r from-slate-900 to-[#111A2E] border-b border-slate-800">
+            <div className="px-6 py-5 bg-gradient-to-r from-slate-900 to-brand-secondary border-b border-slate-800">
               <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">Join our flexible program today</p>
               <div className="mt-3 flex gap-3">
                 <Link 
                   to="/login" 
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#CDA275] hover:bg-[#b88f63] text-[#111A2E] font-extrabold text-[11px] uppercase tracking-wider rounded-xl transition-all shadow-sm"
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-brand-primary hover:bg-brand-primary-hover text-brand-secondary font-extrabold text-[11px] uppercase tracking-wider rounded-xl transition-all shadow-sm"
                 >
                   <span>👤</span>
                   <span>SIGN IN</span>
@@ -401,7 +401,7 @@ export function Navbar() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex flex-col items-start p-4.5 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] transition-all text-left"
               >
-                <span className="p-2 bg-blue-500/10 text-blue-400 border border-blue-500/10 rounded-xl mb-3">
+                <span className="p-2 bg-brand-primary/10 text-brand-primary border border-brand-primary/10 rounded-xl mb-3">
                   <Car className="w-4.5 h-4.5" />
                 </span>
                 <span className="text-xs font-black text-white uppercase tracking-wider">Explore Cars</span>
@@ -414,7 +414,7 @@ export function Navbar() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex flex-col items-start p-4.5 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] transition-all text-left"
               >
-                <span className="p-2 bg-indigo-500/10 text-indigo-400 border border-indigo-500/10 rounded-xl mb-3">
+                <span className="p-2 bg-brand-secondary/15 text-brand-primary border border-brand-primary/10 rounded-xl mb-3">
                   <MapPin className="w-4.5 h-4.5" />
                 </span>
                 <span className="text-xs font-black text-white uppercase tracking-wider">Track Ride</span>
@@ -444,11 +444,11 @@ export function Navbar() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex flex-col items-start p-4.5 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] transition-all text-left"
               >
-                <span className="p-2 bg-amber-500/10 text-[#CDA275] border border-[#CDA275]/15 rounded-xl mb-3">
+                <span className="p-2 bg-brand-primary/10 text-brand-primary border border-brand-primary/15 rounded-xl mb-3">
                   <HelpCircle className="w-4.5 h-4.5" />
                 </span>
                 <span className="text-xs font-black text-white uppercase tracking-wider">How It Works</span>
-                <span className="text-[9px] text-slate-400 mt-0.5 leading-tight">Direct ownership path</span>
+                <span className="text-[9px] text-slate-400 mt-0.5 leading-tight font-light">Direct ownership path</span>
               </Link>
 
               {/* Option 5: Contact Support */}
@@ -470,7 +470,7 @@ export function Navbar() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex flex-col items-start p-4.5 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] transition-all text-left"
               >
-                <span className="p-2 bg-[#CDA275]/10 text-[#CDA275] border border-[#CDA275]/10 rounded-xl mb-3">
+                <span className="p-2 bg-brand-primary/10 text-brand-primary border border-brand-primary/10 rounded-xl mb-3">
                   <MessageCircle className="w-4.5 h-4.5" />
                 </span>
                 <span className="text-xs font-black text-white uppercase tracking-wider">Knowledge Base</span>
@@ -513,7 +513,7 @@ export function Navbar() {
                 <span className="text-xl">💳</span>
                 <div>
                   <h3 className="font-extrabold text-base tracking-wider text-white uppercase">Settle Contribution</h3>
-                  <p className="text-[10px] text-[#CDA275] font-bold tracking-widest uppercase mt-0.5">Rent2Go BuyCarz Payment System</p>
+                  <p className="text-[10px] text-brand-primary font-bold tracking-widest uppercase mt-0.5">Rent2Go BuyCarz Payment System</p>
                 </div>
               </div>
               <button

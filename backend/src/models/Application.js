@@ -16,6 +16,7 @@ const applicationSchema = new mongoose.Schema({
   licenseFrontUrl: { type: String },
   licenseBackUrl: { type: String },
   selfieUrl: { type: String },
+  floorPlanUrl: { type: String },
   notes: { type: String, default: '' },
   documentChecks: { type: mongoose.Schema.Types.Mixed, default: {} },
   applyDetails: {

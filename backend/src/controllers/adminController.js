@@ -5,6 +5,12 @@ import { Agreement } from '../models/Aggreement.js';
 import { Payment } from '../models/Payment.js';
 import { Email } from '../models/Email.js';
 import { Inquiry } from '../models/Inquiry.js';
+import { 
+  sendApplicationApproved, 
+  sendApplicationRejected, 
+  sendBookingConfirmation, 
+  scheduleReminders 
+} from '../utils/notifier.js';
 
 export const getAllRecords = async (req, res) => {
   try {
@@ -33,7 +39,7 @@ export const getAllRecords = async (req, res) => {
 
 export const adminAddCar = async (req, res) => {
   try {
-    const { name, model, price, deposit, description, year, fuel, transmission, mileage, image, images, status } = req.body;
+    const { name, model, price, deposit, description, year, fuel, transmission, mileage, image, images, features, status } = req.body;
     if (!name || !model) {
       return res.status(400).json({ error: "Missing required vehicle make and model details." });
     }
@@ -55,6 +61,7 @@ export const adminAddCar = async (req, res) => {
         image || "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&q=80&w=800",
         "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&q=80&w=800"
       ],
+      features: Array.isArray(features) ? features : [],
       status: status || "Available"
     });
 
@@ -135,17 +142,17 @@ export const adminUpdateApplicationStatus = async (req, res) => {
       app.step = 4;
       
       const emailQuery = app.userEmail.toLowerCase().trim();
-      const hasAgr = await Agreement.findOne({ userEmail: emailQuery });
-      if (!hasAgr) {
+      let targetAgr = await Agreement.findOne({ userEmail: emailQuery });
+      if (!targetAgr) {
         const parts = app.carName ? app.carName.split(" - ") : [];
-        const newAgr = new Agreement({
+        targetAgr = new Agreement({
           userEmail: emailQuery,
           carName: parts[0] || "TOYOTA PRIUS",
           weeklyRate: 45,
           depositStatus: "Pending", 
           insuranceCopyUrl: null
         });
-        await newAgr.save();
+        await targetAgr.save();
       }
 
       const autoEmail = new Email({
@@ -155,16 +162,54 @@ export const adminUpdateApplicationStatus = async (req, res) => {
         attachmentUrl: null
       });
       await autoEmail.save();
+
+      // Trigger actual user emails & schedule reminders
+      try {
+        await sendApplicationApproved({
+          to: emailQuery,
+          userName: app.fullName || "Lease Driver",
+          applicationId: app.id,
+          carName: app.carName || targetAgr.carName,
+          weeklyRate: targetAgr.weeklyRate
+        });
+
+        // Booking confirmation email (on booking creation)
+        await sendBookingConfirmation({
+          to: emailQuery,
+          userName: app.fullName || "Lease Driver",
+          bookingId: targetAgr.id,
+          carName: targetAgr.carName,
+          weeklyRate: targetAgr.weeklyRate,
+          bookingDate: new Date().toISOString().split('T')[0]
+        });
+
+        // Schedule the payment reminders (after application approved)
+        await scheduleReminders(emailQuery, app.id);
+      } catch (emailErr) {
+        console.error('[NOTIFIER WARNING] Failed to send approval & booking confirmation emails:', emailErr);
+      }
     }
 
     if (status === "Rejected") {
+      const emailQuery = app.userEmail.toLowerCase().trim();
       const rejectEmail = new Email({
-        userEmail: app.userEmail.toLowerCase().trim(),
+        userEmail: emailQuery,
         subject: "HEATHROW INBOX: Application Underwriting Status Update",
         content: `Dear Applicant, we regret to inform you that your rent-to-own lease folders has been declined due to driver eligibility credentials checks. Please cross check your driving history details and uploaded address proof files for precision.`,
         attachmentUrl: null
       });
       await rejectEmail.save();
+
+      // Trigger actual rejection email
+      try {
+        await sendApplicationRejected({
+          to: emailQuery,
+          userName: app.fullName || "Lease Driver",
+          reason: notes || app.notes
+        });
+      } catch (emailErr) {
+        console.error('[NOTIFIER WARNING] Failed to send rejection email:', emailErr);
+      }
     }
 
     await app.save();

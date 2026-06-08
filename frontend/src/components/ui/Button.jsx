@@ -13,12 +13,12 @@ export function Button({
   const baseStyle = 'inline-flex items-center justify-center font-medium transition-all duration-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
   
   const variants = {
-    primary: 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm focus:ring-indigo-500',
-    secondary: 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 shadow-sm focus:ring-indigo-500',
-    dark: 'bg-gray-900 hover:bg-gray-800 text-white shadow-sm focus:ring-gray-900',
+    primary: 'bg-brand-primary hover:bg-brand-primary-hover text-white shadow-sm focus:ring-brand-primary font-bold uppercase tracking-wider',
+    secondary: 'bg-white hover:bg-gray-50 text-brand-secondary border border-gray-200 shadow-sm focus:ring-brand-primary font-bold uppercase tracking-wider',
+    dark: 'bg-brand-secondary hover:bg-brand-secondary-hover text-white shadow-sm focus:ring-brand-primary font-bold uppercase tracking-wider',
     danger: 'bg-red-600 hover:bg-red-700 text-white shadow-sm focus:ring-red-500',
-    ghost: 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:ring-gray-500',
-    accent: 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm focus:ring-emerald-500',
+    ghost: 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:ring-gray-500 font-bold',
+    accent: 'bg-brand-primary hover:bg-brand-primary-hover text-white shadow-sm focus:ring-brand-primary font-bold',
   };
 
   const sizes = {

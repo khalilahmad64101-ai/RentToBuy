@@ -6,8 +6,8 @@ import { Footer } from './components/layout/Footer';
 import { BackToTop } from './components/layout/BackToTop';
 
 // Page declarations
-import { Home } from './pages/Home';
-import { Cars } from './pages/Cars';
+import { Home } from './pages/Home.jsx';
+import { Cars } from './pages/Cars.jsx';
 import { CarDetails } from './pages/CarDetails';
 import { Apply } from './pages/Apply';
 import { Login } from './pages/Login';

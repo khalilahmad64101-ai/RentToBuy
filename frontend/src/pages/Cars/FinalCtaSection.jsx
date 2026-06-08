@@ -5,12 +5,12 @@ import { Sparkles, ChevronRight } from 'lucide-react';
 export function FinalCtaSection() {
   return (
     <section className="relative bg-slate-950 text-white rounded-3xl p-4 sm:p-12 overflow-hidden shadow-xl border border-slate-850 group hover:shadow-2xl transition-all duration-300" id="explore-final-cta">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-[#CDA275]/15 via-transparent to-transparent"></div>
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-brand-primary/10 via-transparent to-transparent"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-brand-primary/5 rounded-full blur-3xl"></div>
       
       <div className="relative z-10 text-center max-w-2xl mx-auto space-y-6">
-        <div className="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-1 rounded-full text-[10px] uppercase font-mono tracking-wider text-[#CDA275] animate-pulse">
-          <Sparkles className="w-3 h-3 text-[#CDA275]" />
+        <div className="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-1 rounded-full text-[10px] uppercase font-mono tracking-wider text-brand-primary animate-pulse">
+          <Sparkles className="w-3 h-3 text-brand-primary" />
           Instant Eligibility Underwriting
         </div>
         
@@ -24,9 +24,9 @@ export function FinalCtaSection() {
 
         <div className="pt-4 flex flex-col sm:flex-row justify-center gap-4">
           <Link to="/apply" className="block w-full sm:w-auto">
-            <button className="w-full sm:w-auto px-8 py-3.5 bg-indigo-650 hover:bg-indigo-600 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-indigo-650/20 active:scale-98 flex items-center justify-center gap-2 cursor-pointer">
+            <button className="w-full sm:w-auto px-8 py-3.5 bg-brand-primary hover:bg-brand-primary-hover text-brand-secondary font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg active:scale-98 flex items-center justify-center gap-2 cursor-pointer">
               Apply online
-              <ChevronRight className="w-4 h-4 text-indigo-100 group-hover:translate-x-1 transition-transform" />
+              <ChevronRight className="w-4 h-4 text-brand-secondary group-hover:translate-x-1 transition-transform" />
             </button>
           </Link>
           <Link to="/contact" className="block w-full sm:w-auto">

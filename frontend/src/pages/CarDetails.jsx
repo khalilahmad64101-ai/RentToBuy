@@ -4,6 +4,8 @@ import { api } from '../services/api';
 import { Loader } from '../components/ui/Loader';
 import { Button } from '../components/ui/Button';
 import { Fuel, Orbit, ShieldCheck, CheckCircle2, ChevronLeft, CalendarClock, PenTool, CheckSquare } from 'lucide-react';
+import { getFeatureIcon } from '../components/cars/CarCard';
+import { useSEO } from '../hooks/useSEO';
 
 export function CarDetails() {
   const { id } = useParams();
@@ -11,6 +13,16 @@ export function CarDetails() {
   const [car, setCar] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeImgIndex, setActiveImgIndex] = useState(0);
+
+  useSEO({
+    title: car ? `Rent-to-Buy ${car.name} ${car.model} | R2BuyCar` : 'Vehicle Specifications | R2BuyCar',
+    description: car 
+      ? `Rent-to-buy program details for the ${car.name} ${car.model}. Secure this vehicle for £${car.weeklyRate || car.price || 50}/week with comprehensive servicing, road tax, and maintenance covered.` 
+      : 'Get on the road with clear rent-to-buy parameters, inclusive services, and low weekly contributions.',
+    keywords: car ? `${car.name}, rent to buy ${car.name}, ${car.model} lease, ${car.fuel || 'hybrid'} car subscription` : 'rent-to-buy car model, fleet specifications',
+    ogImage: car?.image,
+    twitterImage: car?.image
+  });
 
   useEffect(() => {
     api.cars.list()
@@ -145,20 +157,20 @@ export function CarDetails() {
         <div className="lg:col-span-5 space-y-6">
           <div className="bg-white rounded-2xl border border-gray-150 p-6 shadow-sm space-y-6" id="program-pricing">
             <div className="pb-4 border-b border-gray-100">
-              <span className="text-xs text-indigo-600 font-bold uppercase tracking-wider">Lease to Own Agreement</span>
+              <span className="text-xs text-brand-primary font-black uppercase tracking-wider">Lease to Own Agreement</span>
               <h1 className="font-sans font-bold text-2xl sm:text-3xl text-gray-950 tracking-tight mt-1">{name}</h1>
               <p className="text-xs text-gray-500 font-medium mt-1">{model}</p>
             </div>
 
             {/* Weekly Price Panel */}
-            <div className="bg-indigo-600 text-white rounded-xl p-5 shadow-xs flex justify-between items-center">
+            <div className="bg-brand-secondary text-white rounded-xl p-5 shadow-xs flex justify-between items-center">
               <div>
-                <span className="text-xs text-indigo-200 uppercase block font-medium">Contributive Weekly Rates</span>
-                <span className="text-3xl font-bold font-sans">£{displayWeekly}</span>
-                <span className="text-xs text-indigo-200">/week</span>
+                <span className="text-xs text-brand-primary uppercase block font-bold tracking-wide">Contributive Weekly Rates</span>
+                <span className="text-3xl font-black font-sans">£{displayWeekly}</span>
+                <span className="text-xs text-brand-primary font-bold">/week</span>
               </div>
               <div className="text-right text-xs bg-white/10 px-3 py-2 rounded border border-white/10">
-                <span className="block text-indigo-200 font-medium">Agreement Term</span>
+                <span className="block text-brand-primary font-extrabold uppercase tracking-widest text-[9px] mb-0.5">Agreement Term</span>
                 <strong>12 - 24 Months</strong>
               </div>
             </div>
@@ -208,8 +220,8 @@ export function CarDetails() {
                 <h4 className="font-sans font-bold text-sm text-gray-950">Standard Features Fitted</h4>
                 <div className="grid grid-cols-2 gap-2">
                   {displayFeatures.map((feat, index) => (
-                    <div key={index} className="flex items-center space-x-2 text-xs text-gray-600">
-                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0"></div>
+                    <div key={index} className="flex items-center space-x-2.5 text-xs text-gray-750 font-medium">
+                      {getFeatureIcon(feat)}
                       <span className="truncate">{feat}</span>
                     </div>
                   ))}

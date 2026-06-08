@@ -30,7 +30,7 @@ export function BackToTop() {
   return (
     <button
       onClick={scrollToTop}
-      className="fixed bottom-20 md:bottom-6 right-6 p-3 rounded-full bg-indigo-600 text-white shadow-xl hover:bg-indigo-700 transition-all duration-250 z-40 md:z-50 animate-bounce focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer hidden md:block"
+      className="fixed bottom-20 md:bottom-6 right-6 p-3 rounded-full bg-brand-secondary text-white shadow-xl hover:bg-brand-secondary-hover transition-all duration-250 z-40 md:z-50 animate-bounce focus:outline-none focus:ring-2 focus:ring-brand-secondary cursor-pointer hidden md:block"
       title="Back to top"
     >
       <ChevronUp className="w-5 h-5" />

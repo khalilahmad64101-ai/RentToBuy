@@ -36,8 +36,15 @@ import {
   Play
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useSEO } from '../hooks/useSEO';
 
 export function Dashboard() {
+  useSEO({
+    title: 'Driver Workspace | Underwriting Status & Billing | R2BuyCar',
+    description: 'Manage your active lease, track underwriting parameters, submit compliance check-in logs, and download motor insurance certificates directly inside your workspace.',
+    keywords: 'driver workspace, active lease status tracker, pay lease invoice, R2BuyCar client hub'
+  });
+
   const { user, driverData, loading, syncDriverData, logout, updateProfile } = useAuth();
   const navigate = useNavigate();
 
@@ -248,8 +255,8 @@ export function Dashboard() {
       );
     }
     return (
-      <span className="flex items-center gap-1.5 bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase leading-none">
-        <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
+      <span className="flex items-center gap-1.5 bg-brand-primary/10 text-brand-secondary border border-brand-primary/20 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase leading-none">
+        <span className="w-1.5 h-1.5 rounded-full bg-brand-primary animate-pulse"></span>
         Under Review
       </span>
     );
@@ -280,7 +287,7 @@ export function Dashboard() {
       {/* Mobile Header Nav */}
       <div className="md:hidden bg-slate-900 border-b border-slate-800 text-white p-4 flex justify-between items-center z-40 sticky top-0">
         <div className="flex items-center space-x-2.5">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-black text-sm">R</div>
+          <div className="w-8 h-8 rounded-lg bg-brand-secondary flex items-center justify-center font-black text-sm">R</div>
           <span className="font-extrabold tracking-tight text-sm">Rent2Buy Drivers Dashboard</span>
         </div>
         <button 
@@ -299,7 +306,7 @@ export function Dashboard() {
         {/* Brand Container */}
         <div className="p-6 border-b border-slate-900 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-black text-white text-base shadow-lg shadow-indigo-600/30">
+            <div className="w-8 h-8 rounded-lg bg-brand-secondary flex items-center justify-center font-black text-white text-base shadow-lg shadow-brand-secondary/30">
               R
             </div>
             <div>
@@ -315,7 +322,7 @@ export function Dashboard() {
 
         {/* Driver Profile Summary */}
         <div className="p-5 border-b border-slate-900/80 bg-slate-950/60 flex items-center space-x-3.5">
-          <div className="w-10 h-10 rounded-full bg-slate-800/80 border border-slate-700 flex items-center justify-center font-black text-indigo-400 text-sm">
+          <div className="w-10 h-10 rounded-full bg-slate-800/80 border border-slate-700 flex items-center justify-center font-black text-brand-primary text-sm">
             {user.fullName ? user.fullName.substring(0, 2).toUpperCase() : 'DR'}
           </div>
           <div className="overflow-hidden min-w-0">
@@ -340,7 +347,7 @@ export function Dashboard() {
                 className={`
                   w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-colors text-left group
                   ${isActive 
-                    ? 'bg-indigo-650 text-white font-bold' 
+                    ? 'bg-brand-primary text-brand-secondary font-black shadow-md shadow-brand-primary/10' 
                     : 'text-slate-400 hover:bg-slate-900 hover:text-white'
                   }
                 `}
@@ -351,7 +358,7 @@ export function Dashboard() {
                 </div>
                 {item.badge && (
                   <span className={`text-[9.5px] font-black px-2 py-0.5 rounded-full uppercase leading-none ${
-                    isActive ? 'bg-indigo-700 text-white' : 'bg-slate-900 text-indigo-400'
+                    isActive ? 'bg-brand-secondary text-brand-primary font-bold' : 'bg-slate-900 text-brand-primary'
                   }`}>
                     {item.badge}
                   </span>
@@ -392,7 +399,7 @@ export function Dashboard() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-5 bg-white border border-gray-150 rounded-2xl shadow-xs gap-4 animate-fade-in" id="workspace-sub-header">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded uppercase tracking-wider">Heathrow Terminus</span>
+              <span className="text-[10px] font-bold text-brand-secondary bg-brand-primary/10 px-2 py-0.5 rounded uppercase tracking-wider">Heathrow Terminus</span>
               <span className="text-xs text-gray-400">• Fully Underwritten Plan</span>
             </div>
             <h2 className="text-xl font-bold text-gray-900 tracking-tight mt-1 font-sans">
@@ -409,7 +416,7 @@ export function Dashboard() {
               }}
               className="flex items-center text-xs font-bold bg-white text-gray-700 border border-gray-250 hover:bg-gray-50 focus:outline-none transition-colors px-3 py-1.5 rounded-xl cursor-pointer"
             >
-              <RefreshCw className="w-3.5 h-3.5 mr-1.5 text-indigo-600" />
+              <RefreshCw className="w-3.5 h-3.5 mr-1.5 text-brand-primary" />
               Pulse Re-sync
             </button>
             <Link to="/apply">
@@ -754,21 +761,21 @@ export function Dashboard() {
                         <p className="text-gray-650 leading-relaxed font-sans text-xs">
                           "References matched successfully with the UK DVLA drivers database. Soft income statements verification checks show balanced salary inflows. Approved subject to lease downpayment security fee."
                         </p>
-                        <span className="block text-[10px] text-indigo-600 font-bold font-mono text-right">- Heathrow Lead Underwriter</span>
+                        <span className="block text-[10px] text-brand-primary font-bold font-mono text-right">- Heathrow Lead Underwriter</span>
                       </div>
 
                       {selectedApp.step === 3 && (
-                        <div className="bg-indigo-900 border border-indigo-950 text-indigo-100 p-4.5 rounded-xl space-y-3">
-                          <h5 className="font-bold text-xs text-white">Guaranteed Lease Approval Billing</h5>
-                          <p className="text-[11px] text-indigo-300 leading-normal">
-                            Excellent! Standard eligibility threshold passed successfully. Finalize underwriting by submitting your deposit billing contribution (£250.00).
+                        <div className="bg-brand-secondary border border-slate-900 text-brand-primary p-4.5 rounded-xl space-y-3">
+                          <h5 className="font-bold text-xs text-brand-primary">Guaranteed Lease Approval Billing</h5>
+                          <p className="text-[11px] text-slate-300 leading-normal">
+                             Excellent! Standard eligibility threshold passed successfully. Finalize underwriting by submitting your deposit billing contribution (£250.00).
                           </p>
                           <button 
                             onClick={() => {
                               setSelectedAppForPayment(selectedApp.id);
                               setActiveTab('payments');
                             }}
-                            className="w-full bg-white text-indigo-900 hover:bg-slate-50 transition font-bold py-1.5 rounded-lg text-[11px] uppercase focus:outline-none cursor-pointer"
+                            className="w-full bg-brand-primary text-brand-secondary hover:bg-brand-primary-hover transition font-bold py-1.5 rounded-lg text-[11px] uppercase focus:outline-none cursor-pointer"
                           >
                             Pay Lease Deposit (£250) Now
                           </button>
@@ -797,7 +804,7 @@ export function Dashboard() {
                       </p>
                     </div>
                     <Link to="/apply">
-                      <button className="bg-indigo-600 text-white font-bold text-xs px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition">
+                      <button className="bg-brand-primary text-brand-secondary font-black text-xs px-5 py-2.5 rounded-xl hover:bg-brand-primary-hover transition">
                         Select a Car and Apply Now
                       </button>
                     </Link>
@@ -871,7 +878,7 @@ export function Dashboard() {
                   <FolderOpen className="w-12 h-12 text-slate-300 mx-auto" />
                   <p className="text-xs text-slate-500">You must file an underwriting lease application before manager or re-uploading driver documents files.</p>
                   <Link to="/apply">
-                    <button className="bg-indigo-650 text-white font-bold text-xs px-4 py-2 rounded-xl">Apply First</button>
+                    <button className="bg-brand-primary text-brand-secondary font-black text-xs px-4 py-2 rounded-xl hover:bg-brand-primary-hover">Apply First</button>
                   </Link>
                 </div>
               ) : (
@@ -1160,14 +1167,14 @@ export function Dashboard() {
                       </div>
                       <div className="flex justify-between text-slate-900 font-bold pt-1.5 border-t border-dashed border-gray-200">
                         <span>Cleared Total:</span>
-                        <span className="font-mono text-indigo-650">£{payAmount}.00</span>
+                        <span className="font-mono text-brand-secondary">£{payAmount}.00</span>
                       </div>
                     </div>
 
                     <button
                       type="submit"
                       disabled={payLoading}
-                      className="w-full bg-indigo-650 hover:bg-indigo-700 transition text-white font-bold py-2.5 rounded-xl text-xs uppercase cursor-pointer"
+                      className="w-full bg-brand-primary hover:bg-brand-primary-hover transition text-brand-secondary font-black py-2.5 rounded-xl text-xs uppercase cursor-pointer shadow-sm"
                     >
                       {payLoading ? 'Processing Secure Clearance...' : `Pay Invoice (£${payAmount}.00) Now`}
                     </button>
@@ -1206,7 +1213,7 @@ export function Dashboard() {
                   </div>
                   <button 
                     onClick={() => setActiveTab('payments')} 
-                    className="bg-indigo-650 text-white font-bold text-xs px-4.5 py-2 rounded-xl"
+                    className="bg-brand-primary text-brand-secondary font-black text-xs px-4.5 py-2 rounded-xl hover:bg-brand-primary-hover transition-colors shadow-xs"
                   >
                     Go To Payments & Clear Deposit
                   </button>
@@ -1218,16 +1225,16 @@ export function Dashboard() {
                   <div className="lg:col-span-8 bg-slate-950 text-slate-100 rounded-3xl p-6 md:p-8 relative overflow-hidden border border-slate-900 space-y-6 shadow-xl">
                     
                     {/* Glowing Accent vector badge */}
-                    <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointers-event-none"></div>
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-brand-primary/10 rounded-full blur-3xl pointers-event-none"></div>
 
                     {/* Header */}
                     <div className="flex justify-between items-start border-b border-slate-800 pb-5">
                       <div className="space-y-1.5">
-                        <span className="text-[10px] uppercase font-black tracking-widest text-indigo-400 font-mono">Certificate of Motor Insurance</span>
+                        <span className="text-[10px] uppercase font-black tracking-widest text-brand-primary font-mono">Certificate of Motor Insurance</span>
                         <h4 className="text-lg md:text-xl font-bold tracking-tight text-white leading-none">R2B HEATHROW FLEET INSURANCE GROUP</h4>
                         <span className="block text-[9.5px] text-slate-500 font-medium">Underwritten by Sentinel UK Brokers Mutual Group Co.</span>
                       </div>
-                      <div className="w-14 h-14 border border-dashed border-indigo-500/30 rounded-2xl flex items-center justify-center font-mono text-center text-[10px] leading-none text-indigo-400 font-extrabold uppercase shrink-0 p-1">
+                      <div className="w-14 h-14 border border-dashed border-brand-primary/30 rounded-2xl flex items-center justify-center font-mono text-center text-[10px] leading-none text-brand-primary font-extrabold uppercase shrink-0 p-1">
                         SECURE road tax OK
                       </div>
                     </div>
@@ -1251,7 +1258,7 @@ export function Dashboard() {
 
                       <div className="space-y-1">
                         <span className="block text-[10px] text-slate-500 uppercase tracking-wider font-bold">Designated Leased Vehicle</span>
-                        <span className="block text-indigo-400 text-xs font-bold truncate">
+                        <span className="block text-brand-primary text-xs font-bold truncate">
                           {applications.find(a => a.step === 4)?.carName || 'Approved Rental Fleet Unit'}
                         </span>
                       </div>
@@ -1268,8 +1275,8 @@ export function Dashboard() {
 
                       <div className="space-y-1">
                         <span className="block text-[10px] text-slate-500 uppercase tracking-wider font-bold">Underwriters Seal Verification</span>
-                        <span className="block text-indigo-300 text-xs font-bold flex items-center">
-                          <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-indigo-400" />
+                        <span className="block text-brand-primary text-xs font-bold flex items-center">
+                          <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-brand-primary" />
                           VERIFIED SECURITY STAMP
                         </span>
                       </div>
@@ -1299,7 +1306,7 @@ export function Dashboard() {
                     <div className="space-y-2 pt-2.5">
                       <button 
                         onClick={() => alert("Simulating download: Certificate of Motor Insurance 'UK-R2B-92801-HTW.pdf' downloaded successfully!")}
-                        className="w-full flex items-center justify-center bg-indigo-650 text-white font-bold text-xs px-4 py-2.5 rounded-xl hover:bg-indigo-700 transition focus:outline-none cursor-pointer"
+                        className="w-full flex items-center justify-center bg-brand-primary text-brand-secondary font-black text-xs px-4 py-2.5 rounded-xl hover:bg-brand-primary-hover transition focus:outline-none cursor-pointer shadow-sm"
                       >
                         <Download className="w-3.5 h-3.5 mr-1.5" />
                         Download Certificate (PDF)

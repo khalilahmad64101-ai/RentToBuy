@@ -42,7 +42,7 @@ export function WhyChooseSection() {
           const PerkIcon = perk.icon;
           return (
             <div key={index} className="p-6 bg-white border border-gray-150 rounded-2xl hover:border-indigo-400 group transition-all hover:shadow-lg flex flex-col space-y-4">
-              <div className="p-3 bg-slate-50 text-slate-800 group-hover:bg-[#111A2E] group-hover:text-[#CDA275] rounded-xl self-start transition-all duration-300">
+              <div className="p-3 bg-slate-50 text-slate-800 group-hover:bg-brand-secondary group-hover:text-brand-primary rounded-xl self-start transition-all duration-300">
                 <PerkIcon className="w-5 h-5" />
               </div>
               <div className="space-y-1 bg-transparent">

@@ -19,8 +19,15 @@ import {
   Sparkles,
   RefreshCw 
 } from 'lucide-react';
+import { useSEO } from '../hooks/useSEO';
 
 export function Apply() {
+  useSEO({
+    title: 'Apply Online | Start Your Rent-to-Buy Application | R2BuyCar',
+    description: 'Submit your license credentials & details to start your custom Rent-to-Buy vehicle lease agreement. Instant underwriting matching, no credit score blockades, and zero application fees.',
+    keywords: 'start rent-to-buy application, credit-friendly vehicle lease, lease application UK, online underwriting sign up'
+  });
+
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, syncDriverData } = useAuth();
@@ -429,7 +436,7 @@ export function Apply() {
               <select
                 value={selectedCarId}
                 onChange={(e) => setSelectedCarId(e.target.value)}
-                className="w-full text-xs py-2 px-3 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800"
+                className="w-full text-xs py-2 px-3 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-800"
               >
                 {carsList.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -443,7 +450,7 @@ export function Apply() {
               <select
                 value={termMonths}
                 onChange={(e) => setTermMonths(e.target.value)}
-                className="w-full text-xs py-2 px-3 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800"
+                className="w-full text-xs py-2 px-3 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-800"
               >
                 <option value="12">12 Months</option>
                 <option value="18">18 Months</option>
@@ -468,7 +475,7 @@ export function Apply() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Jane Doe"
-                className="w-full text-xs py-2 px-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full text-xs py-2 px-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
               />
             </div>
             <div>
@@ -479,7 +486,7 @@ export function Apply() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="e.g. 07700 900222"
-                className="w-full text-xs py-2 px-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full text-xs py-2 px-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
               />
             </div>
             <div>
@@ -490,7 +497,7 @@ export function Apply() {
                 value={emailAddress}
                 onChange={(e) => setEmailAddress(e.target.value)}
                 placeholder="jane@example.com"
-                className="w-full text-xs py-2 px-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full text-xs py-2 px-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
               />
             </div>
           </div>
@@ -501,7 +508,7 @@ export function Apply() {
               <select
                 value={employment}
                 onChange={(e) => setEmployment(e.target.value)}
-                className="w-full text-xs py-2 px-3 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800"
+                className="w-full text-xs py-2 px-3 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-800"
               >
                 <option value="Full Time Employee">Full Time</option>
                 <option value="Self Employed PCO Operator">Self Employed (PCO)</option>
@@ -518,13 +525,13 @@ export function Apply() {
                 value={weeklyIncome}
                 onChange={(e) => setWeeklyIncome(e.target.value)}
                 placeholder="e.g. 450"
-                className="w-full text-xs py-2 px-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full text-xs py-2 px-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
               />
             </div>
             <div>
               <label className="block text-xs text-gray-500 mb-1 font-medium flex items-center justify-between">
                 <span>Location</span>
-                {gpsLoading && <span className="text-[10px] text-indigo-600 animate-pulse font-bold">Scanning...</span>}
+                {gpsLoading && <span className="text-[10px] text-brand-primary animate-pulse font-bold">Scanning...</span>}
               </label>
               <div className="relative flex rounded-lg">
                 <input
@@ -533,14 +540,14 @@ export function Apply() {
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder="e.g. Manchester, UK"
-                  className="w-full text-xs py-2 pl-3 pr-14 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full text-xs py-2 pl-3 pr-14 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
                 />
                 <button
                   type="button"
                   onClick={handleGPSDetect}
                   className="absolute right-1 top-1 bottom-1 px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-[10px] font-bold rounded-md flex items-center gap-1 cursor-pointer transition-all"
                 >
-                  <MapPin className="w-3 h-3 text-indigo-600" />
+                  <MapPin className="w-3 h-3 text-brand-primary" />
                   <span>GPS</span>
                 </button>
               </div>
@@ -558,15 +565,14 @@ export function Apply() {
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            
-            {/* Front License Card */}
+                     {/* Front License Card */}
             <div 
               onDragEnter={(e) => handleDrag(e, setDragActiveFront)}
               onDragOver={(e) => handleDrag(e, setDragActiveFront)}
               onDragLeave={(e) => handleDrag(e, setDragActiveFront)}
               onDrop={(e) => handleDrop(e, setDragActiveFront, setLicenseFront)}
               className={`border border-dashed p-3 rounded-lg flex flex-col justify-between text-center min-h-[180px] transition-all relative ${
-                dragActiveFront ? "border-indigo-500 bg-indigo-50/20" : "border-gray-200 bg-gray-50/40 hover:bg-gray-50"
+                dragActiveFront ? "border-brand-primary bg-brand-primary/10" : "border-gray-200 bg-gray-50/40 hover:bg-gray-50"
               }`}
             >
               <div className="space-y-1 flex flex-col items-center">
@@ -610,7 +616,7 @@ export function Apply() {
                   <button
                     type="button"
                     onClick={() => setUploadType('front')}
-                    className="w-full py-1 px-2 bg-white hover:bg-indigo-50 border border-slate-200 text-indigo-700 text-[10px] font-medium rounded-md transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1"
+                    className="w-full py-1 px-2 bg-white hover:bg-brand-primary/10 border border-slate-200 text-brand-secondary text-[10px] font-medium rounded-md transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1"
                   >
                     <UploadCloud className="w-3 h-3 shrink-0" />
                     <span>Upload</span>
@@ -632,7 +638,7 @@ export function Apply() {
               onDragLeave={(e) => handleDrag(e, setDragActiveBack)}
               onDrop={(e) => handleDrop(e, setDragActiveBack, setLicenseBack)}
               className={`border border-dashed p-3 rounded-lg flex flex-col justify-between text-center min-h-[180px] transition-all relative ${
-                dragActiveBack ? "border-indigo-500 bg-indigo-50/20" : "border-gray-200 bg-gray-50/40 hover:bg-gray-50"
+                dragActiveBack ? "border-brand-primary bg-brand-primary/10" : "border-gray-200 bg-gray-50/40 hover:bg-gray-50"
               }`}
             >
               <div className="space-y-1 flex flex-col items-center">
@@ -676,7 +682,7 @@ export function Apply() {
                   <button
                     type="button"
                     onClick={() => setUploadType('back')}
-                    className="w-full py-1 px-2 bg-white hover:bg-indigo-50 border border-slate-200 text-indigo-700 text-[10px] font-medium rounded-md transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1"
+                    className="w-full py-1 px-2 bg-white hover:bg-brand-primary/10 border border-slate-200 text-brand-secondary text-[10px] font-medium rounded-md transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1"
                   >
                     <UploadCloud className="w-3 h-3 shrink-0" />
                     <span>Upload</span>
@@ -698,7 +704,7 @@ export function Apply() {
               onDragLeave={(e) => handleDrag(e, setDragActiveSelfie)}
               onDrop={(e) => handleDrop(e, setDragActiveSelfie, setSelfie)}
               className={`border border-dashed p-3 rounded-lg flex flex-col justify-between text-center min-h-[180px] transition-all relative ${
-                dragActiveSelfie ? "border-indigo-500 bg-indigo-50/20" : "border-gray-200 bg-gray-50/40 hover:bg-gray-50"
+                dragActiveSelfie ? "border-brand-primary bg-brand-primary/10" : "border-gray-200 bg-gray-50/40 hover:bg-gray-50"
               }`}
             >
               <div className="space-y-1 flex flex-col items-center">
@@ -742,7 +748,7 @@ export function Apply() {
                   <button
                     type="button"
                     onClick={() => setUploadType('selfie')}
-                    className="w-full py-1 px-2 bg-white hover:bg-indigo-50 border border-slate-200 text-indigo-700 text-[10px] font-medium rounded-md transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1"
+                    className="w-full py-1 px-2 bg-white hover:bg-brand-primary/10 border border-slate-200 text-brand-secondary text-[10px] font-medium rounded-md transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1"
                   >
                     <UploadCloud className="w-3 h-3 shrink-0" />
                     <span>Upload</span>
@@ -764,7 +770,7 @@ export function Apply() {
         {submitting && uploadProgress > 0 && (
           <div className="p-3 bg-slate-55 border border-slate-150 rounded-xl space-y-1.5 animate-pulse" id="progress-meter-container">
             <div className="flex justify-between items-center text-xs font-bold text-slate-700">
-              <span className="flex items-center gap-1.5 text-indigo-600">
+              <span className="flex items-center gap-1.5 text-brand-primary">
                 <RefreshCw className="w-3 h-3 animate-spin" />
                 Uploading documents...
               </span>
@@ -772,7 +778,7 @@ export function Apply() {
             </div>
             <div className="w-full bg-slate-205 h-1.5 rounded-full overflow-hidden">
               <div 
-                className="bg-indigo-600 h-1.5 rounded-full transition-all duration-300 ease-out" 
+                className="bg-brand-primary h-1.5 rounded-full transition-all duration-300 ease-out" 
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>
@@ -915,6 +921,7 @@ export function Apply() {
         }}
       />
 
+      
       {/* Choice Modal: Camera or Gallery Selection popup */}
       {uploadType && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex justify-center items-center z-50 animate-fade-in" id="upload-type-modal">
@@ -942,9 +949,9 @@ export function Apply() {
                   await openDeviceCamera(uploadType);
                   setUploadType(null);
                 }}
-                className="flex flex-col items-center justify-center p-4 bg-slate-50 hover:bg-indigo-50/40 border border-slate-100 hover:border-indigo-150 rounded-xl cursor-pointer dynamic-choice-card transition-all text-center space-y-1.5 shadow-xs group w-full"
+                className="flex flex-col items-center justify-center p-4 bg-slate-50 hover:bg-brand-primary/10 border border-slate-100 hover:border-brand-primary rounded-xl cursor-pointer dynamic-choice-card transition-all text-center space-y-1.5 shadow-xs group w-full"
               >
-                <div className="p-2.5 bg-indigo-50 rounded-full text-indigo-600 group-hover:scale-105 transition-all">
+                <div className="p-2.5 bg-brand-primary/10 rounded-full text-brand-secondary group-hover:scale-105 transition-all">
                   <Camera className="w-5 h-5" />
                 </div>
                 <span className="text-xs font-bold text-slate-800">Use Camera</span>
@@ -959,9 +966,9 @@ export function Apply() {
                   if (el) el.click();
                   setUploadType(null);
                 }}
-                className="flex flex-col items-center justify-center p-4 bg-slate-50 hover:bg-indigo-50/40 border border-slate-100 hover:border-indigo-150 rounded-xl cursor-pointer dynamic-choice-card transition-all text-center space-y-1.5 shadow-xs group border-dashed w-full"
+                className="flex flex-col items-center justify-center p-4 bg-slate-50 hover:bg-brand-primary/10 border border-slate-100 hover:border-brand-primary rounded-xl cursor-pointer dynamic-choice-card transition-all text-center space-y-1.5 shadow-xs group border-dashed w-full"
               >
-                <div className="p-2.5 bg-indigo-50 rounded-full text-indigo-600 group-hover:scale-105 transition-all">
+                <div className="p-2.5 bg-brand-primary/10 rounded-full text-brand-secondary group-hover:scale-105 transition-all">
                   <ImageIcon className="w-5 h-5" />
                 </div>
                 <span className="text-xs font-bold text-slate-800">Photo Gallery</span>
@@ -1008,14 +1015,14 @@ export function Apply() {
                 style={{ transform: cameraActiveType === 'selfie' ? 'scaleX(-1)' : 'none' }}
               />
               {/* Highlight Target Guide Frame Overlay */}
-              <div className="absolute inset-4 border border-indigo-500/30 rounded-xl pointer-events-none flex flex-col justify-between p-4">
+              <div className="absolute inset-4 border border-brand-primary/30 rounded-xl pointer-events-none flex flex-col justify-between p-4">
                 <div className="flex justify-between">
-                  <div className="w-6 h-6 border-t-2 border-l-2 border-indigo-500" />
-                  <div className="w-6 h-6 border-t-2 border-r-2 border-indigo-500" />
+                  <div className="w-6 h-6 border-t-2 border-l-2 border-brand-primary" />
+                  <div className="w-6 h-6 border-t-2 border-r-2 border-brand-primary" />
                 </div>
                 <div className="flex justify-between">
-                  <div className="w-6 h-6 border-b-2 border-l-2 border-indigo-500" />
-                  <div className="w-6 h-6 border-b-2 border-r-2 border-indigo-500" />
+                  <div className="w-6 h-6 border-b-2 border-l-2 border-brand-primary" />
+                  <div className="w-6 h-6 border-b-2 border-r-2 border-brand-primary" />
                 </div>
               </div>
             </div>
@@ -1033,7 +1040,7 @@ export function Apply() {
               <button
                 type="button"
                 onClick={handleCapturePhoto}
-                className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-extrabold text-xs rounded-xl cursor-pointer transition-all flex items-center gap-2 shadow-lg shadow-indigo-600/30"
+                className="px-6 py-2.5 bg-brand-primary hover:bg-brand-primary-hover active:scale-95 text-white font-extrabold text-xs rounded-xl cursor-pointer transition-all flex items-center gap-2 shadow-lg shadow-brand-primary/30"
               >
                 <Camera className="w-4 h-4" />
                 <span>Take Photo</span>

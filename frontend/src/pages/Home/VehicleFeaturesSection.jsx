@@ -17,7 +17,7 @@ export function VehicleFeaturesSection() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:16px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
         
         <div className="relative z-10 text-center max-w-2xl mx-auto space-y-3 mb-10">
-          <span className="text-[10px] font-black text-[#CDA275] uppercase tracking-widest block font-mono">Premium Conveniences</span>
+          <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest block font-mono">Premium Conveniences</span>
           <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-none">
             High-Spec Vehicle Features
           </h2>
@@ -30,9 +30,9 @@ export function VehicleFeaturesSection() {
           {customFeatures.map((feat, index) => {
             const IconComp = feat.icon;
             return (
-              <div key={index} className="p-4 bg-white/5 border border-white/10 rounded-xl flex flex-col items-center text-center space-y-3 hover:border-[#CDA275] hover:bg-white/10 transition-all duration-300">
+              <div key={index} className="p-4 bg-white/5 border border-white/10 rounded-xl flex flex-col items-center text-center space-y-3 hover:border-brand-primary hover:bg-white/10 transition-all duration-300">
                 <div className="p-2.5 bg-indigo-500/10 text-indigo-400 rounded-lg">
-                  <IconComp className="w-5 h-5 text-[#CDA275]" />
+                  <IconComp className="w-5 h-5 text-brand-primary" />
                 </div>
                 <div className="space-y-1 bg-transparent">
                   <span className="text-xs font-sans font-black leading-tight block text-white">{feat.title}</span>

@@ -20,8 +20,15 @@ import {
   FileText,
   DollarSign
 } from 'lucide-react';
+import { useSEO } from '../hooks/useSEO';
 
 export function TrackRide() {
+  useSEO({
+    title: 'Lease Tracker | Track Rent-to-Buy Step Progress | R2BuyCar',
+    description: 'Track your rent-to-buy lease application status in real-time. Check references verification, underwriting checkpoints, and final pre-approval step lists.',
+    keywords: 'track car agreement, lease progress checker, Rent-to-Buy verification logs, buycarz pipeline'
+  });
+
   const { user, driverData } = useAuth();
   
   // Tracking state variables
@@ -156,32 +163,62 @@ export function TrackRide() {
   return (
     <div className="bg-gray-50/50 min-h-screen pb-16 font-sans antialiased" id="track-ride-page-root">
       
-      {/* 1. Hero Section */}
-      <section className="relative bg-slate-950 text-white py-28 overflow-hidden" id="track-journey-hero">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:20px_20px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_75%,transparent_100%)]"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-3xl"></div>
+      {/* 1. VIP Hero Section (500px height, luxury layout) */}
+      <section 
+        className="relative w-full h-[500px] bg-cover bg-center flex items-center px-4 sm:px-6 lg:px-8 overflow-hidden shadow-2xl animate-fade-in"
+        style={{
+          backgroundImage: `linear-gradient(90deg, rgba(8, 14, 28, 0.96) 0%, rgba(12, 22, 44, 0.72) 45%, rgba(15, 23, 42, 0.25) 100%), url('https://images.unsplash.com/photo-161843479313-40f8afb4b4d8?auto=format&fit=crop&q=80&w=1600')`
+        }}
+        id="track-journey-hero"
+      >
+        {/* Subtle grid pattern overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:24px_24px] opacity-25 pointer-events-none z-0"></div>
         
-        <div className="relative max-w-5xl mx-auto px-6 text-center space-y-8 z-10">
-          <div className="inline-flex items-center gap-1.5 bg-indigo-500/10 text-indigo-300 text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full border border-indigo-500/20">
-            Real-time Status Portal
+        {/* Decorative graphic overlay */}
+        <div className="absolute top-0 right-0 w-[45%] h-full bg-gradient-to-l from-black/20 to-transparent pointer-events-none z-0"></div>
+
+        {/* Two-Column Grid layout: Left-Text layout & Right-Car layout */}
+        <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+          
+          {/* Left text block: Title, subtitle & custom badges with logo colors (#7CC242, #1F3F7A) */}
+          <div className="lg:col-span-12 xl:col-span-8 space-y-5 text-left">
+            <div className="inline-flex items-center gap-1.5 bg-white/10 text-white text-[11px] font-black uppercase tracking-widest px-3.5 py-1.5 rounded-md border border-white/20">
+              ⭐ Real-time Status Portal
+            </div>
+            
+            <h1 className="font-sans font-black text-3xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-none uppercase">
+              Track Your <br />
+              <span className="text-[#7CC242]">Ride Journey</span>
+            </h1>
+            
+            <p className="text-gray-300 text-xs sm:text-sm md:text-base leading-relaxed max-w-xl font-normal">
+              Stay updated with your application and vehicle status. Get real-time updates of your onboarding steps in one unified location.
+            </p>
+
+            <div className="pt-2">
+              <button 
+                onClick={() => {
+                  const searchForm = document.getElementById('track-by-id-form');
+                  if (searchForm) searchForm.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-[#7CC242] hover:bg-[#6bb033] text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-[#7CC242]/20 transition-all duration-200 active:scale-95 cursor-pointer font-sans"
+              >
+                Track Now
+              </button>
+            </div>
           </div>
-          <h1 className="font-sans font-black text-4xl sm:text-6xl tracking-tight leading-none bg-gradient-to-r from-white via-slate-100 to-indigo-200 bg-clip-text text-transparent">
-            Track Your Ride Journey
-          </h1>
-          <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            Stay updated with your application and vehicle status. Get real-time updates of your onboarding steps in one unified location.
-          </p>
-          <div className="pt-2">
-            <button 
-              onClick={() => {
-                const searchForm = document.getElementById('track-by-id-form');
-                if (searchForm) searchForm.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="bg-indigo-600 hover:bg-indigo-550 text-white font-extrabold text-sm uppercase tracking-wider px-8 py-4 rounded-xl shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/30 transition-all active:scale-98 cursor-pointer"
-            >
-              Track Now
-            </button>
+
+          {/* Right Image element: stylish premium SUV */}
+          <div className="hidden lg:flex lg:col-span-4 relative items-center justify-center select-none">
+            <div className="w-full max-w-[400px] flex items-center justify-center relative">
+              <img
+                src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=800"
+                alt="R2BuyCar Modern Hybrid SUV Asset"
+                className="w-full object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)] transform -scale-x-100 lg:-mr-6 animate-fade-in"
+              />
+            </div>
           </div>
+
         </div>
       </section>
 
@@ -194,13 +231,13 @@ export function TrackRide() {
         >
           <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-100 pb-6 mb-8 gap-4">
             <div className="space-y-1">
-              <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Active Stages</span>
+              <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest">Active Stages</span>
               <h2 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tight">
                 Application Routing Timeline
               </h2>
             </div>
-            <div className="inline-flex items-center gap-2 bg-indigo-50/50 text-indigo-700 px-3.5 py-1.5 rounded-xl border border-indigo-100/50 text-xs font-bold font-mono">
-              <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
+            <div className="inline-flex items-center gap-2 bg-brand-primary/10 text-brand-secondary px-3.5 py-1.5 rounded-xl border border-brand-primary/10 text-xs font-bold font-mono">
+              <span className="w-2 h-2 rounded-full bg-brand-primary animate-pulse"></span>
               Currently View State: {timelineSteps[activeStep]?.label || 'Active Status'}
             </div>
           </div>
@@ -237,22 +274,22 @@ export function TrackRide() {
                     onClick={() => setActiveStep(idx)}
                     className={`relative p-5 rounded-2xl border transition-all duration-300 cursor-pointer ${
                       isCurrent 
-                        ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/10 scale-105' 
+                        ? 'bg-brand-secondary border-brand-secondary text-white shadow-lg shadow-brand-secondary/15 scale-105' 
                         : isPassed 
-                        ? 'bg-indigo-50/40 border-indigo-200 text-slate-800 hover:bg-indigo-50/70' 
+                        ? 'bg-brand-primary/5 border-brand-primary/15 text-slate-800 hover:bg-brand-primary/10' 
                         : 'bg-white border-gray-200 text-slate-400 hover:border-gray-300'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-4">
-                      <span className={`text-[10px] font-bold uppercase tracking-widest ${isCurrent ? 'text-indigo-100' : 'text-slate-400'}`}>
+                      <span className={`text-[10px] font-bold uppercase tracking-widest ${isCurrent ? 'text-brand-primary' : 'text-slate-400'}`}>
                         Step 0{idx + 1}
                       </span>
                       {isPassed ? (
-                        <CheckCircle2 className="w-5 h-5 text-indigo-600" />
+                        <CheckCircle2 className="w-5 h-5 text-brand-primary" />
                       ) : isCurrent ? (
                         <span className="flex h-5 w-5 relative">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-5 w-5 bg-indigo-100/30 border-2 border-white items-center justify-center text-[9px] font-black text-white">●</span>
+                          <span className="relative inline-flex rounded-full h-5 w-5 bg-brand-primary/30 border-2 border-white items-center justify-center text-[9px] font-black text-white">●</span>
                         </span>
                       ) : (
                         <Circle className="w-5 h-5 text-slate-200" />
@@ -353,14 +390,12 @@ export function TrackRide() {
             </div>
 
             {searchResult && (
-              <div className="mt-6 p-4.5 bg-indigo-50 text-indigo-900 rounded-2xl border border-indigo-100/80 animate-fade-in flex flex-col gap-2">
-                <span className="text-[9px] font-bold uppercase tracking-wider text-indigo-600 bg-white border border-indigo-100 px-2 py-0.5 rounded-md self-start">
-                  Match Found: {searchResult.id || 'RTB-8291'}
-                </span>
+              <div className="mt-6 p-4.5 bg-brand-primary/5 text-brand-secondary rounded-2xl border border-brand-primary/10 animate-fade-in flex flex-col gap-2">
+                <span className="text-[9px] font-bold uppercase tracking-wider text-brand-secondary bg-white border border-brand-primary/20 px-2.5 py-0.5 rounded-md self-start">Match Found: {searchResult.id || 'RTB-8291'}</span>
                 <span className="font-extrabold text-sm block">
                   Status: {searchResult.status}
                 </span>
-                <p className="text-[11px] text-indigo-700 leading-tight">
+                <p className="text-[11px] text-slate-650 leading-tight">
                   Lease vehicle is currently marked as <span className="font-bold underline">{searchResult.vehicle}</span>. Review timeline and updates accordingly.
                 </p>
               </div>
@@ -371,7 +406,7 @@ export function TrackRide() {
           <div className="bg-white rounded-3xl border border-gray-150 p-4 sm:p-8 shadow-sm flex flex-col justify-between" id="how-tracking-steps">
             <div className="space-y-4">
               <div className="space-y-1">
-                <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Simple Explanation</span>
+                <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest">Simple Explanation</span>
                 <h3 className="text-lg sm:text-xl font-black text-slate-950 tracking-tight">
                   How Tracking Works
                 </h3>
@@ -413,11 +448,11 @@ export function TrackRide() {
 
             {/* Premium Interactive Asset Panel */}
             <div className="bg-slate-950 text-white rounded-2xl p-6 relative overflow-hidden group">
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-indigo-550/20 via-transparent to-transparent"></div>
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-brand-primary/20 via-transparent to-transparent"></div>
               
               <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
                 <div className="space-y-4">
-                  <div className="inline-flex items-center gap-1.5 bg-indigo-500/10 text-indigo-300 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md border border-indigo-500/20">
+                  <div className="inline-flex items-center gap-1.5 bg-brand-primary/10 text-brand-primary text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md border border-brand-primary/20">
                     <Car className="w-3.5 h-3.5" />
                     Toyota Aqua
                   </div>
@@ -438,8 +473,8 @@ export function TrackRide() {
                 </div>
 
                 <div className="flex flex-col items-start sm:items-end justify-between gap-4 self-stretch sm:self-center">
-                  <div className="bg-indigo-600 border border-indigo-500/50 rounded-2xl p-4 flex flex-col items-center justify-center text-center w-full min-w-[140px]">
-                    <span className="text-[9px] text-indigo-200 font-mono tracking-widest uppercase">UNDER REVIEW</span>
+                  <div className="bg-brand-secondary border border-brand-secondary/50 rounded-2xl p-4 flex flex-col items-center justify-center text-center w-full min-w-[140px]">
+                    <span className="text-[9px] text-brand-primary font-mono tracking-widest uppercase">UNDER REVIEW</span>
                     <span className="text-lg font-black leading-none mt-1 text-white">82% Verified</span>
                   </div>
                   
@@ -457,7 +492,7 @@ export function TrackRide() {
           {/* 6. Notifications & Updates */}
           <div className="lg:col-span-5 bg-white rounded-3xl border border-gray-150 p-4 sm:p-8 shadow-sm space-y-6 animate-fade-in" id="notifications-logs">
             <div className="space-y-1">
-              <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Activity Audit</span>
+              <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest">Activity Audit</span>
               <h3 className="text-lg sm:text-xl font-black text-slate-950 tracking-tight">
                 Notifications & Updates
               </h3>
@@ -474,8 +509,8 @@ export function TrackRide() {
               ].map((notif, nIdx) => {
                 const IconComp = notif.icon;
                 return (
-                  <div key={nIdx} className="flex gap-4 p-4.5 bg-slate-50/50 border border-gray-150/80 rounded-2xl relative overflow-hidden group hover:border-indigo-150 transition-all">
-                    <div className="shrink-0 p-2.5 bg-slate-100 text-slate-700 group-hover:bg-indigo-50 group-hover:text-indigo-650 rounded-xl transition-all duration-300">
+                  <div key={nIdx} className="flex gap-4 p-4.5 bg-slate-50/50 border border-gray-150/80 rounded-2xl relative overflow-hidden group hover:border-brand-primary/20 transition-all">
+                    <div className="shrink-0 p-2.5 bg-slate-100 text-slate-700 group-hover:bg-brand-primary/10 group-hover:text-brand-secondary rounded-xl transition-all duration-300">
                       <IconComp className="w-4 h-4" />
                     </div>
                     <div className="space-y-1 flex-1">
@@ -553,7 +588,7 @@ export function TrackRide() {
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:16px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_80%,transparent_100%)]"></div>
           
           <div className="relative z-10 space-y-4 max-w-2xl mx-auto">
-            <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest bg-white/5 px-2.5 py-1 rounded-md border border-white/5">
+            <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest bg-white/5 px-2.5 py-1 rounded-md border border-white/5">
               Instant Touchpoint
             </span>
             <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white leading-none">
@@ -566,7 +601,7 @@ export function TrackRide() {
 
           <div className="relative z-10 flex flex-col sm:flex-row gap-4 items-center justify-center pt-2">
             <a href="tel:+442079460192" className="w-full sm:w-auto">
-              <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-indigo-600 hover:bg-indigo-550 border border-indigo-500/50 text-white font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer transition-all">
+              <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-brand-primary hover:bg-brand-primary-hover border border-brand-primary/20 text-brand-secondary font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer transition-all">
                 <Phone className="w-4 h-4" />
                 Call Us
               </button>
@@ -574,7 +609,7 @@ export function TrackRide() {
             
             <a href="mailto:support@rent2go-buycarz.co.uk" className="w-full sm:w-auto">
               <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white/10 hover:bg-white/15 border border-white/10 text-white font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer transition-all">
-                <Mail className="w-4 h-4 text-indigo-300" />
+                <Mail className="w-4 h-4 text-brand-primary" />
                 Email Us
               </button>
             </a>

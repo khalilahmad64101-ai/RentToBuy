@@ -4,6 +4,10 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --color-brand-primary: #7CC242;
+  --color-brand-primary-hover: #6bb033;
+  --color-brand-secondary: #1F3F7A;
+  --color-brand-secondary-hover: #173263;
 }
 
 html, body {
@@ -31,4 +35,51 @@ img, video {
 iframe {
   max-width: 100%;
 }
+
+/* Custom elite range slider styling to match design screenshots perfectly */
+.custom-slider-input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 12px; /* Large slider track */
+  background: #e2e8f0; /* Soft luxury gray track base */
+  border-radius: 9999px;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Webkit browser thumb styling */
+.custom-slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 34px; /* Larger thumb size */
+  height: 34px; /* Larger thumb size */
+  border-radius: 50%;
+  background: #7CC242; /* Vibrant brand green */
+  border: 4px solid #ffffff; /* Thick white concentric ring border */
+  box-shadow: 0 6px 16px rgba(124, 194, 66, 0.4); /* Luxury glowing shadow */
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.custom-slider-input::-webkit-slider-thumb:hover {
+  transform: scale(1.15); /* Nice subtle hover reactive expander */
+}
+
+/* Firefox browser thumb styling */
+.custom-slider-input::-moz-range-thumb {
+  width: 26px; /* Slight scale down to match inner model inside FF */
+  height: 26px;
+  border-radius: 50%;
+  background: #7CC242;
+  border: 4px solid #ffffff;
+  box-shadow: 0 6px 16px rgba(124, 194, 66, 0.4);
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.custom-slider-input::-moz-range-thumb:hover {
+  transform: scale(1.15);
+}
+
 

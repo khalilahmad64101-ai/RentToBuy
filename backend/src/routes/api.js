@@ -36,7 +36,8 @@ const upload = multer({
 const docsUpload = upload.fields([
   { name: 'licenseFront', maxCount: 1 },
   { name: 'licenseBack', maxCount: 1 },
-  { name: 'proofOfAddress', maxCount: 1 }
+  { name: 'proofOfAddress', maxCount: 1 },
+  { name: 'floorPlan', maxCount: 1 }
 ]);
 
 const router = express.Router();

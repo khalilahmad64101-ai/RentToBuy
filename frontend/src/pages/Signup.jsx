@@ -21,7 +21,9 @@ import {
   AlertCircle
 } from 'lucide-react';
 
-// Form Zod validation schema matching strict UK mobile standards and password refinement check
+import { useSEO } from '../hooks/useSEO';
+
+// Form Zod validation schema matching strict UK mobile standards
 const signupSchema = z.object({
   fullName: z.string()
     .min(3, "Full Name must be at least 3 characters")
@@ -37,14 +39,16 @@ const signupSchema = z.object({
     .regex(/[a-z]/, "Password must contain at least 1 lowercase letter")
     .regex(/[0-9]/, "Password must contain at least 1 number")
     .regex(/[!@#$%^&*(),.?":{}|<>]/, "Password must contain at least 1 special character"),
-  confirmPassword: z.string(),
   agreeTerms: z.boolean().refine(val => val === true, "You must agree to the Terms & Conditions and Privacy Policy to register.")
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"]
 });
 
 export function Signup() {
+  useSEO({
+    title: 'Driver Registration | Join Our Fleet | R2BuyCar',
+    description: 'Register your secure driver account with R2BuyCar. Enter your credentials and UK mobile details to unlock our instant rent-to-buy car matchmaking terminal.',
+    keywords: 'register drive to buy car, rent-to-buy registration, create driver account'
+  });
+
   const { signup, googleLogin } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -52,7 +56,6 @@ export function Signup() {
 
   // UI elements triggers
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -71,7 +74,6 @@ export function Signup() {
       email: '',
       phone: '',
       password: '',
-      confirmPassword: '',
       agreeTerms: false
     }
   });
@@ -218,7 +220,7 @@ export function Signup() {
         {/* Brand Header */}
         <div className="text-center space-y-1.5 mb-6">
           <div className="flex justify-center text-slate-900 mb-2">
-            <Car className="h-9 w-9 stroke-[2.5] text-[#CDA275]" />
+            <Car className="h-9 w-9 stroke-[2.5] text-brand-primary" />
           </div>
           <h2 className="font-sans font-black text-2xl text-gray-950 tracking-tight leading-none" id="signup-title">
             Create Driver Profile
@@ -403,39 +405,7 @@ export function Signup() {
             )}
           </div>
 
-          {/* 5. Confirm Password Input */}
-          <div>
-            <label htmlFor="signup-confirmpassword-input" className="block text-xs text-slate-500 font-bold mb-1">Confirm Password</label>
-            <div className="relative">
-              <Lock className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                id="signup-confirmpassword-input"
-                name="confirmPassword"
-                autoComplete="new-password"
-                maxLength={128}
-                {...register('confirmPassword')}
-                placeholder="••••••••"
-                aria-invalid={!!errors.confirmPassword}
-                aria-describedby={errors.confirmPassword ? "confirmPassword-error" : undefined}
-                className={`w-full text-xs pl-10 pr-10 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                  errors.confirmPassword ? 'border-red-500 focus:ring-red-500' : 'border-gray-250'
-                }`}
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-3 text-gray-400 hover:text-slate-800 focus:outline-none cursor-pointer"
-              >
-                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4 animate-pulse" />}
-              </button>
-            </div>
-            {errors.confirmPassword && (
-              <span id="confirmPassword-error" className="text-[10px] text-red-600 font-medium mt-1 block px-1">{errors.confirmPassword.message}</span>
-            )}
-          </div>
-
-          {/* 6. Terms and Privacy Policy Tickbox */}
+          {/* 5. Terms and Privacy Policy Tickbox */}
           <div className="flex items-start gap-2 pt-1">
             <input
               type="checkbox"
@@ -443,7 +413,7 @@ export function Signup() {
               name="agreeTerms"
               {...register('agreeTerms')}
               aria-invalid={!!errors.agreeTerms}
-              className="mt-1 h-4 w-4 text-[#CDA275] border-gray-300 rounded focus:ring-[#CDA275] cursor-pointer"
+              className="mt-1 h-4 w-4 text-brand-primary border-gray-300 rounded focus:ring-brand-primary cursor-pointer"
             />
             <label htmlFor="signup-agreement-checkbox" className="text-[11px] text-gray-500 leading-normal cursor-pointer select-none">
               I agree to the <a href="#terms" className="text-indigo-600 font-semibold hover:underline">Terms of Service</a> & <a href="#privacy" className="text-indigo-600 font-semibold hover:underline">Privacy Policy</a>. I consent to my license records verification under PCO nationwide standards.

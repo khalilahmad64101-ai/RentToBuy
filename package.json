@@ -13,6 +13,7 @@
     "lint": "echo 'Skipping TS validation as codebase is fully JavaScript'"
   },
   "dependencies": {
+    "@getbrevo/brevo": "^5.0.4",
     "@google/genai": "^1.29.0",
     "@hookform/resolvers": "^5.4.0",
     "bcrypt": "^5.1.1",

@@ -10,7 +10,7 @@ export function FiltersSection({
   availability, setAvailability
 }) {
   return (
-    <section className="bg-white rounded-3xl border border-gray-150/80 p-4 sm:p-8 shadow-xs space-y-6" id="catalog-advanced-filters">
+    <section className="hidden sm:block bg-white rounded-3xl border border-gray-150/80 p-4 sm:p-8 shadow-xs space-y-6" id="catalog-advanced-filters">
       <div className="flex items-center gap-2 border-b border-gray-100 pb-4">
         <SlidersHorizontal className="w-5 h-5 text-indigo-600" />
         <span className="font-black text-xs text-slate-900 uppercase tracking-widest">Filter Fleet Parameters</span>
@@ -18,7 +18,7 @@ export function FiltersSection({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-5 items-end font-sans">
         {/* Search Input */}
-        <div className="lg:col-span-3 space-y-1.5">
+        <div className="lg:col-span-4 space-y-1.5">
           <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">Search Vehicle</label>
           <div className="relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
@@ -27,13 +27,13 @@ export function FiltersSection({
               placeholder="Search by vehicle name..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-slate-50/50 text-xs font-bold text-slate-805 border border-gray-150 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-600/10 focus:border-indigo-600 transition-all outline-none"
+              className="w-full pl-10 pr-4 py-3 bg-slate-50/50 text-xs font-bold text-slate-850 border border-gray-150 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-600/10 focus:border-indigo-600 transition-all outline-none"
             />
           </div>
         </div>
 
         {/* Vehicle Type */}
-        <div className="lg:col-span-2 space-y-1.5">
+        <div className="lg:col-span-3 space-y-1.5">
           <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">Vehicle Type</label>
           <select 
             value={vehicleType}
@@ -49,12 +49,12 @@ export function FiltersSection({
         </div>
 
         {/* Fuel Type */}
-        <div className="lg:col-span-2 space-y-1.5">
+        <div className="lg:col-span-3 space-y-1.5">
           <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">Fuel Type</label>
           <select 
             value={fuelType}
             onChange={(e) => setFuelType(e.target.value)}
-            className="w-full bg-slate-50/50 border border-gray-150 rounded-xl px-3 py-3 text-xs font-bold text-slate-700 focus:bg-white focus:outline-none focus:border-indigo-610 focus:border-indigo-600 transition-all outline-none"
+            className="w-full bg-slate-50/50 border border-gray-150 rounded-xl px-3 py-3 text-xs font-bold text-slate-705 focus:bg-white focus:outline-none focus:border-indigo-600 transition-all outline-none"
           >
             <option value="All">All Fuels</option>
             <option value="Petrol">Petrol</option>
@@ -70,40 +70,11 @@ export function FiltersSection({
           <select 
             value={transmission}
             onChange={(e) => setTransmission(e.target.value)}
-            className="w-full bg-slate-50/50 border border-gray-150 rounded-xl px-3 py-3 text-xs font-bold text-slate-700 focus:bg-white focus:outline-none focus:border-indigo-600 transition-all outline-none"
+            className="w-full bg-slate-50/50 border border-gray-150 rounded-xl px-3 py-3 text-xs font-bold text-slate-705 focus:bg-white focus:outline-none focus:border-indigo-600 transition-all outline-none"
           >
             <option value="All">All Swaps</option>
             <option value="Automatic">Automatic</option>
             <option value="Manual">Manual</option>
-          </select>
-        </div>
-
-        {/* Price Range */}
-        <div className="lg:col-span-2 space-y-1.5">
-          <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">Price Range</label>
-          <select 
-            value={priceRange}
-            onChange={(e) => setPriceRange(e.target.value)}
-            className="w-full bg-slate-50/50 border border-gray-150 rounded-xl px-3 py-3 text-xs font-bold text-slate-700 focus:bg-white focus:outline-none focus:border-indigo-600 transition-all outline-none"
-          >
-            <option value="All">All Pricing</option>
-            <option value="under-220">Under £220/wk</option>
-            <option value="220-300">£220 - £300/wk</option>
-            <option value="over-300">Over £300/wk</option>
-          </select>
-        </div>
-
-        {/* Availability */}
-        <div className="lg:col-span-1 space-y-1.5">
-          <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">Status</label>
-          <select 
-            value={availability}
-            onChange={(e) => setAvailability(e.target.value)}
-            className="w-full bg-slate-50/50 border border-gray-150 rounded-xl px-3 py-3 text-xs font-bold text-slate-700 focus:bg-white focus:outline-none focus:border-indigo-600 transition-all outline-none"
-          >
-            <option value="All">All</option>
-            <option value="Available">Available</option>
-            <option value="Under Review">Reserved</option>
           </select>
         </div>
       </div>

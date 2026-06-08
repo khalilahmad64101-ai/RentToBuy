@@ -46,7 +46,7 @@ export function RequiredDocumentsSection() {
                 key={index} 
                 className="p-6 bg-slate-50/60 rounded-2xl border border-gray-150/80 hover:border-indigo-400 group transition-all duration-300 hover:shadow-lg flex flex-col space-y-4"
               >
-                <div className="p-3 bg-white text-slate-700 group-hover:bg-[#111A2E] group-hover:text-[#CDA275] rounded-xl self-start transition-all duration-300 shadow-xs">
+                <div className="p-3 bg-white text-slate-700 group-hover:bg-brand-secondary group-hover:text-brand-primary rounded-xl self-start transition-all duration-300 shadow-xs">
                   <DocIcon className="w-5 h-5" />
                 </div>
                 <div className="space-y-1 bg-transparent">

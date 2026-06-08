@@ -21,8 +21,15 @@ import {
   ChevronUp,
   ArrowRight
 } from 'lucide-react';
+import { useSEO } from '../hooks/useSEO';
 
 export function HowItWorks() {
+  useSEO({
+    title: 'How It Works | No Credit Barrier Rent-to-Buy Steps | R2BuyCar',
+    description: 'Understand the clear, step-by-step pathway from flexible car renting to full vehicle ownership. No strict bank score thresholds, no application feed burdens, plus complete road servicing covered.',
+    keywords: 'how rent to buy works, hire purchase car, bad credit car lease UK, buycarz roadmap, R2BuyCar guide'
+  });
+
   const [openFaqIdx, setOpenFaqIdx] = useState(null);
 
   const steps = [
@@ -159,22 +166,50 @@ export function HowItWorks() {
   return (
     <div className="bg-gray-50/50 min-h-screen pb-16 font-sans antialiased" id="how-it-works-page">
       
-      {/* 1. Hero Section */}
-      <section className="relative bg-[#111A2E] text-white py-24 sm:py-28 overflow-hidden" id="how-works-hero-seq">
-        {/* Pattern overlays */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-3xl"></div>
+      {/* 1. VIP Hero Section (500px height, luxury layout) */}
+      <section 
+        className="relative w-full h-[500px] bg-cover bg-center flex items-center px-4 sm:px-6 lg:px-8 overflow-hidden shadow-2xl animate-fade-in"
+        style={{
+          backgroundImage: `linear-gradient(90deg, rgba(8, 14, 28, 0.96) 0%, rgba(12, 22, 44, 0.72) 45%, rgba(15, 23, 42, 0.25) 100%), url('https://images.unsplash.com/photo-161843479313-40f8afb4b4d8?auto=format&fit=crop&q=80&w=1600')`
+        }}
+        id="how-works-hero-seq"
+      >
+        {/* Subtle grid pattern overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:24px_24px] opacity-25 pointer-events-none z-0"></div>
         
-        <div className="relative max-w-5xl mx-auto px-6 text-center space-y-6 z-10">
-          <div className="inline-flex items-center gap-1.5 bg-[#CDA275]/15 text-[#CDA275] text-[10px] font-black uppercase tracking-widest px-3.5 py-1.5 rounded-full border border-[#CDA275]/25">
-            Clear Path to Vehicle Ownership
+        {/* Decorative graphic overlay */}
+        <div className="absolute top-0 right-0 w-[45%] h-full bg-gradient-to-l from-black/20 to-transparent pointer-events-none z-0"></div>
+
+        {/* Two-Column Grid layout: Left-Text layout & Right-Car layout */}
+        <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+          
+          {/* Left text block: Title, subtitle & custom badges with logo colors (#7CC242, #1F3F7A) */}
+          <div className="lg:col-span-7 space-y-5 text-left">
+            <div className="inline-flex items-center gap-1.5 bg-white/10 text-white text-[11px] font-black uppercase tracking-widest px-3.5 py-1.5 rounded-md border border-white/20">
+              ⭐ Clear Path to Vehicle Ownership
+            </div>
+            
+            <h1 className="font-sans font-black text-3xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-none uppercase">
+              How Our Rent-To-Buy <br />
+              <span className="text-[#7CC242]">Process Works</span>
+            </h1>
+            
+            <p className="text-gray-300 text-xs sm:text-sm md:text-base leading-relaxed max-w-xl font-normal">
+              A simple step-by-step process to get behind the wheel of your next vehicle. Our simplified system bypasses heavy bank constraints.
+            </p>
           </div>
-          <h1 className="font-sans font-black text-4xl sm:text-6xl tracking-tight leading-none text-white">
-            How Our Rent-To-Buy Process Works
-          </h1>
-          <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
-            A simple step-by-step process to get behind the wheel of your next vehicle. Our simplified system bypasses heavy bank constraints.
-          </p>
+
+          {/* Right Image element: stylish premium SUV */}
+          <div className="hidden lg:flex lg:col-span-5 relative items-center justify-center select-none">
+            <div className="w-full max-w-[400px] flex items-center justify-center relative">
+              <img
+                src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=800"
+                alt="R2BuyCar Modern Hybrid SUV Asset"
+                className="w-full object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)] transform -scale-x-100 lg:-mr-6 animate-fade-in"
+              />
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -210,7 +245,7 @@ export function HowItWorks() {
 
                   <div className="space-y-4">
                     {/* Icon frame code matching user branding perfectly */}
-                    <div className="inline-flex p-3.5 bg-slate-50 text-slate-800 group-hover:bg-[#111A2E] group-hover:text-[#CDA275] rounded-xl transition-all duration-300 shadow-xs">
+                    <div className="inline-flex p-3.5 bg-slate-50 text-slate-800 group-hover:bg-brand-secondary group-hover:text-brand-primary rounded-xl transition-all duration-300 shadow-xs">
                       <IconComponent className="w-5 h-5 stroke-[2]" />
                     </div>
 
@@ -277,7 +312,7 @@ export function HowItWorks() {
           
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <div className="lg:col-span-5 space-y-4">
-              <span className="text-[10px] font-black text-[#CDA275] uppercase tracking-widest">Pre-approval Parameters</span>
+              <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest">Pre-approval Parameters</span>
               <h3 className="font-sans font-black text-2xl sm:text-3xl tracking-tight leading-tight text-white mb-2">
                 Eligibility Requirements Check
               </h3>
@@ -323,7 +358,7 @@ export function HowItWorks() {
                   key={index}
                   className="p-6 bg-white border border-gray-150 rounded-2xl hover:border-indigo-400 group transition-all hover:shadow-lg flex flex-col space-y-4"
                 >
-                  <div className="p-3.5 bg-slate-50 text-slate-800 group-hover:bg-[#111A2E] group-hover:text-[#CDA275] rounded-xl self-start transition-all duration-300">
+                  <div className="p-3.5 bg-slate-50 text-slate-800 group-hover:bg-brand-secondary group-hover:text-brand-primary rounded-xl self-start transition-all duration-300">
                     <CompIcon className="w-5 h-5" />
                   </div>
                   <div className="space-y-1">
@@ -381,10 +416,10 @@ export function HowItWorks() {
         {/* 7. Call To Action (Last section) */}
         <section className="bg-[#111A2E] text-white rounded-3xl p-4 sm:p-14 relative overflow-hidden text-center space-y-6" id="process-page-cta">
           {/* Subtle decoration matching visual look */}
-          <div className="absolute inset-0 bg-[#CDA275]/5 [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_80%,transparent_100%)]"></div>
+          <div className="absolute inset-0 bg-brand-primary/5 [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_80%,transparent_100%)]"></div>
           
           <div className="relative z-10 space-y-3.5 max-w-xl mx-auto">
-            <span className="text-[10px] font-black text-[#CDA275] uppercase tracking-widest bg-white/5 px-2.5 py-1.5 rounded-md border border-white/5 inline-block">
+            <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest bg-white/5 px-2.5 py-1.5 rounded-md border border-white/5 inline-block">
               Drive Towards Auto Ownership
             </span>
             <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white leading-none">
@@ -397,7 +432,7 @@ export function HowItWorks() {
 
           <div className="relative z-10 flex flex-col sm:flex-row gap-4 items-center justify-center pt-2">
             <Link to="/cars" className="w-full sm:w-auto">
-              <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#CDA275] text-[#111A2E] font-extrabold text-xs uppercase tracking-wider rounded-xl cursor-pointer hover:bg-[#bfa068] active:scale-98 transition-all">
+              <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-brand-primary text-brand-secondary font-extrabold text-xs uppercase tracking-wider rounded-xl cursor-pointer hover:bg-brand-primary-hover active:scale-98 transition-all">
                 Browse Cars
               </button>
             </Link>
@@ -405,7 +440,7 @@ export function HowItWorks() {
             <Link to="/apply" className="w-full sm:w-auto">
               <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 hover:bg-white/15 border border-white/15 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl cursor-pointer active:scale-98 transition-all">
                 Apply Now
-                <ArrowRight className="w-4 h-4 text-[#CDA275]" />
+                <ArrowRight className="w-4 h-4 text-brand-primary" />
               </button>
             </Link>
           </div>

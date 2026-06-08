@@ -2,8 +2,15 @@ import React, { useState } from 'react';
 import { Mail, Phone, MapPin, CheckCircle, Send, HelpCircle, AlertCircle, Clock, ChevronRight, MessageSquare, Car, Shield } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { api } from '../services/api';
+import { useSEO } from '../hooks/useSEO';
 
 export function Contact() {
+  useSEO({
+    title: 'Contact Us | Underwriting Desk & Support Operations | R2BuyCar',
+    description: 'Get in touch with our Heathrow Underwriting operations team. Call us, email our support crew, or submit your direct questions regarding our rent-to-buy contracts.',
+    keywords: 'R2BuyCar help desk, underwriter contact, car lease support team Manchester, rent to buy London phone number'
+  });
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -53,48 +60,68 @@ ${msg}
   return (
     <div className="space-y-0 pb-16 animate-fade-in font-sans antialiased" id="contact-view">
       
-      {/* 1. Bespoke Hero Section */}
-      <section className="relative bg-[#080B12] text-white overflow-hidden py-20 lg:py-24 border-b border-gray-950" id="contact-hero">
-        {/* Background Grids & Soft Radial Ambient Accents */}
-        <div className="absolute inset-0 bg-[#080B12] bg-[linear-gradient(to_right,#1e293b26_1px,transparent_1px),linear-gradient(to_bottom,#1e293b26_1px,transparent_1px)] bg-[size:32px_32px]"></div>
-        <div className="absolute -top-48 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-[#CDA275]/5 pointer-events-none blur-[120px]"></div>
-        <div className="absolute top-1/2 right-10 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-indigo-600/10 pointer-events-none blur-[100px]"></div>
+      {/* 1. VIP Hero Section (500px height, luxury layout) */}
+      <section 
+        className="relative w-full h-[500px] bg-cover bg-center flex items-center px-4 sm:px-6 lg:px-8 overflow-hidden shadow-2xl animate-fade-in"
+        style={{
+          backgroundImage: `linear-gradient(90deg, rgba(8, 14, 28, 0.96) 0%, rgba(12, 22, 44, 0.72) 45%, rgba(15, 23, 42, 0.25) 100%), url('https://images.unsplash.com/photo-161843479313-40f8afb4b4d8?auto=format&fit=crop&q=80&w=1600')`
+        }}
+        id="contact-hero"
+      >
+        {/* Subtle grid pattern overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:24px_24px] opacity-25 pointer-events-none z-0"></div>
+        
+        {/* Decorative graphic overlay */}
+        <div className="absolute top-0 right-0 w-[45%] h-full bg-gradient-to-l from-black/20 to-transparent pointer-events-none z-0"></div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <div className="space-y-5 max-w-3xl mx-auto">
-            {/* Top Badge */}
-            <div className="inline-block text-[#CDA275] border border-[#CDA275]/20 bg-[#CDA275]/5 font-black text-[10.5px] tracking-[0.2em] px-4 py-1.5 rounded-md uppercase font-mono">
-              GET IN TOUCH
+        {/* Two-Column Grid layout: Left-Text layout & Right-Car layout */}
+        <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+          
+          {/* Left text block: Title, subtitle & custom badges with logo colors (#7CC242, #1F3F7A) */}
+          <div className="lg:col-span-7 space-y-5 text-left">
+            <div className="inline-flex items-center gap-1.5 bg-white/10 text-white text-[11px] font-black uppercase tracking-widest px-3.5 py-1.5 rounded-md border border-white/20">
+              ⭐ GET IN TOUCH
             </div>
-
-            {/* Main Title Heading */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-none">
-              Contact R2Buy
+            
+            <h1 className="font-sans font-black text-3xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-none uppercase">
+              Contact <br />
+              <span className="text-[#7CC242]">R2Buy Solutions</span>
             </h1>
-
-            {/* Subheading */}
-            <p className="text-slate-400 text-sm sm:text-base leading-relaxed max-w-xl mx-auto font-light">
+            
+            <p className="text-gray-300 text-xs sm:text-sm md:text-base leading-relaxed max-w-xl font-normal">
               Have questions about our vehicles, applications, or rent-to-buy process? Our team is ready to assist you.
             </p>
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap justify-center gap-4 pt-4">
+            <div className="flex flex-wrap gap-4 pt-4">
               <a
-                href="tel:01613689635"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[#CDA275] hover:bg-[#b88f63] text-[#080B12] font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition-transform hover:-translate-y-0.5 duration-200"
+                href="phone:01613689635"
+                className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-white hover:bg-gray-100 text-[#1F3F7A] font-black text-xs uppercase tracking-wider rounded-xl transition-all duration-200 active:scale-95 cursor-pointer font-sans shadow-md"
               >
-                <Phone className="w-4 h-4" />
+                <Phone className="w-4 h-4 text-[#1F3F7A]" />
                 Call Us
               </a>
               <button
                 onClick={() => scrollToSection('contact-form-section')}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/15 text-white border border-white/20 font-black text-xs uppercase tracking-wider rounded-xl transition-transform hover:-translate-y-0.5 duration-200 cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-[#7CC242] hover:bg-[#6bb033] text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-[#7CC242]/20 transition-all duration-200 active:scale-95 cursor-pointer font-sans"
               >
-                <MessageSquare className="w-4 h-4" />
+                <MessageSquare className="w-4 h-4 text-white" />
                 Send Message
               </button>
             </div>
           </div>
+
+          {/* Right Image element: stylish premium SUV */}
+          <div className="hidden lg:flex lg:col-span-5 relative items-center justify-center select-none">
+            <div className="w-full max-w-[400px] flex items-center justify-center relative">
+              <img
+                src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=800"
+                alt="R2BuyCar Modern Hybrid SUV Asset"
+                className="w-full object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)] transform -scale-x-100 lg:-mr-6 animate-fade-in"
+              />
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -114,7 +141,7 @@ ${msg}
                 {/* Office Address Card */}
                 <div className="bg-slate-50 border border-gray-150 rounded-2xl p-6 hover:shadow-md transition-shadow">
                   <div className="flex items-center space-x-2.5 text-slate-800 mb-4 pb-3 border-b border-gray-200/60">
-                    <MapPin className="w-5 h-5 text-[#CDA275]" />
+                    <MapPin className="w-5 h-5 text-brand-primary" />
                     <h3 className="font-extrabold text-sm text-slate-900 font-mono">Office Address</h3>
                   </div>
                   <div className="text-xs text-slate-600 space-y-1.5 leading-relaxed font-light">
@@ -131,7 +158,7 @@ ${msg}
                 <div className="bg-slate-50 border border-gray-150 rounded-2xl p-6 hover:shadow-md transition-shadow flex flex-col justify-between">
                   <div>
                     <div className="flex items-center space-x-2.5 text-slate-800 mb-4 pb-3 border-b border-gray-200/60">
-                      <Phone className="w-5 h-5 text-[#CDA275]" />
+                      <Phone className="w-5 h-5 text-brand-primary" />
                       <h3 className="font-extrabold text-sm text-slate-900 font-mono">Contact Numbers</h3>
                     </div>
                     <div className="text-xs text-slate-600 space-y-2 leading-relaxed">
@@ -148,7 +175,7 @@ ${msg}
 
                   <div className="pt-4 mt-4 border-t border-gray-200/60">
                     <div className="flex items-center space-x-2.5 text-slate-850 mb-2">
-                      <Mail className="w-4 h-4 text-[#CDA275]" />
+                      <Mail className="w-4 h-4 text-brand-primary" />
                       <span className="font-extrabold text-xs text-slate-900 font-mono">Email Communications</span>
                     </div>
                     <div className="text-xs">
@@ -168,7 +195,7 @@ ${msg}
               <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff02_1px,transparent_1px),linear-gradient(to_bottom,#ffffff02_1px,transparent_1px)] bg-[size:16px_24px]"></div>
               
               <div className="relative z-10 space-y-4">
-                <div className="flex items-center space-x-2 text-[#CDA275]">
+                <div className="flex items-center space-x-2 text-brand-primary">
                   <Clock className="w-5 h-5" />
                   <span className="text-[10px] font-black uppercase tracking-widest font-mono">Live Operations Timetable</span>
                 </div>
@@ -184,7 +211,7 @@ ${msg}
                   </div>
                   <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
                     <span className="text-xs text-slate-300 font-medium">Saturday</span>
-                    <span className="text-xs font-black text-[#CDA275]">10:00 AM – 4:00 PM</span>
+                    <span className="text-xs font-black text-brand-primary">10:00 AM – 4:00 PM</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-slate-450 font-medium">Sunday</span>
@@ -314,7 +341,7 @@ ${msg}
       <section className="bg-white py-16 border-b border-gray-100" id="why-contact-section">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto space-y-2 mb-12">
-            <span className="text-[10px] font-black text-[#CDA275] uppercase tracking-widest block font-mono">ARE TEAM ATTENTION</span>
+            <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest block font-mono">ARE TEAM ATTENTION</span>
             <h2 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight leading-none">
               Why Contact Us
             </h2>
@@ -328,7 +355,7 @@ ${msg}
               {
                 title: 'Vehicle Enquiries',
                 desc: 'Get help finding the right vehicle for your needs. Choose from eco-friendly hybrids and premier comfort models.',
-                colorClass: 'border-[#CDA275]'
+                colorClass: 'border-brand-primary'
               },
               {
                 title: 'Application Support',

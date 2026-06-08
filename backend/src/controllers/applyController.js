@@ -4,10 +4,18 @@ import { Application } from '../models/Application.js';
 import { Agreement } from '../models/Aggreement.js';
 import { Payment } from '../models/Payment.js';
 import { Inquiry } from '../models/Inquiry.js';
+import { 
+  sendApplicationSubmitted, 
+  sendAdminNewApplicationAlert, 
+  sendPaymentConfirmation, 
+  sendAdminNewPaymentAlert, 
+  sendAdminContactFormNotification,
+  cancelReminders 
+} from '../utils/notifier.js';
 
 export const createApplication = async (req, res) => {
   try {
-    const { carId, userEmail, email, drivingLicence, selfieWithId, addressProof, durationMonths, applyDetails, profile } = req.body;
+    const { carId, userEmail, email, drivingLicence, selfieWithId, addressProof, floorPlan, durationMonths, applyDetails, profile } = req.body;
     const activeEmailVal = userEmail || email || (profile && profile.email);
     if (!activeEmailVal) {
       return res.status(400).json({ error: "Active identity credentials missing" });
@@ -17,6 +25,7 @@ export const createApplication = async (req, res) => {
     const drivingLicenceVal = drivingLicence || details.drivingLicence || "";
     const selfieWithIdVal = selfieWithId || details.selfieWithId || "";
     const addressProofVal = addressProof || details.addressProof || "";
+    const floorPlanVal = floorPlan || details.floorPlanUrl || details.floorPlan || "";
     const durationMonthsVal = durationMonths || details.durationMonths || "12";
 
     // Lookup original target vehicle specs in Mongoose
@@ -48,6 +57,7 @@ export const createApplication = async (req, res) => {
       licenseFrontUrl: drivingLicenceVal,
       licenseBackUrl: addressProofVal,
       selfieUrl: selfieWithIdVal,
+      floorPlanUrl: floorPlanVal,
       applyDetails: {
         fullName: currentFullName,
         phone: currentPhone,
@@ -57,11 +67,34 @@ export const createApplication = async (req, res) => {
         drivingLicence: drivingLicenceVal,
         addressProof: addressProofVal,
         selfieWithId: selfieWithIdVal,
-        location: currentLocation
+        location: currentLocation,
+        floorPlanUrl: floorPlanVal
       }
     });
 
     await newApp.save();
+
+    // Trigger Email Notifications (User Submission confirmation & Admin Alert)
+    try {
+      const formattedDate = newApp.submissionDateTime ? new Date(newApp.submissionDateTime).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+      await sendApplicationSubmitted({
+        to: finalEmail,
+        userName: currentFullName,
+        applicationId: newApp.id,
+        submissionDate: formattedDate
+      });
+      await sendAdminNewApplicationAlert({
+        adminEmail: process.env.ADMIN_EMAIL,
+        userName: currentFullName,
+        userEmail: finalEmail,
+        userPhone: currentPhone,
+        applicationId: newApp.id,
+        submissionDate: formattedDate
+      });
+    } catch (emailErr) {
+      console.error('[NOTIFIER WARNING] Failed to send application submission emails:', emailErr);
+    }
+
     res.status(201).json(newApp);
   } catch (err) {
     console.error('[applyController] createApplication error:', err);
@@ -155,6 +188,39 @@ export const submitPayment = async (req, res) => {
       await agreement.save();
     }
 
+    // Trigger Email Notifications (User Receipt, Admin Alert, Stop Reminders)
+    try {
+      const matchingUser = await User.findOne({ email: activeEmail });
+      const fullName = matchingUser ? matchingUser.fullName : "Lease Driver";
+      const paymentDateVal = new Date().toISOString().split('T')[0];
+
+      await sendPaymentConfirmation({
+        to: activeEmail,
+        userName: fullName,
+        amount: Number(amount),
+        carName: carName || "Fleet Asset Dues",
+        paymentDate: paymentDateVal,
+        method: method || "Debit Card",
+        txnId: newTxn.id
+      });
+
+      await sendAdminNewPaymentAlert({
+        adminEmail: process.env.ADMIN_EMAIL,
+        userName: fullName,
+        userEmail: activeEmail,
+        paymentAmount: Number(amount),
+        vehicleDetails: carName || "Fleet Asset Dues",
+        paymentDate: paymentDateVal,
+        method: method || "Debit Card",
+        txnId: newTxn.id
+      });
+
+      // Stop any future reminders for this user
+      await cancelReminders(activeEmail);
+    } catch (emailErr) {
+      console.error('[NOTIFIER WARNING] Failed to send payment confirmation emails:', emailErr);
+    }
+
     res.status(201).json(newTxn);
   } catch (err) {
     console.error('[applyController] submitPayment error:', err);
@@ -177,6 +243,34 @@ export const submitInquiry = async (req, res) => {
     });
 
     await newInq.save();
+
+    // Trigger Contact Inquiry Email Alert to Admin
+    try {
+      let phoneVal = "";
+      let subjectVal = "Contact Inquiry";
+      let bodyText = msg;
+
+      const subjectMatch = msg.match(/Subject:\s*(.*)/i);
+      const phoneMatch = msg.match(/Phone:\s*(.*)/i);
+      const messageMatch = msg.match(/Message:\s*\n([\s\S]*)/i);
+
+      if (subjectMatch) subjectVal = subjectMatch[1].trim();
+      if (phoneMatch) phoneVal = phoneMatch[1].trim();
+      if (messageMatch) bodyText = messageMatch[1].trim();
+
+      await sendAdminContactFormNotification({
+        adminEmail: process.env.ADMIN_EMAIL,
+        name,
+        email: email.toLowerCase().trim(),
+        phone: phoneVal,
+        subject: subjectVal,
+        msg: bodyText,
+        submissionDate: new Date().toISOString().split('T')[0]
+      });
+    } catch (emailErr) {
+      console.error('[NOTIFIER WARNING] Failed to send admin contact alert email:', emailErr);
+    }
+
     res.status(201).json({ message: "Dispatch successful!", inquiry: newInq });
   } catch (err) {
     console.error('[applyController] submitInquiry error:', err);
@@ -221,6 +315,7 @@ export const uploadDocumentsMock = (req, res) => {
     const licenseFrontFile = files.licenseFront ? files.licenseFront[0] : null;
     const licenseBackFile = files.licenseBack ? files.licenseBack[0] : null;
     const proofOfAddressFile = files.proofOfAddress ? files.proofOfAddress[0] : null;
+    const floorPlanFile = files.floorPlan ? files.floorPlan[0] : null;
 
     // Calculate the absolute base URL dynamically based on current requests headers
     const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
@@ -238,11 +333,16 @@ export const uploadDocumentsMock = (req, res) => {
     const proofOfAddressUrl = proofOfAddressFile 
       ? `${baseUrl}/uploads/${proofOfAddressFile.filename}` 
       : "";
+
+    const floorPlanUrl = floorPlanFile 
+      ? `${baseUrl}/uploads/${floorPlanFile.filename}` 
+      : "";
       
     const responsePayload = {
       licenseFront: licenseFrontUrl,
       licenseBack: licenseBackUrl,
-      proofOfAddress: proofOfAddressUrl
+      proofOfAddress: proofOfAddressUrl,
+      floorPlan: floorPlanUrl
     };
 
     console.log("[UPLOAD-DEBUG] Sending response payload:", responsePayload);

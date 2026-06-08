@@ -11,10 +11,15 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand block */}
           <div className="space-y-4">
-            <div className="flex items-center space-x-2 text-white">
-              <Car className="h-6 w-6 stroke-[2.5]" />
-              <span className="font-sans font-bold text-lg tracking-tight">
-                R2buy<span className="text-[#CDA275]">.com</span>
+            <div className="flex items-center">
+              <div className="w-8 h-8 rounded-full bg-brand-secondary flex items-center justify-center mr-2 shadow-sm">
+                <Car className="h-4.5 w-4.5 text-brand-primary" strokeWidth={2.5} />
+              </div>
+              <span className="font-extrabold text-white text-lg tracking-tight">
+                R2
+              </span>
+              <span className="font-extrabold text-brand-primary text-lg tracking-tight ml-0.5">
+                BuyCar
               </span>
             </div>
             <p className="text-xs text-gray-400 leading-relaxed">
@@ -46,18 +51,18 @@ export function Footer() {
             <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-4">Contact Info</h3>
             <ul className="space-y-2 text-xs text-gray-400">
               <li className="flex items-start space-x-2">
-                <Phone className="h-4 w-4 text-[#CDA275] shrink-0 mt-0.5" />
+                <Phone className="h-4 w-4 text-brand-primary font-bold shrink-0 mt-0.5" />
                 <div className="flex flex-col">
                   <span>Landline: 0161 368 9635</span>
                   <span>Mobile: 07758313276</span>
                 </div>
               </li>
               <li className="flex items-center space-x-2">
-                <Mail className="h-4 w-4 text-[#CDA275] shrink-0" />
+                <Mail className="h-4 w-4 text-brand-primary font-bold shrink-0" />
                 <span>support@r2buy.com</span>
               </li>
               <li className="flex items-start space-x-2">
-                <MapPin className="h-4 w-4 text-[#CDA275] shrink-0 mt-0.5" />
+                <MapPin className="h-4 w-4 text-brand-primary font-bold shrink-0 mt-0.5" />
                 <span className="leading-relaxed">
                   Piccadilly Business Centre,<br />
                   Aldow Enterprise Park,<br />

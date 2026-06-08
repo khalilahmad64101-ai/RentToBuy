@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
 import { HeroSection } from '../components/layout/HeroSection';
 import { HelpCircle, ChevronDown, ChevronUp, ShieldCheck, Mail, Phone } from 'lucide-react';
+import { useSEO } from '../hooks/useSEO';
 
 export function FAQ() {
+  useSEO({
+    title: 'R2BuyCar FAQ | Rent-to-Buy Car Ownership Questions Answered',
+    description: 'Find answers regarding our rent-to-buy soft credit checks, mechanical repairs coverage, early termination terms, and weekly payment methods.',
+    keywords: 'rent to rent car FAQ, car subscription questions, bad credit lease advice, buycarz info'
+  });
+
   const [openIndex, setOpenIndex] = useState(0);
 
   const entries = [
@@ -53,7 +60,7 @@ export function FAQ() {
                 className="w-full flex justify-between items-center p-5 text-left font-sans font-semibold text-sm text-gray-900 focus:outline-none hover:bg-gray-50/50"
               >
                 <span>{item.q}</span>
-                {isOpen ? <ChevronUp className="w-4 h-4 text-indigo-650 shrink-0" /> : <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />}
+                {isOpen ? <ChevronUp className="w-4 h-4 text-brand-secondary shrink-0" /> : <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />}
               </button>
               
               {isOpen && (
@@ -67,20 +74,20 @@ export function FAQ() {
       </div>
 
       {/* Contact desk callout */}
-      <div className="bg-indigo-50 rounded-xl p-5 border border-indigo-100 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-sans font-medium text-indigo-700 mt-10" id="faq-cta">
+      <div className="bg-brand-primary/5 rounded-xl p-5 border border-brand-primary/10 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-sans font-medium text-brand-secondary mt-10" id="faq-cta">
         <div className="flex items-start space-x-3">
-          <ShieldCheck className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
+          <ShieldCheck className="w-5 h-5 text-brand-primary shrink-0 mt-0.5" />
           <p>
             Still have individual questions or have commercial courier fleet needs? <br />
             Our brokerage underwriting processing desks are active 24/7.
           </p>
         </div>
         <div className="flex space-x-4 shrink-0 font-bold">
-          <a href="tel:01613689635" className="flex items-center space-x-1 hover:text-indigo-900">
+          <a href="tel:01613689635" className="flex items-center space-x-1 hover:text-brand-primary">
             <Phone className="w-4 h-4" />
             <span>0161 368 9635</span>
           </a>
-          <a href="mailto:support@r2buy.com" className="flex items-center space-x-1 hover:text-indigo-900">
+          <a href="mailto:support@r2buy.com" className="flex items-center space-x-1 hover:text-brand-primary">
             <Mail className="w-4 h-4" />
             <span>support@r2buy.com</span>
           </a>
