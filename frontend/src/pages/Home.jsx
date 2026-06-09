@@ -1,13 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import { Link } from 'react-router-dom';
-import { VehicleFeaturesSection } from './Home/VehicleFeaturesSection';
-import { HowItWorksSection } from './Home/HowItWorksSection';
-import { PerksSection } from './Home/PerksSection';
 import { TestimonialsSection } from './Home/TestimonialsSection';
 import { CarCard } from '../components/cars/CarCard';
 import { Loader } from '../components/ui/Loader';
-import { Car } from 'lucide-react';
+import { Car, Sliders, CheckSquare, FileText, Upload, Clock, CreditCard, Key } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSEO } from '../hooks/useSEO';
 
@@ -166,7 +163,7 @@ export function Home() {
                         className={`font-sans font-black transition-all duration-200 cursor-pointer focus:outline-none text-xs sm:text-sm md:text-base py-2 px-3 sm:py-2.5 sm:px-4 rounded-xl border whitespace-nowrap min-w-[50px] sm:min-w-[55px] text-center ${
                           isCurrent 
                             ? 'border-[#7CC242] bg-[#7CC242]/10 text-[#7CC242] scale-110 shadow-sm' 
-                            : 'border-slate-100 bg-slate-50 text-slate-600 hover:text-[#7CC242] hover:border-[#7CC242]/30'
+                            : 'border-slate-500 bg-slate-50 text-slate-600 hover:text-[#7CC242] hover:border-[#7CC242]/30'
                         }`}
                       >
                         £{step}{idx === BUDGET_STEPS.length - 1 ? '+' : ''}
@@ -196,7 +193,7 @@ export function Home() {
                       className={`flex-1 font-sans font-black transition-all duration-200 cursor-pointer focus:outline-none text-xs sm:text-sm py-2 px-1 rounded-xl border text-center whitespace-nowrap ${
                         isCurrent 
                           ? 'border-[#7CC242] bg-[#7CC242]/10 text-[#7CC242] scale-105 shadow-xs font-bold' 
-                          : 'border-slate-100 bg-slate-50 text-slate-600 hover:text-[#7CC242] hover:border-[#7CC242]/30'
+                          : 'border-slate-500 bg-slate-50 text-slate-600 hover:text-[#7CC242] hover:border-[#7CC242]/30'
                       }`}
                     >
                       £{item.label}
@@ -270,15 +267,139 @@ export function Home() {
           </div>
         )}
       </div>
+    
+      {/* 3. Customer Journey Section */}
+      <section className="bg-white border-y border-gray-100 py-16 w-full animate-fade-in" id="customer-journey-section">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="font-sans font-black text-2xl sm:text-3xl text-[#1F3F7A] tracking-tight uppercase">
+              Your Journey to Vehicle Ownership
+            </h2>
+            <div className="h-1.5 w-24 bg-[#7CC242] mx-auto my-4 rounded-full"></div>
+            <p className="text-xs sm:text-sm text-slate-500 font-bold uppercase tracking-wider text-slate-400">
+              Follow these simple steps to find your vehicle and complete your application.
+            </p>
+          </div>
 
-      {/* Integrated Vehicle Features Section */}
-      <VehicleFeaturesSection />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 relative">
+            
+            {/* Step 1 */}
+            <div className="relative p-6 bg-slate-50 border border-slate-500 rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
+              <div className="absolute top-4 right-4 text-[10px] font-mono font-black text-slate-300 group-hover:text-[#7CC242]/40 transition-colors">
+                STEP 01
+              </div>
+              <div className="w-12 h-12 bg-[#7CC242]/10 rounded-2xl flex items-center justify-center text-[#7CC242] mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
+                <Sliders className="w-6 h-6" />
+              </div>
+              <h3 className="font-extrabold text-sm uppercase text-[#1F3F7A] mb-2 tracking-tight">Set Your Budget</h3>
+              <p className="text-xs text-slate-400 leading-relaxed max-w-[220px]">
+                Use the affordability meter to choose your weekly budget.
+              </p>
+            </div>
 
-      {/* Mechanics Explanation: How it works */}
-      <HowItWorksSection />
+            {/* Step 2 */}
+            <div className="relative p-6 bg-slate-50 border border-slate-500 rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
+              <div className="absolute top-4 right-4 text-[10px] font-mono font-black text-slate-300 group-hover:text-[#7CC242]/40 transition-colors">
+                STEP 02
+              </div>
+              <div className="w-12 h-12 bg-[#1F3F7A]/10 rounded-2xl flex items-center justify-center text-[#1F3F7A] mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
+                <Car className="w-6 h-6" />
+              </div>
+              <h3 className="font-extrabold text-sm uppercase text-[#1F3F7A] mb-2 tracking-tight">Browse Matching Vehicles</h3>
+              <p className="text-xs text-slate-400 leading-relaxed max-w-[220px]">
+                View vehicles that match your selected budget.
+              </p>
+            </div>
 
-      {/* Highlight Testimonials / Perks layout */}
-      <PerksSection />
+            {/* Step 3 */}
+            <div className="relative p-6 bg-slate-50 border border-slate-500 rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
+              <div className="absolute top-4 right-4 text-[10px] font-mono font-black text-slate-300 group-hover:text-[#7CC242]/40 transition-colors">
+                STEP 03
+              </div>
+              <div className="w-12 h-12 bg-[#7CC242]/10 rounded-2xl flex items-center justify-center text-[#7CC242] mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
+                <CheckSquare className="w-6 h-6" />
+              </div>
+              <h3 className="font-extrabold text-sm uppercase text-[#1F3F7A] mb-2 tracking-tight">Choose Your Vehicle</h3>
+              <p className="text-xs text-slate-400 leading-relaxed max-w-[220px]">
+                Select the car that best suits your needs.
+              </p>
+            </div>
+
+            {/* Step 4 */}
+            <div className="relative p-6 bg-slate-50 border border-slate-500 rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
+              <div className="absolute top-4 right-4 text-[10px] font-mono font-black text-slate-300 group-hover:text-[#7CC242]/40 transition-colors">
+                STEP 04
+              </div>
+              <div className="w-12 h-12 bg-[#1F3F7A]/10 rounded-2xl flex items-center justify-center text-[#1F3F7A] mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
+                <FileText className="w-6 h-6" />
+              </div>
+              <h3 className="font-extrabold text-sm uppercase text-[#1F3F7A] mb-2 tracking-tight">Start Your Application</h3>
+              <p className="text-xs text-slate-400 leading-relaxed max-w-[220px]">
+                Complete the online application form.
+              </p>
+            </div>
+
+            {/* Step 5 */}
+            <div className="relative p-6 bg-slate-50 border border-slate-500 rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
+              <div className="absolute top-4 right-4 text-[10px] font-mono font-black text-slate-300 group-hover:text-[#7CC242]/40 transition-colors">
+                STEP 05
+              </div>
+              <div className="w-12 h-12 bg-[#7CC242]/10 rounded-2xl flex items-center justify-center text-[#7CC242] mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
+                <Upload className="w-6 h-6" />
+              </div>
+              <h3 className="font-extrabold text-sm uppercase text-[#1F3F7A] mb-2 tracking-tight">Upload Required Documents</h3>
+              <p className="text-xs text-slate-400 leading-relaxed max-w-[220px]">
+                Submit your driving licence, selfie, and required verification documents.
+              </p>
+            </div>
+
+            {/* Step 6 */}
+            <div className="relative p-6 bg-slate-50 border border-slate-500 rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
+              <div className="absolute top-4 right-4 text-[10px] font-mono font-black text-slate-300 group-hover:text-[#7CC242]/40 transition-colors">
+                STEP 06
+              </div>
+              <div className="w-12 h-12 bg-[#1F3F7A]/10 rounded-2xl flex items-center justify-center text-[#1F3F7A] mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
+                <Clock className="w-6 h-6" />
+              </div>
+              <h3 className="font-extrabold text-sm uppercase text-[#1F3F7A] mb-2 tracking-tight">Application Review</h3>
+              <p className="text-xs text-slate-400 leading-relaxed max-w-[220px]">
+                Our team reviews and verifies your application.
+              </p>
+            </div>
+
+            {/* Step 7 */}
+            <div className="relative p-6 bg-slate-50 border border-slate-500 rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
+              <div className="absolute top-4 right-4 text-[10px] font-mono font-black text-slate-300 group-hover:text-[#7CC242]/40 transition-colors">
+                STEP 07
+              </div>
+              <div className="w-12 h-12 bg-[#7CC242]/10 rounded-2xl flex items-center justify-center text-[#7CC242] mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
+                <CreditCard className="w-6 h-6" />
+              </div>
+              <h3 className="font-extrabold text-sm uppercase text-[#1F3F7A] mb-2 tracking-tight">Approval & Payment</h3>
+              <p className="text-xs text-slate-400 leading-relaxed max-w-[220px]">
+                Once approved, complete the required payment.
+              </p>
+            </div>
+
+            {/* Step 8 */}
+            <div className="relative p-6 bg-slate-50 border border-slate-500 rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
+              <div className="absolute top-4 right-4 text-[10px] font-mono font-black text-slate-300 group-hover:text-[#7CC242]/40 transition-colors">
+                STEP 08
+              </div>
+              <div className="w-12 h-12 bg-[#1F3F7A]/10 rounded-2xl flex items-center justify-center text-[#1F3F7A] mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
+                <Key className="w-6 h-6" />
+              </div>
+              <h3 className="font-extrabold text-sm uppercase text-[#1F3F7A] mb-2 tracking-tight">Collect & Drive</h3>
+              <p className="text-xs text-slate-400 leading-relaxed max-w-[220px]">
+                Receive your vehicle and start your journey.
+              </p>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
 
       {/* Modern High-End Premium Testimonial Section */}
       <TestimonialsSection />

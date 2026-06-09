@@ -9,6 +9,7 @@ import {
   sendApplicationApproved, 
   sendApplicationRejected, 
   sendBookingConfirmation, 
+  sendAdminNewBookingAlert,
   scheduleReminders 
 } from '../utils/notifier.js';
 
@@ -183,6 +184,17 @@ export const adminUpdateApplicationStatus = async (req, res) => {
           bookingDate: new Date().toISOString().split('T')[0]
         });
 
+        // Admin Notification: New Booking Created
+        await sendAdminNewBookingAlert({
+          adminEmail: process.env.ADMIN_EMAIL,
+          userName: app.fullName || "Lease Driver",
+          userEmail: emailQuery,
+          bookingId: targetAgr.id,
+          carName: targetAgr.carName,
+          weeklyRate: targetAgr.weeklyRate,
+          bookingDate: new Date().toISOString().split('T')[0]
+        });
+
         // Schedule the payment reminders (after application approved)
         await scheduleReminders(emailQuery, app.id);
       } catch (emailErr) {
@@ -205,6 +217,7 @@ export const adminUpdateApplicationStatus = async (req, res) => {
         await sendApplicationRejected({
           to: emailQuery,
           userName: app.fullName || "Lease Driver",
+          applicationId: app.id,
           reason: notes || app.notes
         });
       } catch (emailErr) {

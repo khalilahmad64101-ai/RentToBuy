@@ -38,7 +38,12 @@ import {
   MailOpen,
   Send,
   HelpCircle,
-  FileCheck
+  FileCheck,
+  Menu,
+  X,
+  ChevronLeft,
+  Filter,
+  CheckCircle2
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSEO } from '../hooks/useSEO';
@@ -117,6 +122,15 @@ export function Admin() {
   // Insurance Uploader state
   const [insuranceTargetEmail, setInsuranceTargetEmail] = useState('');
   const [insurancePolicyUrl, setInsurancePolicyUrl] = useState('https://images.unsplash.com/photo-1586075010923-2dd4570fb338?auto=format&fit=crop&q=80&w=800');
+
+  // Mobile menu and advanced search/filter states
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [appSearch, setAppSearch] = useState('');
+  const [appStatusFilter, setAppStatusFilter] = useState('All');
+  const [userSearch, setUserSearch] = useState('');
+  const [userRoleFilter, setUserRoleFilter] = useState('All');
+  const [paymentSearch, setPaymentSearch] = useState('');
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState('All');
 
   // Trigger loading master data records
   const fetchAllData = async () => {

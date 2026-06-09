@@ -159,7 +159,11 @@ export const googleSignin = async (req, res) => {
     try {
       const parts = credential.split('.');
       if (parts.length === 3) {
-        const payloadBuffer = Buffer.from(parts[1], 'base64');
+        let base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+        while (base64.length % 4) {
+          base64 += '=';
+        }
+        const payloadBuffer = Buffer.from(base64, 'base64');
         const payload = JSON.parse(payloadBuffer.toString('utf-8'));
         email = payload.email;
         fullName = payload.name || payload.given_name || "Google User";

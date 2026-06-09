@@ -274,7 +274,7 @@ export async function sendApplicationSubmitted({ to, userName, applicationId, su
  * 2. Application Approved notification
  */
 export async function sendApplicationApproved({ to, userName, applicationId, carName, weeklyRate }) {
-  const subject = `RENT2BUY APPROVED: Secure Your Approved Vehicle - Next Steps!`;
+  const subject = `RENT2BUY APPROVED: Secure Your Approved Vehicle [ID: ${applicationId}] - Next Steps!`;
   const html = getHTMLTemplate(subject, `
     <h2>Application APPROVED!</h2>
     <p>Dear ${userName},</p>
@@ -308,8 +308,8 @@ export async function sendApplicationApproved({ to, userName, applicationId, car
 /**
  * 3. Application Rejected notification
  */
-export async function sendApplicationRejected({ to, userName, reason }) {
-  const subject = `RENT2BUY: Lease Application Underwriting Status Update`;
+export async function sendApplicationRejected({ to, userName, applicationId, reason }) {
+  const subject = `RENT2BUY: Lease Application Underwriting Status Update [ID: ${applicationId}]`;
   const html = getHTMLTemplate(subject, `
     <h2>Application Review Decision</h2>
     <p>Dear ${userName},</p>
@@ -348,7 +348,7 @@ export async function sendPaymentConfirmation({ to, userName, amount, carName, p
     <p>Your electronic ledger indices have updated in real time. We appreciate your prompt lease contributions.</p>
   `);
 
-  return sendEmailDirect({ to, subject, html, allowDuplicates: true });
+  return sendEmailDirect({ to, subject, html });
 }
 
 
@@ -418,7 +418,7 @@ export async function sendAdminNewApplicationAlert({ adminEmail, userName, userE
  * 2. New Payment Alert for admin
  */
 export async function sendAdminNewPaymentAlert({ adminEmail, userName, userEmail, paymentAmount, vehicleDetails, paymentDate, method, txnId }) {
-  const subject = `ADMIN ALERT: Completed Transaction Logged [Amount: £${paymentAmount}]`;
+  const subject = `ADMIN ALERT: Completed Transaction Logged [Amount: £${paymentAmount}] [Ref: ${txnId}]`;
   const html = getHTMLTemplate(subject, `
     <h2>Payment Alert Received</h2>
     <p>Hello Administrator,</p>
@@ -435,6 +435,35 @@ export async function sendAdminNewPaymentAlert({ adminEmail, userName, userEmail
       </table>
     </div>
     <p>The system has registered this transaction into MongoDB arrays. Let's inspect the administration dashboard list index for further details.</p>
+  `);
+
+  const dest = adminEmail || "khalilahmad64101@gmail.com";
+  return sendEmailDirect({ to: dest, subject, html });
+}
+
+/**
+ * 4. New Booking Alert for admin (booking creation)
+ */
+export async function sendAdminNewBookingAlert({ adminEmail, userName, userEmail, bookingId, carName, weeklyRate, bookingDate }) {
+  const subject = `ADMIN ALERT: New Vehicle Lease Booking Created [Booking: ${bookingId}]`;
+  const html = getHTMLTemplate(subject, `
+    <h2>New Vehicle Lease Booking Established</h2>
+    <p>Hello Administrator,</p>
+    <p>A new booking contract registration has been successfully established and logged under our London Heathrow EV dispatch registry:</p>
+    <div class="details-box" style="border-left-color: #6366f1;">
+      <table>
+        <tr><td class="label">Booking/Contract ID:</td><td class="value">${bookingId}</td></tr>
+        <tr><td class="label">Vehicle Allocation:</td><td class="value">${carName || 'Premium EV Lineup'}</td></tr>
+        <tr><td class="label">Weekly Rate:</td><td class="value">£${weeklyRate || '50.00'} / week</td></tr>
+        <tr><td class="label">Driver Name:</td><td class="value">${userName}</td></tr>
+        <tr><td class="label">Driver Email:</td><td class="value">${userEmail}</td></tr>
+        <tr><td class="label">Registration Date:</td><td class="value">${bookingDate}</td></tr>
+      </table>
+    </div>
+    <p>Please review active inventory logs or schedule the dispatch key prep workflow as needed.</p>
+    <p style="text-align: center;">
+      <a href="${process.env.APP_URL || 'https://r2buy.com'}/login" class="btn" style="background-color: #6366f1; color:#ffffff !important;">View Bookings Portal</a>
+    </p>
   `);
 
   const dest = adminEmail || "khalilahmad64101@gmail.com";
