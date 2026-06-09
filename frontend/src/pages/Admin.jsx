@@ -3,1474 +3,558 @@ import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { Button } from '../components/ui/Button';
 import { Loader } from '../components/ui/Loader';
+import { useSEO } from '../hooks/useSEO';
+import { useNavigate, Link } from 'react-router-dom';
+
+// Import modular layouts
+import AdminSidebar from '../components/AdminSidebar';
+import { DocumentViewerModal, FullApplicationModal } from '../components/AdminModals';
+import AdminCarForm from '../components/AdminCarForm';
+
 import { 
-  Gauge, 
-  Car, 
-  FileSearch, 
-  Users, 
-  CreditCard, 
-  Mail, 
-  MessageSquare, 
-  LogOut, 
+  Menu, 
   Plus, 
+  Search, 
   Trash2, 
   Edit2, 
-  CheckCircle, 
-  XCircle, 
-  Lock, 
-  Unlock, 
-  Globe,
-  Settings, 
-  Search, 
-  FileText, 
-  RefreshCw, 
-  Sliders, 
-  ShieldAlert, 
-  Upload, 
-  Activity, 
-  Briefcase, 
-  Clock, 
-  User,
-  ExternalLink,
-  ChevronRight,
-  PlusCircle,
+  AlertCircle,
+  Eye,
+  FileText,
+  DollarSign,
   TrendingUp,
-  MailOpen,
+  Layers,
+  Clock,
   Send,
+  PlusCircle,
+  MailOpen,
+  Users,
+  CheckCircle2,
+  XCircle,
+  RefreshCw,
+  Gauge,
   HelpCircle,
-  FileCheck,
-  Menu,
-  X,
-  ChevronLeft,
-  Filter,
-  CheckCircle2
+  ToggleLeft,
+  ToggleRight
 } from 'lucide-react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useSEO } from '../hooks/useSEO';
+
+const getImageUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return url.startsWith('/') ? url : `/${url}`;
+};
 
 export function Admin() {
   useSEO({
-    title: 'Security Terminal | Heathrow Administrative Operations | R2BuyCar',
-    description: 'Manage active fleet inventories, modify vehicle listings, resolve support queue inquiries, and approve/reject lease candidate underwriting applications from the centralized security terminal.',
-    keywords: 'R2BuyCar terminal administration, lease back-office clearance hub',
-    ogType: 'article'
+    title: 'Backoffice Heathrow Control Center',
+    description: 'Rent-to-Buy motor fleet management console.'
   });
-
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
-  const getImageUrl = (url) => {
-    if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
-      return url;
-    }
-    const apiBase = import.meta.env.VITE_API_URL || '';
-    return `${apiBase.replace(/\/$/, '')}${url}`;
-  };
-
-  // Active Admin Sidebar Tab selector
-  const [activeTab, setActiveTab] = useState('dashboard');
-
-  // Cars Management sub-views: 'list', 'add', 'edit'
-  const [carViewMode, setCarViewMode] = useState('list');
+  // Page Views layout states
+  const [activeTab, setActiveTab] = useState('dashboard'); // dashboard, cars, applications, users, payments, emails, settings
+  const [carViewMode, setCarViewMode] = useState('list'); // list, add, edit
   const [selectedCar, setSelectedCar] = useState(null);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-  // Master records synchronised from backend DB
+  // Pagination & details states
+  const [appCurrentPage, setAppCurrentPage] = useState(1);
+  const [userCurrentPage, setUserCurrentPage] = useState(1);
+  const [paymentCurrentPage, setPaymentCurrentPage] = useState(1);
+  const [selectedUserDetail, setSelectedUserDetail] = useState(null);
+
+  // States for searchable user dropdowns in Notifications Hub
+  const [emailToSearch, setEmailToSearch] = useState('');
+  const [emailToIsOpen, setEmailToIsOpen] = useState(false);
+  const [insuranceSearch, setInsuranceSearch] = useState('');
+  const [insuranceIsOpen, setInsuranceIsOpen] = useState(false);
+
+  // Data registers from db API
   const [systemRecords, setSystemRecords] = useState({
-    users: [],
-    applications: [],
-    agreements: [],
-    payments: [],
     cars: [],
+    applications: [],
+    users: [],
+    payments: [],
     emails: [],
     inquiries: []
   });
-  
   const [isLoading, setIsLoading] = useState(true);
-  const [sysAlert, setSysAlert] = useState(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [alertBanner, setAlertBanner] = useState(null); // { type: 'success' | 'error', text: '' }
 
-  // Cars Management form states
-  const [carName, setCarName] = useState('');
-  const [carModel, setCarModel] = useState('');
-  const [carPrice, setCarPrice] = useState('45');
-  const [carDeposit, setCarDeposit] = useState('150');
-  const [carFuel, setCarFuel] = useState('Hybrid');
-  const [carTransmission, setCarTransmission] = useState('Automatic');
-  const [carEconomy, setCarEconomy] = useState('65 mpg');
-  const [carYear, setCarYear] = useState('2024');
-  const [carMileage, setCarMileage] = useState('15,000 miles');
-  const [carImage, setCarImage] = useState('https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&q=80&w=800');
-  const [carImages, setCarImages] = useState(Array(10).fill(''));
-  const [carFeaturesStr, setCarFeaturesStr] = useState('Air Conditioning, Parking Sensors, Bluetooth, Adaptive Cruise, Heated Seats');
-  const [carDescription, setCarDescription] = useState('This fuel-efficient EV vehicle is primed and prepared for Heathrow Airport dispatch networks. Includes servicing logs and active road tax profiles.');
-  const [carStatus, setCarStatus] = useState('Available');
+  // Action specific spinner
+  const [actionLoading, setActionLoading] = useState(false);
 
-  // Underwriting Inspection selection
-  const [selectedApp, setSelectedApp] = useState(null);
-  const [docChecks, setDocChecks] = useState({
-    drivingLicence: false,
-    addressProof: false,
-    selfie: false
-  });
-  const [auditNotes, setAuditNotes] = useState('');
-
-  // Email Composer states
-  const [emailTo, setEmailTo] = useState('');
-  const [emailSubject, setEmailSubject] = useState('');
-  const [emailContent, setEmailContent] = useState('');
-
-  // Insurance Uploader state
-  const [insuranceTargetEmail, setInsuranceTargetEmail] = useState('');
-  const [insurancePolicyUrl, setInsurancePolicyUrl] = useState('https://images.unsplash.com/photo-1586075010923-2dd4570fb338?auto=format&fit=crop&q=80&w=800');
-
-  // Mobile menu and advanced search/filter states
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  // Search, filter state parameters
+  const [carSearch, setCarSearch] = useState('');
+  const [carStatusFilter, setCarStatusFilter] = useState('All');
+  
   const [appSearch, setAppSearch] = useState('');
   const [appStatusFilter, setAppStatusFilter] = useState('All');
+
   const [userSearch, setUserSearch] = useState('');
   const [userRoleFilter, setUserRoleFilter] = useState('All');
+
   const [paymentSearch, setPaymentSearch] = useState('');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState('All');
 
-  // Trigger loading master data records
+  // Multi choice modals states
+  const [inspectedAppForDocs, setInspectedAppForDocs] = useState(null);
+  const [inspectedAppForFullView, setInspectedAppForFullView] = useState(null);
+
+  // Emails form state variables
+  const [emailTo, setEmailTo] = useState('');
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailContent, setEmailContent] = useState('');
+  
+  const [insuranceTargetEmail, setInsuranceTargetEmail] = useState('');
+  const [insurancePolicyUrl, setInsurancePolicyUrl] = useState('');
+
+  // Primary data synchronized initializer
   const fetchAllData = async () => {
-    setIsLoading(true);
-    setSysAlert(null);
+    setIsSyncing(true);
     try {
       const resp = await api.admin.getAllRecords();
-      setSystemRecords(resp);
-      
-      // Auto-configure default drivers options if empty
-      if (resp.users && resp.users.length > 0) {
-        const firstUser = resp.users.find(u => u.role !== 'admin') || resp.users[0];
-        setEmailTo(firstUser.email);
-        setInsuranceTargetEmail(firstUser.email);
+      if (resp) {
+        setSystemRecords({
+          cars: resp.cars || [],
+          applications: resp.applications || [],
+          users: resp.users || [],
+          payments: resp.payments || [],
+          emails: resp.emails || [],
+          inquiries: resp.inquiries || []
+        });
+        setAlertBanner({ type: 'success', text: 'Database synchronized and accounts verified.' });
       }
     } catch (err) {
-      console.error("Error loading system logs:", err);
-      setSysAlert({ type: 'error', text: 'Error synching data records with persistent storage. Check backend directories.' });
+      console.error("[ALL-RECORDS-FETCH-ERROR]:", err);
+      setAlertBanner({ type: 'error', text: 'Credentials validation failure. Could not download portfolio archives.' });
     } finally {
+      setIsSyncing(false);
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    if (!user) {
-      navigate('/login?redirect=admin');
-      return;
-    }
-    if (user.role !== 'admin') {
-      navigate('/dashboard');
-      return;
-    }
     fetchAllData();
-  }, [user, navigate]);
+  }, []);
 
-  // Handle Logout Trigger
-  const handleLogoutClick = async () => {
+  const clearAlertWithTimeout = () => {
+    setTimeout(() => setAlertBanner(null), 4000);
+  };
+
+  useEffect(() => {
+    if (alertBanner) {
+      clearAlertWithTimeout();
+    }
+  }, [alertBanner]);
+
+  // Car operations
+  const handleToggleCarStatus = async (carId, currentStatus) => {
+    const nextStatus = currentStatus === 'Available' ? 'Reserved' : 'Available';
     try {
-      await logout();
-      navigate('/login');
+      await api.admin.editCar(carId, { status: nextStatus });
+      setAlertBanner({ type: 'success', text: `Status for vehicle index ${carId} configured to ${nextStatus}.` });
+      fetchAllData();
     } catch (err) {
-      console.error('Logout issues:', err);
+      setAlertBanner({ type: 'error', text: err.message || 'Error updating status.' });
     }
   };
 
-  // 1. CAR MANAGEMENT CONTROLLERS
-  const startAddCar = () => {
-    setSelectedCar(null);
-    setCarName('');
-    setCarModel('');
-    setCarPrice('45');
-    setCarDeposit('150');
-    setCarFuel('Hybrid');
-    setCarTransmission('Automatic');
-    setCarEconomy('65 mpg');
-    setCarYear('2024');
-    setCarMileage('15,000 miles');
-    setCarImage('https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&q=80&w=800');
-    setCarImages(Array(10).fill(''));
-    setCarFeaturesStr('Air Conditioning, Parking Sensors, Bluetooth, Adaptive Cruise, Heated Seats');
-    setCarDescription('Fuel efficient electric hybrid primed and checked for prompt Heathrow delivery networks. Includes full breakdown protection and road taxes.');
-    setCarStatus('Available');
-    setCarViewMode('add');
-  };
-
-  const startEditCar = (car) => {
-    setSelectedCar(car);
-    setCarName(car.name || '');
-    setCarModel(car.model || '');
-    setCarPrice(String(car.weeklyRate || car.price || '45'));
-    setCarDeposit(String(car.deposit || '150'));
-    setCarFuel(car.fuel || 'Hybrid');
-    setCarTransmission(car.transmission || 'Automatic');
-    setCarEconomy(car.economy || '65 mpg');
-    setCarYear(car.year || '2024');
-    setCarMileage(car.mileage || '15,000 miles');
-    setCarImage(car.image || 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&q=80&w=800');
-    
-    // Format existing images or fallback to empty strings
-    const existingImgs = Array.isArray(car.images) && car.images.length > 0 ? car.images : [];
-    const formattedImgs = Array(10).fill('').map((_, idx) => existingImgs[idx] || '');
-    setCarImages(formattedImgs);
-
-    setCarFeaturesStr(Array.isArray(car.features) ? car.features.join(', ') : car.features || '');
-
-    setCarDescription(car.description || '');
-    setCarStatus(car.status || 'Available');
-    setCarViewMode('edit');
-  };
-
-  const handleCarFormSubmit = async (e) => {
-    e.preventDefault();
-    setSysAlert(null);
-    if (!carName || !carModel) {
-      setSysAlert({ type: 'error', text: 'Please fill name and model specifications parameters.' });
-      return;
+  const handleDeleteCarAction = async (carId) => {
+    if (window.confirm('Delete Vehicle Catalog Item: Are you sure you want to permanently delete this stock record? This cannot be undone.')) {
+      try {
+        await api.admin.deleteCar(carId);
+        setAlertBanner({ type: 'success', text: 'Vehicle stock clearance executed successfully.' });
+        fetchAllData();
+      } catch (err) {
+        setAlertBanner({ type: 'error', text: err.message || 'Clearance error' });
+      }
     }
+  };
 
-    const payload = {
-      name: carName,
-      model: carModel,
-      price: Number(carPrice),
-      weeklyRate: Number(carPrice),
-      deposit: Number(carDeposit),
-      fuel: carFuel,
-      transmission: carTransmission,
-      economy: carEconomy,
-      year: carYear,
-      mileage: carMileage,
-      image: carImage,
-      images: carImages.filter(img => img.trim() !== ''), // Filter out empty strings
-      features: carFeaturesStr.split(',').map(f => f.trim()).filter(f => f !== ''),
-      description: carDescription,
-      status: carStatus
-    };
-
+  const handleCarFormSubmit = async (payload) => {
+    setActionLoading(true);
     try {
-      if (carViewMode === 'edit' && selectedCar) {
-        await api.admin.editCar(selectedCar.id, payload);
-        setSysAlert({ type: 'success', text: `Specs edited successfully for target vehicle "${carName}"!` });
+      if (carViewMode === 'add') {
+        const resp = await api.admin.addCar(payload);
+        setAlertBanner({ type: 'success', text: 'Portfolio vehicle mapped. Standard rates and specifications published.' });
       } else {
-        await api.admin.addCar(payload);
-        setSysAlert({ type: 'success', text: `New EV listing "${carName}" registered to fleet inventory database!` });
+        await api.admin.editCar(selectedCar.id, payload);
+        setAlertBanner({ type: 'success', text: 'Vehicle specifications updated.' });
       }
       setCarViewMode('list');
-      await fetchAllData();
+      setSelectedCar(null);
+      fetchAllData();
     } catch (err) {
-      setSysAlert({ type: 'error', text: err.message || 'Action on fleet roster rejected by server.' });
+      setAlertBanner({ type: 'error', text: err.message || 'Operation failed.' });
+    } finally {
+      setActionLoading(false);
     }
   };
 
-  const handleDeleteCar = async (carId) => {
-    if (!window.confirm("Verify Deletion: Permanently prune this EV from global lists?")) return;
-    setSysAlert(null);
+  // Underwrite application action saves
+  const handleUnderwritingAction = async (appId, decision, notes, checklistsObj) => {
+    setActionLoading(true);
     try {
-      await api.admin.deleteCar(carId);
-      setSysAlert({ type: 'success', text: 'Vehicle listing successfully pruned!' });
-      await fetchAllData();
-    } catch (err) {
-      setSysAlert({ type: 'error', text: err.message || 'Vehicle pruning rejected.' });
-    }
-  };
-
-  const handleToggleCarStatus = async (car) => {
-    const nextStatus = car.status === 'Available' ? 'Unavailable' : 'Available';
-    try {
-      await api.admin.editCar(car.id, { status: nextStatus });
-      setSysAlert({ type: 'info', text: `Vehicle "${car.name}" status switched to ${nextStatus}.` });
-      await fetchAllData();
-    } catch (err) {
-      setSysAlert({ type: 'error', text: 'Failed to update vehicle availability.' });
-    }
-  };
-
-  // 2. LEASE APPLICATION MANUAL WORKFLOW CONTROLLERS
-  const startInspectApp = (app) => {
-    setSelectedApp(app);
-    setDocChecks({
-      drivingLicence: app.documentChecks?.drivingLicence || false,
-      addressProof: app.documentChecks?.addressProof || false,
-      selfie: app.documentChecks?.selfie || false
-    });
-    setAuditNotes(app.notes || '');
-  };
-
-  const handleSaveAppVerification = async (newStatus, stepNum) => {
-    if (!selectedApp) return;
-    setSysAlert(null);
-    try {
-      await api.admin.updateApplicationStatus(selectedApp.id, {
-        status: newStatus,
-        step: stepNum,
-        documentChecks: docChecks,
-        notes: auditNotes
+      await api.admin.updateApplicationStatus(appId, {
+        status: decision,
+        step: decision === 'Approved' ? 4 : 2, // 4 for cleared/paid driver, 2 for pending review decisions
+        underwritingNotes: notes,
+        validationChecklists: checklistsObj
       });
-      setSysAlert({ type: 'success', text: `Underwriting dossier ID ${selectedApp.id} updated permanently to Status: ${newStatus} (Stage ${stepNum})!` });
-      setSelectedApp(null);
-      await fetchAllData();
+
+      // Dispatch automated notification body for audit confirmation
+      const app = systemRecords.applications.find(a => a.id === appId);
+      if (app) {
+        await api.admin.sendEmail({
+          userId: app.userId,
+          userEmail: app.userEmail,
+          subject: `Underwriting Decision: Vehicle licensing application status - ${decision.toUpperCase()}`,
+          content: decision === 'Approved' 
+            ? `Congratulations! Your underwriting check has been cleared. The status is now APPROVED. Log in to reserve your Heathrow vehicle collection date. Notes: ${notes}`
+            : `Dear Driver, your Rent-to-Buy dossier has been updated with review requirements. Present Status: REJECTED. Underwriter Notes: ${notes}`
+        });
+      }
+
+      setAlertBanner({ type: 'success', text: `Underwriting file #${appId} updated to ${decision.toUpperCase()}.` });
+      setInspectedAppForFullView(null);
+      setInspectedAppForDocs(null);
+      fetchAllData();
     } catch (err) {
-      setSysAlert({ type: 'error', text: err.message || 'Underwriting folder submission fail.' });
+      setAlertBanner({ type: 'error', text: err.message || 'Failed to file credentials decisions.' });
+    } finally {
+      setActionLoading(false);
     }
   };
 
-  // 3. USER MANAGEMENT CONTROLLERS
-  const handleToggleBlockUser = async (email, currentBlocked) => {
-    setSysAlert(null);
+  // User Management block toggle & roles
+  const handleToggleBlockUser = async (email, blockedCurrently) => {
     try {
-      const nextBlocked = !currentBlocked;
-      await api.admin.blockUser(email, nextBlocked);
-      setSysAlert({ type: 'info', text: `Member "${email}" credentials access ${nextBlocked ? 'SUSPENDED' : 'RESTORED'} successfully!` });
-      await fetchAllData();
+      await api.admin.updateUserStatus(email, !blockedCurrently);
+      setAlertBanner({ 
+        type: 'success', 
+        text: `Driver ${email} has been ${!blockedCurrently ? 'Suspended' : 'Unblocked'}` 
+      });
+      fetchAllData();
     } catch (err) {
-      setSysAlert({ type: 'error', text: 'Failed to toggle member block access state.' });
+      setAlertBanner({ type: 'error', text: err.message || 'Driver update failed.' });
     }
   };
 
   const handleDeleteUser = async (email) => {
-    if (!window.confirm(`Critical Warn: Completely purge profile records for ${email}? This action is irreversible.`)) return;
-    setSysAlert(null);
-    try {
-      await api.admin.deleteUser(email);
-      setSysAlert({ type: 'success', text: 'Member profile records permanently purged.' });
-      await fetchAllData();
-    } catch (err) {
-      setSysAlert({ type: 'error', text: err.message || 'Clear profile action denied.' });
+    if (window.confirm(`Purge profile credentials for driver: ${email}? This clears historical application references.`)) {
+      try {
+        await api.admin.deleteUser(email);
+        setAlertBanner({ type: 'success', text: 'Driver credentials and file registries deleted.' });
+        fetchAllData();
+      } catch (err) {
+        setAlertBanner({ type: 'error', text: err.message || 'Driver deletion failed.' });
+      }
     }
   };
 
-  // 4. PAYMENTS BOOKKEEPING
+  // Manual payment verification ledger logs
   const handleVerifyManualPayment = async (payId) => {
-    setSysAlert(null);
-    try {
-      await api.admin.verifyPayment(payId);
-      setSysAlert({ type: 'success', text: 'Payment transaction confirmed. Reflected on driver dashboard & contracts ledger.' });
-      await fetchAllData();
-    } catch (err) {
-      setSysAlert({ type: 'error', text: 'Fail to approve payment.' });
+    if (window.confirm('Confirm and Audit Receipt: Verify that the weekly deposit amount has cleared the bank accounts?')) {
+      try {
+        await api.admin.updatePaymentStatus(payId, 'Verified');
+        setAlertBanner({ type: 'success', text: 'Deposits receipts verified. License account credited.' });
+        fetchAllData();
+      } catch (err) {
+        setAlertBanner({ type: 'error', text: err.message || 'Verification error' });
+      }
     }
   };
 
-  // 5. EMAIL DIRECT DISPATCH CONTROLLER
+  // Send Manual text email
   const handleSendManualEmail = async (e) => {
     e.preventDefault();
-    if (!emailTo || !emailSubject || !emailContent) {
-      setSysAlert({ type: 'error', text: 'Complete email recipient and content fields first.' });
-      return;
-    }
-    setSysAlert(null);
+    setActionLoading(true);
     try {
+      const userObj = systemRecords.users.find(u => u.email === emailTo);
       await api.admin.sendEmail({
+        userId: userObj?.id || 1,
         userEmail: emailTo,
         subject: emailSubject,
         content: emailContent
       });
-      setSysAlert({ type: 'success', text: `Mail notification dispatched to recipient driver: ${emailTo}!` });
+      setAlertBanner({ type: 'success', text: `System dispatch complete. Registered target successfully notified.` });
       setEmailSubject('');
       setEmailContent('');
-      await fetchAllData();
+      setEmailTo('');
+      fetchAllData();
     } catch (err) {
-      setSysAlert({ type: 'error', text: 'Could not queue system email.' });
+      setAlertBanner({ type: 'error', text: err.message || 'Email courier failed.' });
+    } finally {
+      setActionLoading(false);
     }
   };
 
-  // 6. INSURANCE MANAGEMENT POLICY COMMISSION
+  // Insurance attachments policy dispatch
   const handleUploadInsuranceAction = async (e) => {
     e.preventDefault();
-    if (!insuranceTargetEmail || !insurancePolicyUrl) {
-      setSysAlert({ type: 'error', text: 'Provide driver identifier and policy URL specs.' });
-      return;
-    }
-    setSysAlert(null);
+    setActionLoading(true);
     try {
       await api.admin.uploadInsurance({
-        userEmail: insuranceTargetEmail,
-        insuranceCopyUrl: insurancePolicyUrl
+        email: insuranceTargetEmail,
+        policyUrl: insurancePolicyUrl
       });
-      setSysAlert({ type: 'success', text: `Official Fleet Motor Policy uploaded & mailed to driver user: ${insuranceTargetEmail}!` });
-      await fetchAllData();
+      setAlertBanner({ type: 'success', text: 'Official Comprehensive Fleet coverage certificates attached. Driver alert generated.' });
+      setInsuranceTargetEmail('');
+      setInsurancePolicyUrl('');
+      fetchAllData();
     } catch (err) {
-      setSysAlert({ type: 'error', text: 'Failed compiling motor policy files attachment.' });
+      setAlertBanner({ type: 'error', text: err.message || 'Insurance cover attachment failed.' });
+    } finally {
+      setActionLoading(false);
     }
   };
 
-  // Calculations for KPI metric cards
+  // Calculated aggregations for Dashboard Cards
   const totalCarsCount = systemRecords.cars?.length || 0;
   const totalAppsCount = systemRecords.applications?.length || 0;
-  const pendingAppsCount = systemRecords.applications?.filter(a => ['In Progress', 'Under Review', 'Action Required'].includes(a.status) || a.step < 4).length || 0;
-  const approvedAppsCount = systemRecords.applications?.filter(a => a.status === 'Approved' || a.step === 4).length || 0;
-  const rejectedAppsCount = systemRecords.applications?.filter(a => a.status === 'Rejected').length || 0;
-  const totalRevenue = systemRecords.payments?.reduce((tot, current) => tot + (Number(current.amount) || 0), 0) || 0;
+  
+  const pendingAppsCount = systemRecords.applications?.filter(
+    a => a.status !== 'Approved' && a.status !== 'Rejected'
+  )?.length || 0;
 
-  // Render navigation style class helper
-  const sidebarBtnClass = (tabName) => {
-    const isSelected = activeTab === tabName;
-    return `w-full flex items-center space-x-3.5 px-4.5 py-3 rounded-xl text-xs font-bold transition duration-150 ${
-      isSelected 
-        ? 'bg-amber-500 text-gray-950 font-black shadow-lg shadow-amber-500/10' 
-        : 'text-slate-400 hover:bg-slate-850 hover:text-slate-100'
-    }`;
-  };
+  const approvedAppsCount = systemRecords.applications?.filter(a => a.status === 'Approved')?.length || 0;
+  const rejectedAppsCount = systemRecords.applications?.filter(a => a.status === 'Rejected')?.length || 0;
+
+  const verifiedPaymentsCount = systemRecords.payments?.filter(p => p.status === 'Verified')?.length || 0;
+  const totalRevenue = systemRecords.payments?.reduce((total, p) => total + (Number(p.amount) || 0), 0) || 0;
+
+  // Filter lists (Search selectors)
+  const filteredCars = systemRecords.cars?.filter(car => {
+    const matchesSearch = car.name?.toLowerCase().includes(carSearch.toLowerCase()) || 
+                          car.brand?.toLowerCase().includes(carSearch.toLowerCase()) ||
+                          car.model?.toLowerCase().includes(carSearch.toLowerCase());
+    const matchesFilter = carStatusFilter === 'All' || car.status === carStatusFilter;
+    return matchesSearch && matchesFilter;
+  });
+
+  const filteredApplications = systemRecords.applications?.filter(app => {
+    const term = appSearch.toLowerCase();
+    const nameStr = app.fullName || app.applyDetails?.fullName || '';
+    const carNameStr = app.carName || '';
+    const emailStr = app.userEmail || '';
+    const matchesSearch = nameStr.toLowerCase().includes(term) || carNameStr.toLowerCase().includes(term) || emailStr.toLowerCase().includes(term);
+    
+    let matchesStatus = true;
+    if (appStatusFilter !== 'All') {
+      if (appStatusFilter === 'Pending') {
+        matchesStatus = app.status !== 'Approved' && app.status !== 'Rejected';
+      } else {
+        matchesStatus = app.status === appStatusFilter;
+      }
+    }
+    return matchesSearch && matchesStatus;
+  });
+
+  const filteredUsers = systemRecords.users?.filter(u => {
+    const matchesSearch = u.fullName?.toLowerCase().includes(userSearch.toLowerCase()) || 
+                          u.email?.toLowerCase().includes(userSearch.toLowerCase());
+    const matchesFilter = userRoleFilter === 'All' || u.role === userRoleFilter;
+    return matchesSearch && matchesFilter;
+  });
+
+  const filteredPayments = systemRecords.payments?.filter(p => {
+    const matchesSearch = p.userEmail?.toLowerCase().includes(paymentSearch.toLowerCase()) || 
+                          p.carName?.toLowerCase().includes(paymentSearch.toLowerCase());
+    const matchesFilter = paymentStatusFilter === 'All' || p.status === paymentStatusFilter;
+    return matchesSearch && matchesFilter;
+  });
+
+  if (isLoading) {
+    return <Loader label="Booting Backoffice Heathrow Console..." />;
+  }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col md:flex-row font-sans" id="master-admin-control-room">
+    <div className="md:h-screen md:overflow-hidden h-auto flex flex-col md:flex-row font-sans text-gray-800 bg-gray-50" id="super-admin-root">
       
-      {/* LEFT SIDEBAR COHESIVE NAVIGATION RAIL */}
-      <aside className="w-full md:w-64 bg-slate-950 border-r border-slate-800 shrink-0 flex flex-col justify-between" id="navigation-sidebar-rail">
-        <div className="p-6">
-          <div className="flex items-center space-x-2.5 mb-8 border-b border-slate-850 pb-5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center text-gray-950 shrink-0">
-              <ShieldAlert className="w-4.5 h-4.5" />
-            </div>
-            <div>
-              <span className="block text-[15.5px] font-black text-white tracking-tight">HEATHROW HQ</span>
-              <span className="block text-[8.5px] uppercase text-amber-500 font-bold tracking-widest leading-0">Administration</span>
-            </div>
-          </div>
+      {/* Sidebar navigation */}
+      <AdminSidebar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab}
+        isOpen={isMobileSidebarOpen}
+        onClose={() => setIsMobileSidebarOpen(false)}
+        systemRecords={systemRecords}
+        onSync={fetchAllData}
+        isSyncing={isSyncing}
+      />
 
-          <nav className="space-y-1.5" id="sidebar-tabs-list">
-            <button 
-              onClick={() => { setActiveTab('dashboard'); setSysAlert(null); }} 
-              className={sidebarBtnClass('dashboard')}
-              id="sidebar-btn-dashboard"
-            >
-              <Gauge className="w-4 h-4" />
-              <span>Dashboard Home</span>
-            </button>
-
-            <button 
-              onClick={() => { setActiveTab('cars'); setSysAlert(null); setCarViewMode('list'); }} 
-              className={sidebarBtnClass('cars')}
-              id="sidebar-btn-cars"
-            >
-              <Car className="w-4 h-4" />
-              <span>Cars Management</span>
-            </button>
-
-            <button 
-              onClick={() => { setActiveTab('applications'); setSysAlert(null); setSelectedApp(null); }} 
-              className={sidebarBtnClass('applications')}
-              id="sidebar-btn-applications"
-            >
-              <FileSearch className="w-4 h-4" />
-              <span className="flex-1 text-left">Applications Queue</span>
-              {pendingAppsCount > 0 && (
-                <span className="w-5 h-5 rounded-full bg-red-500 text-white font-mono font-bold text-[9px] flex items-center justify-center animate-pulse">
-                  {pendingAppsCount}
-                </span>
-              )}
-            </button>
-
-            <button 
-              onClick={() => { setActiveTab('users'); setSysAlert(null); }} 
-              className={sidebarBtnClass('users')}
-              id="sidebar-btn-users"
-            >
-              <Users className="w-4 h-4" />
-              <span>User Profiles</span>
-            </button>
-
-            <button 
-              onClick={() => { setActiveTab('payments'); setSysAlert(null); }} 
-              className={sidebarBtnClass('payments')}
-              id="sidebar-btn-payments"
-            >
-              <CreditCard className="w-4 h-4" />
-              <span>Payments Ledger</span>
-            </button>
-
-            <button 
-              onClick={() => { setActiveTab('emails'); setSysAlert(null); }} 
-              className={sidebarBtnClass('emails')}
-              id="sidebar-btn-emails"
-            >
-              <Mail className="w-4 h-4" />
-              <span>System Communications</span>
-            </button>
-
-            <button 
-              onClick={() => { setActiveTab('settings'); setSysAlert(null); }} 
-              className={sidebarBtnClass('settings')}
-              id="sidebar-btn-settings"
-            >
-              <MessageSquare className="w-4 h-4 text-emerald-400" />
-              <span>Inquiries Inbox</span>
-              {systemRecords.inquiries?.length > 0 && (
-                <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full">
-                  {systemRecords.inquiries.length}
-                </span>
-              )}
-            </button>
-
-            <Link
-              to="/dashboard"
-              className="w-full flex items-center space-x-3.5 px-4.5 py-3 rounded-xl text-xs font-bold text-indigo-400 hover:bg-slate-800 hover:text-indigo-300 transition duration-150 mt-4 border border-indigo-950/40"
-              id="sidebar-btn-go-to-portal"
-            >
-              <ExternalLink className="w-4 h-4 text-indigo-400 shrink-0" />
-              <span>Go to Driver Portal</span>
-            </Link>
-          </nav>
-        </div>
-
-        {/* BOTTOM LOGOUT RAIL PROFILE DETAILS */}
-        <div className="p-5 border-t border-slate-850 bg-slate-960">
-          <div className="flex items-center space-x-3 mb-4.5 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
-            <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center font-bold text-xs text-amber-500">
-              AD
-            </div>
-            <div className="min-w-0">
-              <strong className="block text-xs text-white truncate font-sans">{user?.fullName || 'General Admin'}</strong>
-              <span className="block text-[10px] text-slate-400 font-mono truncate">{user?.email}</span>
-            </div>
-          </div>
-          <button 
-            onClick={handleLogoutClick}
-            className="w-full flex items-center justify-center space-x-2 text-xs text-red-450 hover:text-red-400 hover:bg-red-500/5 py-2.5 px-4 rounded-xl font-bold transition"
-            id="sidebar-btn-logout"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>Terminate Session</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* RIGHT WORKSPACE BLOCK */}
-      <main className="flex-1 flex flex-col min-w-0" id="main-content-panel">
+      {/* Main Administrative viewport */}
+      <main className="flex-1 flex flex-col min-w-0 bg-gray-50 md:h-screen md:overflow-y-auto overflow-x-hidden">
         
-        {/* UPPER TOPBAR ACTIONS PANEL */}
-        <header className="h-16 border-b border-slate-800 bg-slate-950/40 backdrop-blur px-6 flex items-center justify-between" id="topbar-actions-panel">
-          <div className="flex items-center space-x-3">
-            <span className="text-slate-400 text-xs font-mono">LOCATION: /root/admin/{activeTab}</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
-            <span className="text-[10px] text-emerald-400 font-mono font-bold uppercase">Database Synchronised Live</span>
+        {/* Top Navbar Header */}
+        <header className="sticky top-0 z-10 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsMobileSidebarOpen(true)}
+              className="md:hidden p-2 text-gray-500 hover:text-gray-700 bg-gray-50 border border-gray-200 rounded-lg"
+            >
+              <Menu className="w-4 h-4" />
+            </button>
+            <div>
+              <h2 className="text-sm font-black text-[#1F3F7A] uppercase tracking-wide">
+                Heathrow Hub Portals
+              </h2>
+              <p className="text-[10.5px] text-gray-400 capitalize hidden sm:block">
+                Operations / {activeTab.replace('-', ' ')}
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <button 
-              onClick={fetchAllData}
-              className="p-1 px-3 text-[11px] font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-755 border border-slate-700/60 rounded-lg flex items-center space-x-1.5 transition"
-              title="Refresh DB Roster"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-              <span>Db Synch</span>
-            </button>
-
-            <div className="h-5 w-px bg-slate-850"></div>
-            
-            <span className="text-xs text-slate-400 bg-slate-900 px-3 py-1 rounded-full border border-slate-800 font-semibold text-center">
-              Active Control Console
-            </span>
+          <div className="flex items-center gap-4 font-sans">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-[#1F3F7A]/8 flex items-center justify-center text-xs font-bold text-[#1F3F7A]">
+                HQ
+              </div>
+              <span className="text-xs font-bold text-gray-700 hidden md:inline">
+                {user?.fullName || 'Heathrow Admin'}
+              </span>
+            </div>
           </div>
         </header>
 
-        {/* BOTTOM REAL ADHERENT VIEW CONTENT */}
-        <div className="flex-1 p-6 md:p-8 space-y-6 overflow-y-auto">
+        {/* Content canvas container */}
+        <div className="flex-grow p-6 space-y-6">
           
-          {/* Global Dashboard Alert banners if present */}
-          {sysAlert && (
-            <div className={`p-4 rounded-xl border text-xs font-bold font-sans flex items-center justify-between shadow-lg animate-fade-in ${
-              sysAlert.type === 'success' 
-                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
-                : sysAlert.type === 'error'
-                  ? 'bg-red-500/15 text-red-400 border-red-500/20'
-                  : 'bg-sky-500/10 text-sky-400 border-sky-500/20'
-            }`} id="hud-system-notification-hud">
-              <div className="flex items-center space-x-2">
-                <Activity className="w-4 h-4 shrink-0" />
-                <span>{sysAlert.text}</span>
-              </div>
-              <button onClick={() => setSysAlert(null)} className="text-sm p-1 ml-4 hover:opacity-75 tracking-widest text-white">✖</button>
+          {/* Global Alert Notification Banner */}
+          {alertBanner && (
+            <div 
+              className={`p-4 rounded-xl border flex items-center gap-3 animate-fade-in ${
+                alertBanner.type === 'success' 
+                  ? 'bg-emerald-50 border-emerald-100 text-emerald-800' 
+                  : 'bg-rose-50 border-rose-100 text-rose-800'
+              }`}
+            >
+              <CheckCircle2 className={`w-4 h-4 ${alertBanner.type === 'success' ? 'text-emerald-500' : 'text-rose-500'}`} />
+              <span className="text-xs font-semibold">{alertBanner.text}</span>
             </div>
           )}
 
-          {isLoading ? (
-            <div className="py-24 text-center flex flex-col items-center justify-center bg-slate-950/40 border border-slate-800 rounded-3xl" id="admin-workspace-placeholder-loader">
-              <Loader label="Synchronising Heathrow Fleet and Documents matrices..." />
-            </div>
-          ) : (
-            <div className="space-y-6">
+          {/* ==========================================
+              TAB 1: DASHBOARD HOMEPAGE OVERVIEW
+              ========================================== */}
+          {activeTab === 'dashboard' && (
+            <div className="space-y-6 animate-fade-in" id="dashboard-overview-module">
+              {/* Intro Title */}
+              <div>
+                <h1 className="text-xl font-black text-[#1F3F7A] uppercase">Dashboard Overview</h1>
+                <p className="text-xs text-gray-400 mt-1">Real-time status indexes, weekly cashflow counts, and fleet portfolio indices.</p>
+              </div>
 
-              {/* ==========================================
-                  TAB 1: DASHBOARD HOME OVERVIEW
-                  ========================================== */}
-              {activeTab === 'dashboard' && (
-                <div className="space-y-8 animate-fade-in" id="dashboard-home-module">
-                  
-                  {/* Master Banner Greetings */}
-                  <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 relative overflow-hidden bg-gradient-to-r from-slate-950 via-slate-910 to-transparent">
-                    <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent pointer-events-none"></div>
-                    <div className="space-y-1 relative z-10">
-                      <span className="text-[10px] text-amber-500 uppercase tracking-widest font-bold font-mono">Administrative Control</span>
-                      <h2 className="text-2xl font-black text-white leading-none tracking-tight">System Global Performance KPI Metrics</h2>
-                      <p className="text-xs text-slate-400">Review real-time rent-to-own files statuses, collected user deposit ledger books, and active vehicle counts.</p>
-                    </div>
+              {/* Bento-grid of numerical indices */}
+              <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
+                
+                {/* 1. Vehicles */}
+                <div className="bg-white border border-gray-150 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-[#1F3F7A]/30 transition">
+                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Fleet Portfolio</span>
+                  <div className="mt-2.5">
+                    <span className="text-2xl font-black text-[#1F3F7A] font-mono leading-none block">{totalCarsCount}</span>
+                    <span className="text-[10px] text-gray-450 mt-1 block">Vehicles in system</span>
                   </div>
-
-                  {/* Stat cards grids */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                    
-                    <div className="bg-slate-950 rounded-xl border border-slate-800 p-5 shadow-xs relative overflow-hidden" id="stat-card-total-cars">
-                      <div className="absolute top-4 right-4 bg-slate-900 border border-slate-850 p-1.5 rounded-lg text-amber-400">
-                        <Car className="w-4.5 h-4.5" />
-                      </div>
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Total Cars</span>
-                      <strong className="block text-2xl font-black text-white mt-2.5 font-sans">{totalCarsCount}</strong>
-                      <span className="block text-[9.5px] text-slate-400 mt-1 font-mono">Listed fleet stock items</span>
-                    </div>
-
-                    <div className="bg-slate-950 rounded-xl border border-slate-800 p-5 shadow-xs relative overflow-hidden" id="stat-card-all-apps">
-                      <div className="absolute top-4 right-4 bg-slate-900 border border-slate-850 p-1.5 rounded-lg text-indigo-400">
-                        <FileSearch className="w-4.5 h-4.5" />
-                      </div>
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Total Applications</span>
-                      <strong className="block text-2xl font-black text-white mt-2.5 font-sans">{totalAppsCount}</strong>
-                      <span className="block text-[9.5px] text-slate-400 mt-1 font-mono">All drivers underwriting files</span>
-                    </div>
-
-                    <div className="bg-slate-950 rounded-xl border border-slate-800 p-5 shadow-xs relative overflow-hidden" id="stat-card-pending-apps">
-                      <div className="absolute top-4 right-4 bg-slate-900 border border-slate-850 p-1.5 rounded-lg text-amber-400">
-                        <Clock className="w-4.5 h-4.5" />
-                      </div>
-                      <span className="block text-[10px] font-bold text-amber-400 uppercase tracking-widest leading-none">Pending Applications</span>
-                      <strong className="block text-2xl font-black text-amber-300 mt-2.5 font-sans">{pendingAppsCount}</strong>
-                      <span className="block text-[9.5px] text-slate-450 mt-1 font-mono">Awaiting verification audits</span>
-                    </div>
-
-                    <div className="bg-slate-950 rounded-xl border border-slate-800 p-5 shadow-xs relative overflow-hidden" id="stat-card-approved-apps">
-                      <div className="absolute top-4 right-4 bg-slate-900 border border-slate-850 p-1.5 rounded-lg text-emerald-400">
-                        <CheckCircle className="w-4.5 h-4.5" />
-                      </div>
-                      <span className="block text-[10px] font-bold text-emerald-400 uppercase tracking-widest leading-none">Approved Files</span>
-                      <strong className="block text-2xl font-black text-emerald-300 mt-2.5 font-sans">{approvedAppsCount}</strong>
-                      <span className="block text-[9.5px] text-slate-450 mt-1 font-mono">Active leases/contracts generated</span>
-                    </div>
-
-                    <div className="bg-slate-900/60 rounded-xl border border-slate-800 p-5 shadow-xs relative overflow-hidden bg-gradient-to-br from-amber-600/5 to-transparent" id="stat-card-rejected-apps">
-                      <div className="absolute top-4 right-4 bg-slate-950 border border-slate-800 p-1.5 rounded-lg text-red-400">
-                        <XCircle className="w-4.5 h-4.5" />
-                      </div>
-                      <span className="block text-[10px] font-bold text-red-400 uppercase tracking-widest leading-none">Rejected Files</span>
-                      <strong className="block text-2xl font-black text-red-300 mt-2.5 font-sans">{rejectedAppsCount}</strong>
-                      <span className="block text-[9.5px] text-slate-450 mt-1 font-mono">Declined underwriting targets</span>
-                    </div>
-
-                  </div>
-
-                  {/* Bottom distribution columns & Recents tracking */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    
-                    {/* Recent underwriting applications logs */}
-                    <div className="lg:col-span-7 bg-slate-950 rounded-2xl border border-slate-800 p-6 space-y-4">
-                      <div className="flex justify-between items-center border-b border-slate-850 pb-3">
-                        <h3 className="font-sans font-black text-sm text-white uppercase tracking-wider flex items-center gap-1.5">
-                          <Activity className="w-4 h-4 text-amber-500" /> Recent Application Submissions
-                        </h3>
-                        <button onClick={() => setActiveTab('applications')} className="text-[10.5px] text-amber-500 hover:underline font-bold">
-                          Manage Queue ↗
-                        </button>
-                      </div>
-
-                      {systemRecords.applications?.length === 0 ? (
-                        <p className="text-xs text-slate-400 py-6 text-center">No applications active in queue.</p>
-                      ) : (
-                        <div className="divide-y divide-slate-850 space-y-2.5 pt-1">
-                          {systemRecords.applications.slice(0, 4).map((app) => (
-                            <div key={app.id} className="pt-2.5 flex justify-between items-start text-xs gap-3">
-                              <div>
-                                <strong className="text-slate-100 font-sans block text-[13px]">{app.carName}</strong>
-                                <span className="text-[10px] text-slate-400 font-mono">ID: {app.id} • Driver: <span className="text-slate-250 italic">{app.userEmail}</span></span>
-                                <span className="block text-[10px] text-slate-400 pt-0.5">Date Submitted: {app.dateApplied}</span>
-                              </div>
-                              <div className="text-right">
-                                <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
-                                  app.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-400' :
-                                  app.status === 'Rejected' ? 'bg-red-500/10 text-red-400' : 'bg-amber-500/10 text-amber-400'
-                                }`}>
-                                  {app.status}
-                                </span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Recent ledger summaries */}
-                    <div className="lg:col-span-5 bg-slate-950 rounded-2xl border border-slate-800 p-6 space-y-4">
-                      <div className="flex justify-between items-center border-b border-slate-850 pb-3">
-                        <h3 className="font-sans font-black text-sm text-white uppercase tracking-wider flex items-center gap-1.5">
-                          <TrendingUp className="w-4 h-4 text-emerald-500" /> Quick Deposit & Lease Revenues
-                        </h3>
-                        <span className="font-mono text-xs text-white bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
-                          SUM: £{totalRevenue}
-                        </span>
-                      </div>
-
-                      {systemRecords.payments?.length === 0 ? (
-                        <p className="text-xs text-slate-450 py-8 text-center">No accounts ledger records yet.</p>
-                      ) : (
-                        <div className="divide-y divide-slate-850 space-y-3 pt-1">
-                          {systemRecords.payments.slice(0, 4).map((pay) => (
-                            <div key={pay.id} className="pt-2.5 flex justify-between items-center text-xs">
-                              <div>
-                                <strong className="text-slate-200 block truncate max-w-[150px]">{pay.carName}</strong>
-                                <span className="text-[10px] text-slate-400 font-mono block">{pay.userEmail} • {pay.date}</span>
-                              </div>
-                              <div className="text-right shrink-0">
-                                <span className="text-emerald-400 font-black block">£{pay.amount}</span>
-                                <span className="text-[9px] text-slate-450 uppercase block font-mono">{pay.method}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                  </div>
-
                 </div>
-              )}
 
+                {/* 2. Total Applications */}
+                <div className="bg-white border border-gray-150 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-[#1F3F7A]/30 transition">
+                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Total Dossiers</span>
+                  <div className="mt-2.5">
+                    <span className="text-2xl font-black text-[#1F3F7A] font-mono leading-none block">{totalAppsCount}</span>
+                    <span className="text-[10px] text-gray-450 mt-1 block">Submitted requests</span>
+                  </div>
+                </div>
 
-              {/* ==========================================
-                  TAB 2: CARS MANAGEMENT (CRUD)
-                  ========================================== */}
-              {activeTab === 'cars' && (
-                <div className="space-y-6 animate-fade-in" id="cars-module">
-                  
-                  {carViewMode === 'list' ? (
-                    <div className="space-y-6">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <h2 className="text-xl font-black text-white">Heathrow Active EV Listings Catalog</h2>
-                          <p className="text-xs text-slate-400">Total listed: {totalCarsCount} fleet vehicles. Add, edit, remove or toggle local availability profiles.</p>
-                        </div>
-                        <button 
-                          onClick={startAddCar} 
-                          className="bg-amber-500 hover:bg-amber-440 text-gray-950 font-black text-xs px-4 py-2.5 rounded-xl flex items-center space-x-1.5 transition shadow shadow-amber-500/10"
-                        >
-                          <PlusCircle className="w-4 h-4" />
-                          <span>Register New Vehicle</span>
-                        </button>
-                      </div>
+                {/* 3. Pending Underwriting */}
+                <div className="bg-white border border-[#1F3F7A]/10 rounded-2xl p-5 bg-amber-50/10 flex flex-col justify-between hover:border-amber-500/20 transition">
+                  <span className="text-[10px] text-amber-600 font-black uppercase tracking-wider block">Pending Review</span>
+                  <div className="mt-2.5">
+                    <span className="text-2xl font-black text-amber-500 font-mono leading-none block">{pendingAppsCount}</span>
+                    <span className="text-[10px] text-amber-700/75 mt-1 block">Awaiting decision</span>
+                  </div>
+                </div>
 
-                      {systemRecords.cars?.length === 0 ? (
-                        <div className="py-24 text-center border-2 border-dashed border-slate-800 rounded-3xl bg-slate-950/20">
-                          <Car className="w-10 h-10 text-slate-600 mx-auto mb-2" />
-                          <strong className="block text-white text-sm">No Fleet Cars Available</strong>
-                          <p className="text-xs text-slate-400 max-w-xs mx-auto mt-1">Register new vehicles into Heathrow EV records using the action button above.</p>
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="cars-catalog-grid">
-                          {systemRecords.cars.map((car) => (
-                            <div key={car.id} className="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden flex flex-col justify-between group">
-                              <div>
-                                <div className="relative aspect-video w-full bg-slate-900 border-b border-slate-850">
-                                  <img 
-                                    src={car.image} 
-                                    alt={car.name} 
-                                    className="w-full h-full object-cover group-hover:scale-103 transition duration-300" 
-                                    referrerPolicy="no-referrer"
-                                  />
-                                  <span className={`absolute top-4 left-4 text-[10.5px] px-2.5 py-0.5 font-bold rounded-full ${
-                                    car.status === 'Available' 
-                                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/10' 
-                                      : 'bg-red-500/20 text-red-400 border border-red-500/10'
-                                  }`}>
-                                    {car.status === 'Available' ? '● Available' : '○ Unavailable'}
-                                  </span>
+                {/* 4. Approved Underwriting */}
+                <div className="bg-white border border-gray-150 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-emerald-500/20 transition">
+                  <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider block">Approved Clearing</span>
+                  <div className="mt-2.5">
+                    <span className="text-2xl font-black text-emerald-500 font-mono leading-none block">{approvedAppsCount}</span>
+                    <span className="text-[10px] text-emerald-600 mt-1 block">Driver cards approved</span>
+                  </div>
+                </div>
 
-                                  <span className="absolute bottom-4 right-4 bg-gray-950/80 backdrop-blur font-mono px-2.5 py-1 text-xs text-amber-500 rounded font-black">
-                                    £{car.weeklyRate || car.price}/wk
-                                  </span>
-                                </div>
+                {/* 5. Reject Ratio */}
+                <div className="bg-white border border-gray-150 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-red-500/20 transition">
+                  <span className="text-[10px] text-red-500 font-bold uppercase tracking-wider block">Rejected Dossiers</span>
+                  <div className="mt-2.5">
+                    <span className="text-2xl font-black text-red-505 font-mono leading-none block">{rejectedAppsCount}</span>
+                    <span className="text-[10px] text-red-500 mt-1 block">Disqualified folders</span>
+                  </div>
+                </div>
 
-                                <div className="p-5 space-y-3.5">
-                                  <div>
-                                    <span className="text-[10px] text-amber-504 tracking-wider uppercase font-bold block">{car.id} • model {car.year || '2024'}</span>
-                                    <h4 className="font-sans font-bold text-lg text-white block">{car.name}</h4>
-                                    <p className="text-xs text-slate-400 block font-light">{car.model}</p>
-                                  </div>
+                {/* 6. Total Cash Receipts */}
+                <div className="bg-white border border-[#7CC242]/20 rounded-2xl p-5 bg-[#7CC242]/5 flex flex-col justify-between hover:border-[#7CC242]/40 transition">
+                  <span className="text-[10px] text-emerald-700 font-black uppercase tracking-wider block">Receipted Ledger</span>
+                  <div className="mt-2.5">
+                    <span className="text-xl font-black text-emerald-600 font-mono leading-none block">£{totalRevenue}</span>
+                    <span className="text-[10px] text-[#7CC242] font-black mt-1 block">Deposits Receipted</span>
+                  </div>
+                </div>
+              </div>
 
-                                  <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-300 font-mono bg-slate-900/60 p-2.5 rounded-xl border border-slate-850">
-                                    <div>Fuel: <span className="text-white font-semibold">{car.fuel}</span></div>
-                                    <div>Gearbox: <span className="text-white font-semibold">{car.transmission}</span></div>
-                                    <div>Milage: <span className="text-white font-semibold">{car.mileage || '15k mi'}</span></div>
-                                    <div>Deposit: <span className="text-amber-500 font-bold">£{car.deposit || '150'}</span></div>
-                                  </div>
-
-                                  <p className="text-[11.5px] text-slate-400 leading-relaxed font-light line-clamp-2">
-                                    {car.description || 'Pristine EV vehicle ready for immediate active lease support.'}
-                                  </p>
-                                </div>
-                              </div>
-
-                              <div className="p-5 pt-0 border-t border-slate-850 mt-2 grid grid-cols-3 gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => handleToggleCarStatus(car)}
-                                  className="py-2 rounded-lg text-[10px] uppercase font-bold text-center border border-slate-805 bg-slate-900 hover:bg-slate-850 text-slate-300"
-                                >
-                                  {car.status === 'Available' ? 'Mark Busy' : 'Free Car'}
-                                </button>
-
-                                <button
-                                  type="button"
-                                  onClick={() => startEditCar(car)}
-                                  className="py-2 rounded-lg text-[10px] uppercase font-bold text-center bg-slate-800 hover:bg-slate-750 text-white flex items-center justify-center space-x-1"
-                                >
-                                  <Edit2 className="w-3 h-3" />
-                                  <span>Edit</span>
-                                </button>
-
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteCar(car.id)}
-                                  className="py-2 rounded-lg text-[10px] uppercase font-bold text-center bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center space-x-1"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                  <span>Delete</span>
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+              {/* Split tables showing recent activities */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pb-2">
+                
+                {/* Left pane: Selected recent applications */}
+                <div className="lg:col-span-12 bg-white border border-gray-150 p-6 rounded-2xl shadow-xs space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 pb-2 gap-3">
+                    <h3 className="text-xs font-black uppercase text-[#1F3F7A]">Recent Application Submissions</h3>
+                    <button
+                      onClick={() => {
+                        setActiveTab('all-applications');
+                        setAppCurrentPage(1);
+                      }}
+                      className="px-4 py-1.5 bg-[#1F3F7A] hover:bg-opacity-95 text-white font-bold text-[11px] uppercase tracking-wider rounded-xl transition shadow-xs cursor-pointer"
+                    >
+                      View All Applications
+                    </button>
+                  </div>
+                  {systemRecords.applications?.length === 0 ? (
+                    <p className="text-xs text-gray-500 py-6 text-center">No driver underwriting folders registered.</p>
                   ) : (
-                    // Add & Edit dynamic form
-                    <div className="max-w-3xl mx-auto bg-slate-950 border border-slate-800 rounded-2xl p-6 md:p-8 space-y-6">
-                      <div className="flex justify-between items-center border-b border-slate-850 pb-4">
-                        <h3 className="font-sans font-black text-lg text-white">
-                          {carViewMode === 'add' ? 'Register New Fleet Asset' : `Edit Vehicle Specifications - ID: ${selectedCar?.id}`}
-                        </h3>
-                        <button 
-                          onClick={() => setCarViewMode('list')}
-                          className="text-xs text-slate-400 hover:text-white font-bold"
-                        >
-                          ← Returns to inventory
-                        </button>
-                      </div>
-
-                      <form onSubmit={handleCarFormSubmit} className="space-y-4.5 text-xs text-slate-100">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-slate-450 font-semibold mb-1 uppercase tracking-wide">Vehicle Make/Title</label>
-                            <input
-                              type="text"
-                              required
-                              value={carName}
-                              onChange={(e) => setCarName(e.target.value)}
-                              placeholder="e.g. TOYOTA PRIUS"
-                              className="w-full text-xs py-2.5 px-3 border border-slate-800 bg-slate-900 rounded-lg text-white focus:outline-none focus:border-amber-500"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-slate-450 font-semibold mb-1 uppercase tracking-wide">Model Details</label>
-                            <input
-                              type="text"
-                              required
-                              value={carModel}
-                              onChange={(e) => setCarModel(e.target.value)}
-                              placeholder="e.g. 1.8 PLUG-IN COMPOSITE HYBRID"
-                              className="w-full text-xs py-2.5 px-3 border border-slate-800 bg-slate-900 rounded-lg text-white focus:outline-none"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-4">
-                          <div>
-                            <label className="block text-slate-450 font-semibold mb-1 uppercase tracking-wide">Weekly Dues Rent (£)</label>
-                            <input
-                              type="number"
-                              required
-                              value={carPrice}
-                              onChange={(e) => setCarPrice(e.target.value)}
-                              className="w-full text-xs py-2.5 px-3 border border-slate-800 bg-slate-900 rounded-lg text-white"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-slate-450 font-semibold mb-1 uppercase tracking-wide">Refundable Deposit (£)</label>
-                            <input
-                              type="number"
-                              required
-                              value={carDeposit}
-                              onChange={(e) => setCarDeposit(e.target.value)}
-                              className="w-full text-xs py-2.5 px-3 border border-slate-800 bg-slate-900 rounded-lg text-white"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-slate-450 font-semibold mb-1 uppercase tracking-wide">Manufacture Year</label>
-                            <input
-                              type="text"
-                              required
-                              value={carYear}
-                              onChange={(e) => setCarYear(e.target.value)}
-                              placeholder="e.g. 2024"
-                              className="w-full text-xs py-2.5 px-3 border border-slate-800 bg-slate-900 text-white rounded-lg"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-4">
-                          <div>
-                            <label className="block text-slate-450 font-semibold mb-1 uppercase tracking-wide">Fuel Engine Trim</label>
-                            <select
-                              value={carFuel}
-                              onChange={(e) => setCarFuel(e.target.value)}
-                              className="w-full text-xs py-2.5 px-2 border border-slate-800 bg-slate-900 text-white rounded-lg"
-                            >
-                              <option value="Hybrid">Hybrid</option>
-                              <option value="Electric">Electric</option>
-                              <option value="Petrol">Petrol</option>
-                              <option value="Diesel">Diesel</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-slate-450 font-semibold mb-1 uppercase tracking-wide">Transmission Box</label>
-                            <select
-                              value={carTransmission}
-                              onChange={(e) => setCarTransmission(e.target.value)}
-                              className="w-full text-xs py-2.5 px-2 border border-slate-800 bg-slate-900 text-white rounded-lg"
-                            >
-                              <option value="Automatic">Automatic</option>
-                              <option value="Manual">Manual</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-slate-450 font-semibold mb-1 uppercase tracking-wide">Economy Specification</label>
-                            <input
-                              type="text"
-                              required
-                              value={carEconomy}
-                              onChange={(e) => setCarEconomy(e.target.value)}
-                              className="w-full text-xs py-2.5 px-3 border border-slate-800 bg-slate-900 text-white rounded-lg"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-slate-450 font-semibold mb-1 uppercase tracking-wide">Mileage logged</label>
-                            <input
-                              type="text"
-                              required
-                              value={carMileage}
-                              onChange={(e) => setCarMileage(e.target.value)}
-                              className="w-full text-xs py-2.5 px-3 border border-slate-800 bg-slate-900 text-white rounded-lg"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-slate-450 font-semibold mb-1 uppercase tracking-wide">Primary Thumbnail Image URL</label>
-                            <input
-                              type="url"
-                              required
-                              value={carImage}
-                              onChange={(e) => setCarImage(e.target.value)}
-                              className="w-full text-xs py-2.5 px-3 border border-slate-800 bg-slate-900 text-white font-mono rounded-lg"
-                            />
-                          </div>
-                        </div>
-
-                        {/* Fleet High-Light Features */}
-                        <div>
-                          <label className="block text-slate-450 font-semibold mb-1 uppercase tracking-wide">Vehicle Features (Comma Separated)</label>
-                          <span className="block text-[10px] text-zinc-400 mb-2 font-sans">
-                            Enter the high-quality features that are displayed as feature icons on the fleet cards (e.g. Air Conditioning, Parking Sensors, GPS Navigation, Bluetooth, Backup Camera, Leather Seats, Electric Range).
-                          </span>
-                          <input
-                            type="text"
-                            required
-                            value={carFeaturesStr}
-                            onChange={(e) => setCarFeaturesStr(e.target.value)}
-                            className="w-full text-xs py-2.5 px-3 border border-slate-800 bg-slate-900 text-white rounded-lg placeholder-slate-500 font-sans"
-                            placeholder="Air Conditioning, Parking Sensors, Bluetooth, Adaptive Cruise, Heated Seats"
-                          />
-                        </div>
-
-                        {/* 10 Multi-Angle Grid Images */}
-                        <div className="bg-slate-900 border border-slate-800 p-4.5 rounded-xl space-y-3.5">
-                          <div>
-                            <span className="block text-amber-500 font-extrabold uppercase tracking-wider text-[11px]">
-                              Visual Multi-Angle Gallery URLs (10 Angles)
-                            </span>
-                            <span className="block text-[10px] text-slate-400 mt-1 font-sans">
-                              Provide URL links to 10 distinct showcase photographs of this vehicle (e.g., front, dashboard, wheels, profile angles).
-                            </span>
-                          </div>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 pt-1">
-                            {carImages.map((imgUrl, index) => (
-                              <div key={index} className="space-y-1">
-                                <label className="block text-[10px] text-slate-400 font-mono font-bold">Angle {index + 1} URL</label>
-                                <input
-                                  type="url"
-                                  value={imgUrl}
-                                  onChange={(e) => {
-                                    const updated = [...carImages];
-                                    updated[index] = e.target.value;
-                                    setCarImages(updated);
-                                  }}
-                                  placeholder={`Showcase URL #${index + 1}`}
-                                  className="w-full text-slate-100 placeholder-slate-600 border border-slate-800 bg-slate-950 px-2 py-1.5 text-[11px] rounded font-mono focus:outline-none focus:border-amber-500"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-slate-450 font-semibold mb-1 uppercase tracking-wide font-sans">Public Highlights & Specifications Description</label>
-                          <textarea
-                            required
-                            rows={3}
-                            value={carDescription}
-                            onChange={(e) => setCarDescription(e.target.value)}
-                            className="w-full text-xs py-2 px-3 border border-slate-800 bg-slate-900 text-white rounded-lg"
-                          />
-                        </div>
-
-                        <div className="pt-4 border-t border-slate-850 flex gap-3">
-                          <Button type="button" variant="dark" size="md" className="flex-1 font-bold" onClick={() => setCarViewMode('list')}>
-                            Discard Form
-                          </Button>
-                          <Button type="submit" variant="primary" size="md" className="flex-1 font-bold">
-                            Save Vehicle Specifications
-                          </Button>
-                        </div>
-                      </form>
-                    </div>
-                  )}
-
-                </div>
-              )}
-
-
-              {/* ==========================================
-                  TAB 3: APPLICATIONS MANAGEMENT & SECURITY UNDERWRITING
-                  ========================================== */}
-              {activeTab === 'applications' && (
-                <div className="space-y-6 animate-fade-in" id="applications-module">
-                  
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                    
-                    {/* Left Applicants queue checklist list */}
-                    <div className="lg:col-span-5 bg-slate-950 border border-slate-800 rounded-2xl p-6 space-y-4">
-                      <div>
-                        <h3 className="font-sans font-black text-sm text-white uppercase tracking-wider flex items-center gap-1.5">
-                          <Activity className="w-4 h-4 text-amber-500" /> Pending Verification Queue
-                        </h3>
-                        <p className="text-[11px] text-slate-400">Total queued files: {totalAppsCount}. Click to examine uploaded driving license files, ID proofs and selfie certifications.</p>
-                      </div>
-
-                      {systemRecords.applications?.length === 0 ? (
-                        <p className="text-xs text-slate-400 py-6 text-center">No underwriting folders currently registered.</p>
-                      ) : (
-                        <div className="divide-y divide-slate-850 space-y-2 max-h-[600px] overflow-y-auto pr-1">
-                          {systemRecords.applications.map((app) => (
-                            <div 
-                              key={app.id}
-                              className={`p-4 rounded-xl border text-xs cursor-pointer transition flex flex-col gap-2 ${
-                                selectedApp?.id === app.id 
-                                  ? 'border-amber-500 bg-amber-500/5 ring-2 ring-amber-500/10' 
-                                  : 'border-slate-800 hover:bg-slate-900 bg-slate-950'
-                              }`}
-                              onClick={() => startInspectApp(app)}
-                            >
-                              <div className="flex justify-between items-start gap-2">
-                                <div className="space-y-1">
-                                  <strong className="text-white font-sans text-[13.5px] block truncate">{app.carName}</strong>
-                                  <span className="block text-[10.5px] text-slate-400">Applicant: <strong className="text-slate-200">{app.fullName || app.applyDetails?.fullName || "Not Specified"}</strong></span>
-                                  <span className="block text-[10.5px] text-slate-400">Email: <span className="text-slate-200">{app.userEmail}</span></span>
-                                  {app.phone && <span className="block text-[10.5px] text-slate-400">Phone: <span className="text-slate-300">{app.phone}</span></span>}
-                                </div>
-                                <span className={`inline-block px-2 py-0.5 rounded text-[8.5px] uppercase font-bold tracking-wider leading-none shrink-0 ${
-                                  app.status === 'Approved' ? 'bg-emerald-500/15 text-emerald-400' :
-                                  app.status === 'Rejected' ? 'bg-red-500/15 text-red-400' : 'bg-amber-500/15 text-amber-400'
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead>
+                          <tr className="bg-gray-50 text-gray-500 font-bold uppercase tracking-wider text-[10px] border-b border-gray-100">
+                            <th className="py-2.5 px-3">Applicant Name</th>
+                            <th className="py-2.5 px-3">Vehicle Class</th>
+                            <th className="py-2.5 px-3">Dues</th>
+                            <th className="py-2.5 px-3">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 font-medium">
+                          {systemRecords.applications.slice(0, 5).map(app => (
+                            <tr key={app.id} className="hover:bg-gray-50 transition">
+                              <td className="py-3 px-3">
+                                <span className="font-bold text-[#1F3F7A] block">{app.fullName || app.applyDetails?.fullName || "Not Specified"}</span>
+                                <span className="text-[10px] text-gray-400 font-mono block mt-0.5">{app.userEmail}</span>
+                              </td>
+                              <td className="py-3 px-3 text-gray-700 text-xs">
+                                {app.carName}
+                              </td>
+                              <td className="py-3 px-3 font-mono font-bold text-gray-800 text-xs">
+                                {app.applyDetails?.weeklyIncome ? `£${app.applyDetails.weeklyIncome}/wk` : 'N/A'}
+                              </td>
+                              <td className="py-3 px-3">
+                                <span className={`inline-block px-2 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider leading-none ${
+                                  app.status === 'Approved' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+                                  app.status === 'Rejected' ? 'bg-red-50 text-red-750 border border-red-100' : 
+                                  'bg-amber-50 text-amber-700 border border-amber-100'
                                 }`}>
                                   {app.status || 'Pending'}
                                 </span>
-                              </div>
-
-                              <div className="flex justify-between items-center text-[10px] text-slate-450 bg-slate-900 border border-slate-850 p-2 rounded-lg font-mono">
-                                <span>Ref: {app.id}</span>
-                                <span>Applied: {app.dateApplied}</span>
-                              </div>
-
-                              <div className="flex justify-between items-center pt-1">
-                                <span className="text-[10.5px] font-bold text-amber-505">Inspect Credentials Folder ↗</span>
-                                <button 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (window.confirm("Verify Deletion: Permanently delete application folder?")) {
-                                      api.admin.deleteApplication(app.id).then(() => fetchAllData());
-                                    }
-                                  }}
-                                  className="text-red-400 hover:text-red-300 font-bold text-[10.5px]"
-                                >
-                                  Clear History
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Right Applicant Credentials Dossier Inspection Terminal */}
-                    <div className="lg:col-span-7 bg-slate-950 border border-slate-800 rounded-2xl p-6 space-y-5">
-                      <h3 className="font-sans font-black text-sm text-white uppercase tracking-wider flex items-center gap-1.5">
-                        <FileCheck className="w-4 h-4 text-emerald-500" /> Administrative Verification Terminal
-                      </h3>
-
-                      {selectedApp ? (
-                        <div className="space-y-6 animate-fade-in" id="credentials-audit-dossier">
-                          <div className="pb-3 border-b border-slate-850 flex justify-between items-start text-xs">
-                            <div>
-                              <span className="text-[9.5px] text-slate-400 uppercase tracking-widest block font-bold">Lease Underwrite dossier</span>
-                              <strong className="text-base text-white tracking-tight block font-sans">{selectedApp.carName}</strong>
-                              <span className="text-slate-400 block font-mono">ID: {selectedApp.id} • Driver Email: {selectedApp.userEmail}</span>
-                            </div>
-                            <span className="bg-amber-500/10 text-amber-400 font-black py-1 px-3 rounded-lg border border-amber-500/20 uppercase">
-                              Status: {selectedApp.status}
-                            </span>
-                          </div>
-
-                          {/* Driving Dossier specifics info */}
-                          <div className="space-y-3 p-4 bg-slate-900 rounded-xl border border-slate-800 text-xs">
-                            <span className="block text-[10px] text-amber-500 font-bold uppercase tracking-wider">Applicant Personal & Income Profile</span>
-                            <div className="grid grid-cols-2 gap-3.5 text-slate-300 bg-slate-950/40 p-3 rounded-lg border border-slate-850">
-                              <div>Applicant Name: <strong className="text-white block font-sans font-medium text-sm mt-0.5">{selectedApp.fullName || (selectedApp.applyDetails?.fullName && selectedApp.applyDetails.fullName !== 'Not Provided' ? selectedApp.applyDetails.fullName : null) || 'N/A'}</strong></div>
-                              <div>Phone Number: <strong className="text-white block font-sans font-medium text-sm mt-0.5">{selectedApp.phone || (selectedApp.applyDetails?.phone && selectedApp.applyDetails.phone !== 'Not Provided' ? selectedApp.applyDetails.phone : null) || 'N/A'}</strong></div>
-                              <div>Email Address: <strong className="text-white block font-sans font-medium text-xs break-all mt-0.5">{selectedApp.userEmail || 'N/A'}</strong></div>
-                              <div>Employment Type: <strong className="text-white block font-sans font-medium text-sm mt-0.5">{(selectedApp.applyDetails?.employment && selectedApp.applyDetails.employment !== 'Not Provided') ? selectedApp.applyDetails.employment : 'N/A'}</strong></div>
-                              <div>Weekly Income: <strong className="text-emerald-400 block font-sans font-semibold text-sm mt-0.5">{(selectedApp.applyDetails?.weeklyIncome !== undefined && selectedApp.applyDetails?.weeklyIncome !== null && selectedApp.applyDetails?.weeklyIncome !== '') ? `£${selectedApp.applyDetails.weeklyIncome} / week` : 'N/A'}</strong></div>
-                              <div>Requested Term: <strong className="text-white block font-sans font-medium text-sm mt-0.5">{selectedApp.applyDetails?.durationMonths ? `${selectedApp.applyDetails.durationMonths} Mos` : 'N/A'}</strong></div>
-                              <div>Location / Area: <strong className="text-white block font-sans font-medium text-sm mt-0.5">{(selectedApp.applyDetails?.location && selectedApp.applyDetails.location !== 'Not Provided' && selectedApp.applyDetails.location !== 'Manchester, UK') ? selectedApp.applyDetails.location : 'N/A'}</strong></div>
-                              <div>Soft credit status: <strong className="text-emerald-400 block font-sans font-semibold text-sm mt-0.5">{selectedApp.creditCheckStatus || 'N/A'}</strong></div>
-                            </div>
-                                  {/* Credentials document previews */}
-                          <div className="space-y-2.5">
-                            <span className="block text-[10px] text-slate-450 uppercase font-black tracking-widest">Submitted Identity Certificates</span>
-                            <div className="grid grid-cols-4 gap-3">
-                              
-                              <div className="bg-slate-900 border border-slate-800 p-2 rounded-xl space-y-1.5 text-center flex flex-col justify-between">
-                                <span className="block text-[9.5px] text-slate-300 font-bold">Driving Licence (Front)</span>
-                                {(selectedApp.licenseFrontUrl && !selectedApp.licenseFrontUrl.includes('unsplash.com')) || (selectedApp.applyDetails?.drivingLicence && !selectedApp.applyDetails.drivingLicence.includes('unsplash.com')) ? (
-                                  <>
-                                    <img 
-                                      src={getImageUrl(selectedApp.licenseFrontUrl || selectedApp.applyDetails?.drivingLicence)} 
-                                      alt="Licence Front" 
-                                      className="w-full aspect-video object-cover rounded bg-slate-950 hover:opacity-90 transition-opacity cursor-pointer duration-200"
-                                      referrerPolicy="no-referrer"
-                                      onClick={() => window.open(getImageUrl(selectedApp.licenseFrontUrl || selectedApp.applyDetails?.drivingLicence), '_blank')}
-                                    />
-                                    <a href={getImageUrl(selectedApp.licenseFrontUrl || selectedApp.applyDetails?.drivingLicence)} target="_blank" rel="noreferrer" className="text-[9px] text-amber-400 hover:underline block pt-1 font-bold">Examine Fullscreen ↗</a>
-                                  </>
-                                ) : (
-                                  <div className="w-full aspect-video rounded bg-slate-950 flex flex-col items-center justify-center text-slate-500 border border-slate-850 py-3">
-                                    <span className="text-[10px] font-mono">N/A</span>
-                                  </div>
-                                )}
-                              </div>
-
-                              <div className="bg-slate-900 border border-slate-800 p-2 rounded-xl space-y-1.5 text-center flex flex-col justify-between">
-                                <span className="block text-[9.5px] text-slate-300 font-bold">Selfie Photo</span>
-                                {(selectedApp.selfieUrl && !selectedApp.selfieUrl.includes('unsplash.com')) || (selectedApp.applyDetails?.selfieWithId && !selectedApp.applyDetails.selfieWithId.includes('unsplash.com')) ? (
-                                  <>
-                                    <img 
-                                      src={getImageUrl(selectedApp.selfieUrl || selectedApp.applyDetails?.selfieWithId)} 
-                                      alt="Selfie" 
-                                      className="w-full aspect-video object-cover rounded bg-slate-950 hover:opacity-90 transition-opacity cursor-pointer duration-200"
-                                      referrerPolicy="no-referrer"
-                                      onClick={() => window.open(getImageUrl(selectedApp.selfieUrl || selectedApp.applyDetails?.selfieWithId), '_blank')}
-                                    />
-                                    <a href={getImageUrl(selectedApp.selfieUrl || selectedApp.applyDetails?.selfieWithId)} target="_blank" rel="noreferrer" className="text-[9px] text-amber-400 hover:underline block pt-1 font-bold">Examine Fullscreen ↗</a>
-                                  </>
-                                ) : (
-                                  <div className="w-full aspect-video rounded bg-slate-950 flex flex-col items-center justify-center text-slate-500 border border-slate-850 py-3">
-                                    <span className="text-[10px] font-mono">N/A</span>
-                                  </div>
-                                )}
-                              </div>
-
-                              <div className="bg-slate-900 border border-slate-800 p-2 rounded-xl space-y-1.5 text-center flex flex-col justify-between">
-                                <span className="block text-[9.5px] text-slate-300 font-bold">Driving Licence (Back)</span>
-                                {(selectedApp.licenseBackUrl && !selectedApp.licenseBackUrl.includes('unsplash.com')) || (selectedApp.applyDetails?.addressProof && !selectedApp.applyDetails.addressProof.includes('unsplash.com')) ? (
-                                  <>
-                                    <img 
-                                      src={getImageUrl(selectedApp.licenseBackUrl || selectedApp.applyDetails?.addressProof)} 
-                                      alt="Licence Back" 
-                                      className="w-full aspect-video object-cover rounded bg-slate-950 hover:opacity-90 transition-opacity cursor-pointer duration-200"
-                                      referrerPolicy="no-referrer"
-                                      onClick={() => window.open(getImageUrl(selectedApp.licenseBackUrl || selectedApp.applyDetails?.addressProof), '_blank')}
-                                    />
-                                    <a href={getImageUrl(selectedApp.licenseBackUrl || selectedApp.applyDetails?.addressProof)} target="_blank" rel="noreferrer" className="text-[9px] text-amber-400 hover:underline block pt-1 font-bold">Examine Fullscreen ↗</a>
-                                  </>
-                                ) : (
-                                  <div className="w-full aspect-video rounded bg-slate-950 flex flex-col items-center justify-center text-slate-500 border border-slate-850 py-3">
-                                    <span className="text-[10px] font-mono">N/A</span>
-                                  </div>
-                                )}
-                              </div>
-
-                              <div className="bg-slate-900 border border-slate-800 p-2 rounded-xl space-y-1.5 text-center flex flex-col justify-between">
-                                <span className="block text-[9.5px] text-slate-300 font-bold">Floor Plan / Support Files</span>
-                                {(selectedApp.floorPlanUrl && !selectedApp.floorPlanUrl.includes('unsplash.com')) || (selectedApp.applyDetails?.floorPlanUrl && !selectedApp.applyDetails.floorPlanUrl.includes('unsplash.com')) ? (
-                                  <>
-                                    <img 
-                                      src={getImageUrl(selectedApp.floorPlanUrl || selectedApp.applyDetails?.floorPlanUrl)} 
-                                      alt="Floor Plan / Docs" 
-                                      className="w-full aspect-video object-cover rounded bg-slate-950 hover:opacity-90 transition-opacity cursor-pointer duration-200"
-                                      referrerPolicy="no-referrer"
-                                      onClick={() => window.open(getImageUrl(selectedApp.floorPlanUrl || selectedApp.applyDetails?.floorPlanUrl), '_blank')}
-                                    />
-                                    <a href={getImageUrl(selectedApp.floorPlanUrl || selectedApp.applyDetails?.floorPlanUrl)} target="_blank" rel="noreferrer" className="text-[9px] text-amber-400 hover:underline block pt-1 font-bold">Examine Fullscreen ↗</a>
-                                  </>
-                                ) : (
-                                  <div className="w-full aspect-video rounded bg-slate-950 flex flex-col items-center justify-center text-slate-505 border border-slate-850 py-3">
-                                    <span className="text-[10px] font-mono">N/A</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                          {/* Validation checklists */}
-                          <div className="space-y-4 border-t border-slate-850 pt-4 bg-slate-900 p-4.5 rounded-xl border border-slate-800 text-xs">
-                            <span className="block text-[10.5px] font-bold text-white uppercase tracking-wide">Step Verification Checklist</span>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                              
-                              <label className="flex items-center space-x-2.5 cursor-pointer">
-                                <input 
-                                  type="checkbox" 
-                                  checked={docChecks.drivingLicence} 
-                                  onChange={(e) => setDocChecks({ ...docChecks, drivingLicence: e.target.checked })} 
-                                  className="w-4.5 h-4.5 text-amber-500 rounded border-slate-700 bg-slate-950 focus:ring-0 focus:ring-offset-0"
-                                />
-                                <span className="text-slate-300">Verify driving license</span>
-                              </label>
-
-                              <label className="flex items-center space-x-2.5 cursor-pointer">
-                                <input 
-                                  type="checkbox" 
-                                  checked={docChecks.addressProof} 
-                                  onChange={(e) => setDocChecks({ ...docChecks, addressProof: e.target.checked })} 
-                                  className="w-4.5 h-4.5 text-amber-500 rounded border-slate-700 bg-slate-950 focus:ring-0"
-                                />
-                                <span className="text-slate-300">Verify address proof</span>
-                              </label>
-
-                              <label className="flex items-center space-x-2.5 cursor-pointer">
-                                <input 
-                                  type="checkbox" 
-                                  checked={docChecks.selfie} 
-                                  onChange={(e) => setDocChecks({ ...docChecks, selfie: e.target.checked })} 
-                                  className="w-4.5 h-4.5 text-amber-500 rounded border-slate-700 bg-slate-950 focus:ring-0"
-                                />
-                                <span className="text-slate-300">Verify selfie photo</span>
-                              </label>
-
-                            </div>
-
-                            <div className="space-y-1.5">
-                              <label className="block text-slate-450 font-semibold uppercase tracking-wide">Review/underwriting Notes</label>
-                              <textarea
-                                rows={2}
-                                value={auditNotes}
-                                onChange={(e) => setAuditNotes(e.target.value)}
-                                placeholder="Add private underwriter comments or checks logs..."
-                                className="w-full text-xs py-2 px-3 border border-slate-800 bg-slate-950 rounded-lg text-white"
-                              />
-                            </div>
-
-                            {/* Approval buttons */}
-                            <div className="pt-2 flex gap-3">
-                              <button
-                                type="button"
-                                onClick={() => handleSaveAppVerification('Rejected', selectedApp.step)}
-                                className="flex-1 py-3 px-4 text-xs font-black uppercase text-center rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/25 transition shadow shadow-red-500/5 cursor-pointer"
-                              >
-                                Trigger Rejection Flow
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={() => handleSaveAppVerification('Approved', 4)}
-                                className="flex-1 py-3 px-4 text-xs font-black uppercase text-center rounded-xl bg-emerald-500 hover:bg-emerald-440 text-gray-950 transition shadow shadow-emerald-500/10 cursor-pointer"
-                              >
-                                Approve Underwriting Flow
-                              </button>
-                            </div>
-                          </div>
-
-                        </div>
-                      ) : (
-                        <div className="py-24 text-center border-2 border-dashed border-slate-805 rounded-2xl bg-slate-900/40 p-6 flex flex-col items-center justify-center">
-                          <FileText className="w-10 h-10 text-slate-700 mb-2" />
-                          <strong className="block text-white text-xs uppercase font-black">Inspection Console Standby</strong>
-                          <p className="text-[11.5px] text-slate-455 max-w-xs leading-relaxed mt-1.5">Click "Inspect Credentials" on any driver queue file to retrieve live ID proofs, utility letters, selfie matches and trigger instant approval flows.</p>
-                        </div>
-                      )}
-                    </div>
-
-                  </div>
-
-                </div>
-              )}
-
-
-              {/* ==========================================
-                  TAB 4: MEMBER DRIVERS PROFILES & BLOCKED LIST
-                  ========================================== */}
-              {activeTab === 'users' && (
-                <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 space-y-4 animate-fade-in" id="users-module">
-                  <div>
-                    <h3 className="font-sans font-black text-white text-base leading-none">Registered Heathrow Member Partners Database</h3>
-                    <p className="text-xs text-slate-400">Review driver credentials details, suspend profile log access, or clear/delete accounts records permanently.</p>
-                  </div>
-
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs border-collapse font-sans">
-                      <thead>
-                        <tr className="bg-slate-900 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[10.5px]">
-                          <th className="py-3 px-4">Driver Name</th>
-                          <th className="py-3 px-4">Email Coordinates</th>
-                          <th className="py-3 px-4">Role Group</th>
-                          <th className="py-3 px-4">Applications Logged</th>
-                          <th className="py-3 px-4">Access Status</th>
-                          <th className="py-3 px-4 text-right">Administrative Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-850">
-                        {systemRecords.users?.map((usr) => {
-                          const driverAppsCount = systemRecords.applications?.filter(a => a.userEmail?.toLowerCase() === usr.email?.toLowerCase()).length || 0;
-                          return (
-                            <tr key={usr.email} className="hover:bg-slate-900/60">
-                              <td className="py-3.5 px-4 font-bold text-white text-sm">{usr.fullName || 'Driver Partner'}</td>
-                              <td className="py-3.5 px-4 font-mono text-slate-300">{usr.email}</td>
-                              <td className="py-3.5 px-4 uppercase font-mono text-[10px]">
-                                <span className={`inline-block px-2.5 py-0.5 rounded text-[9.5px] font-black tracking-wider leading-none ${
-                                  usr.role === 'admin' 
-                                    ? 'bg-purple-500/15 text-purple-400 border border-purple-500/10' 
-                                    : 'bg-slate-500/15 text-slate-400 border border-slate-500/10'
-                                }`}>
-                                  {usr.role || 'user'}
-                                </span>
-                              </td>
-                              <td className="py-3.5 px-4 font-semibold text-center text-amber-500 font-mono text-xs">{driverAppsCount} folder(s)</td>
-                              <td className="py-3.5 px-4 uppercase">
-                                <span className={`inline-block px-2.5 py-0.5 rounded text-[9.5px] font-black tracking-wider leading-none ${
-                                  usr.blocked 
-                                    ? 'bg-red-500/15 text-red-400 border border-red-500/10 animate-pulse' 
-                                    : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/10'
-                                }`}>
-                                  {usr.blocked ? '✘ EXCLUDED' : '✔ ACTIVE'}
-                                </span>
-                              </td>
-                              <td className="py-3.5 px-4 text-right space-x-2">
-                                <button
-                                  type="button"
-                                  onClick={async () => {
-                                    const nextRole = usr.role === 'admin' ? 'user' : 'admin';
-                                    try {
-                                      await api.admin.updateUserRole(usr.email, nextRole);
-                                      setSysAlert({ type: 'success', text: `Role for ${usr.email} successfully updated to ${nextRole.toUpperCase()}!` });
-                                      await fetchAllData();
-                                    } catch (err) {
-                                      setSysAlert({ type: 'error', text: err.message || "Failed to edit user role." });
-                                    }
-                                  }}
-                                  className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20"
-                                >
-                                  Make {usr.role === 'admin' ? 'Driver' : 'Admin'}
-                                </button>
-
-                                <button
-                                  type="button"
-                                  onClick={() => handleToggleBlockUser(usr.email, usr.blocked)}
-                                  className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition ${
-                                    usr.blocked 
-                                      ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20' 
-                                      : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20'
-                                  }`}
-                                >
-                                  {usr.blocked ? 'Unblock Partner' : 'Block Profile'}
-                                </button>
- 
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteUser(usr.email)}
-                                  className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20"
-                                >
-                                  Purge
-                                </button>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
-
-              {/* ==========================================
-                  TAB 5: PAYMENTS & DEPOSITS BOOKKEEPING
-                  ========================================== */}
-              {activeTab === 'payments' && (
-                <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 space-y-5 animate-fade-in" id="payments-module">
-                  <div className="flex justify-between items-center border-b border-slate-850 pb-3">
-                    <div>
-                      <h2 className="text-base font-black text-white uppercase tracking-wider">Heathrow Deposit & Lease Accounts ledger</h2>
-                      <p className="text-xs text-slate-400">Log client deposit receipts or verify pending transactions files from Heathrow drivers.</p>
-                    </div>
-                    <span className="font-mono text-sm font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3.5 py-1 rounded-full">
-                      Ledger: £{totalRevenue} Paid
-                    </span>
-                  </div>
-
-                  {systemRecords.payments?.length === 0 ? (
-                    <p className="text-xs text-slate-450 py-12 text-center">No transactions statements registered in DB ledgers.</p>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs border-collapse font-sans">
-                        <thead>
-                          <tr className="bg-slate-900 border-b border-slate-800 text-slate-400 font-bold uppercase text-[10.5px]">
-                            <th className="py-3 px-4">Transaction ID</th>
-                            <th className="py-3 px-4">Driver Coordinates</th>
-                            <th className="py-3 px-4">Target Rent Account</th>
-                            <th className="py-3 px-4">Date Logged</th>
-                            <th className="py-3 px-4">Method</th>
-                            <th className="py-3 px-4">Dues Amount</th>
-                            <th className="py-3 px-4 text-right">Verification Status</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-850 font-sans">
-                          {systemRecords.payments.map((pay) => (
-                            <tr key={pay.id} className="hover:bg-slate-900/40">
-                              <td className="py-3.5 px-4 font-mono font-bold text-amber-501 text-[12.5px]">{pay.id}</td>
-                              <td className="py-3.5 px-4 font-mono text-slate-350">{pay.userEmail}</td>
-                              <td className="py-3.5 px-4 font-bold text-slate-100 text-sm truncate max-w-[150px]">{pay.carName}</td>
-                              <td className="py-3.5 px-4 text-slate-400 font-mono">{pay.date}</td>
-                              <td className="py-3.5 px-4 text-slate-300">{pay.method || 'Debit Card'}</td>
-                              <td className="py-3.5 px-4 font-black text-emerald-400 text-sm font-mono">£{pay.amount}</td>
-                              <td className="py-3.5 px-4 text-right">
-                                {pay.status === 'Pending' ? (
-                                  <button
-                                    onClick={() => handleVerifyManualPayment(pay.id)}
-                                    className="bg-emerald-500 text-gray-950 font-black px-2.5 py-1.5 rounded-lg text-[10px] uppercase shadow hover:bg-emerald-440 transition"
-                                  >
-                                    Verify Paid
-                                  </button>
-                                ) : (
-                                  <span className="bg-emerald-500/10 text-emerald-400 font-bold px-2.5 py-1 rounded text-[10px] tracking-wide">
-                                    ✓ Verified Payment
-                                  </span>
-                                )}
                               </td>
                             </tr>
                           ))}
@@ -1479,229 +563,1730 @@ export function Admin() {
                     </div>
                   )}
                 </div>
-              )}
 
+              </div>
+            </div>
+          )}
 
-              {/* ==========================================
-                  TAB 6: EMAIL SYSTEM & INSURANCE FILES COMMISSION
-                  ========================================== */}
-              {activeTab === 'emails' && (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-fade-in" id="emails-module">
-                  
-                  {/* Left Column Email Dispatcher and Insurance Uploader */}
-                  <div className="lg:col-span-6 space-y-6">
-                    
-                    {/* Send manual email trigger form */}
-                    <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 space-y-4">
-                      <h3 className="font-sans font-black text-sm text-white uppercase tracking-wider flex items-center gap-1.5">
-                        <Mail className="w-4 h-4 text-amber-500" /> Manual Driver Mail Dispatcher
-                      </h3>
-                      <p className="text-[11px] text-slate-400">Trigger custom approval/rejection notes, logistics coordinates or documents requests directly:</p>
-
-                      <form onSubmit={handleSendManualEmail} className="space-y-4 text-xs">
-                        <div>
-                          <label className="block text-slate-400 font-bold mb-1">Target Recipient Address</label>
-                          <select
-                            required
-                            value={emailTo}
-                            onChange={(e) => setEmailTo(e.target.value)}
-                            className="w-full text-xs py-2 bg-slate-900 border border-slate-800 text-white rounded-lg px-2"
-                          >
-                            <option value="">-- Choose Driver Email --</option>
-                            {systemRecords.users?.map(u => (
-                              <option key={u.email} value={u.email}>{u.fullName} ({u.email})</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-slate-400 font-bold mb-1 col">Email Subject Topic</label>
-                          <input
-                            type="text"
-                            required
-                            value={emailSubject}
-                            onChange={(e) => setEmailSubject(e.target.value)}
-                            placeholder="e.g. Heathrow Airport Rent-to-Own Update"
-                            className="w-full text-xs py-2 px-3 bg-slate-900 border border-slate-800 text-white rounded-lg focus:outline-none"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-slate-400 font-bold mb-1">Message Body text</label>
-                          <textarea
-                            required
-                            rows={4}
-                            value={emailContent}
-                            onChange={(e) => setEmailContent(e.target.value)}
-                            placeholder="Compose driver instructions, logistics schedules or credentials requests here..."
-                            className="w-full text-xs py-2 px-3 bg-slate-900 border border-slate-800 text-white rounded-lg focus:outline-none"
-                          />
-                        </div>
-
-                        <div className="pt-1.5">
-                          <button
-                            type="submit"
-                            className="w-full py-2 px-3 text-xs font-black uppercase text-center rounded-lg bg-amber-500 hover:bg-amber-440 text-gray-950 transition flex items-center justify-center space-x-1.5 cursor-pointer"
-                          >
-                            <Send className="w-3.5 h-3.5" />
-                            <span>Dispatch system Email</span>
-                          </button>
-                        </div>
-                      </form>
+          {/* ==========================================
+              TAB 2: VEHICLES MANAGEMENT
+              ========================================== */}
+          {activeTab === 'cars' && (
+            <div className="space-y-6 animate-fade-in" id="cars-module">
+              {carViewMode === 'list' ? (
+                <>
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                    <div>
+                      <h1 className="text-xl font-black text-[#1F3F7A] uppercase">Vehicles Catalog Management</h1>
+                      <p className="text-xs text-gray-400 mt-1">Configure weekly portfolio models, update rates lists, and upload multiple high-res product photos.</p>
                     </div>
-
-                    {/* Insurance Policy Upload form */}
-                    <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 space-y-4">
-                      <div className="flex justify-between items-center border-b border-slate-850 pb-2">
-                        <h3 className="font-sans font-black text-sm text-white uppercase tracking-wider flex items-center gap-1.5">
-                          <PlusCircle className="w-4.5 h-4.5 text-emerald-400" /> Upload Fleet Insurance Policy
-                        </h3>
-                        <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded font-mono uppercase font-black">
-                          Specific flow
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-slate-400">Attach and send official comprehensive Heathrow motor fleet cover certificates directly to approved driver's account profiles:</p>
-
-                      <form onSubmit={handleUploadInsuranceAction} className="space-y-4 text-xs">
-                        <div>
-                          <label className="block text-slate-400 font-bold mb-1">Target Approved Driver Partner</label>
-                          <select
-                            required
-                            value={insuranceTargetEmail}
-                            onChange={(e) => setInsuranceTargetEmail(e.target.value)}
-                            className="w-full text-xs py-2 bg-slate-900 border border-slate-800 text-white rounded-lg px-2"
-                          >
-                            <option value="">-- Select Member --</option>
-                            {systemRecords.users?.map(u => (
-                              <option key={u.email} value={u.email}>{u.fullName} ({u.email})</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-slate-400 font-bold mb-1">Certificate Image / Document File URL</label>
-                          <input
-                            type="url"
-                            required
-                            value={insurancePolicyUrl}
-                            onChange={(e) => setInsurancePolicyUrl(e.target.value)}
-                            placeholder="Paste certificate image reference link or PDF..."
-                            className="w-full text-xs py-2 px-3 bg-slate-900 border border-slate-800 text-white rounded-lg font-mono"
-                          />
-                        </div>
-
-                        <div className="pt-2">
-                          <Button type="submit" variant="primary" size="sm" className="w-full font-black uppercase tracking-wider text-xs">
-                            Attach Coverage Certificate & Notify Partner
-                          </Button>
-                        </div>
-                      </form>
-                    </div>
-
+                    <button
+                      onClick={() => {
+                        setSelectedCar(null);
+                        setCarViewMode('add');
+                      }}
+                      className="px-4 py-2 bg-[#1F3F7A] hover:bg-opacity-90 text-white font-bold text-xs uppercase tracking-wider rounded-xl flex items-center gap-2 self-start sm:self-auto transition shadow-sm cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Insert New Portfolio</span>
+                    </button>
                   </div>
 
-                  {/* Right Column Sent Communications ledgers log */}
-                  <div className="lg:col-span-6 bg-slate-950 border border-slate-800 rounded-2xl p-6 space-y-4">
-                    <h3 className="font-sans font-black text-sm text-white uppercase tracking-wider flex items-center gap-1.5">
-                      <MailOpen className="w-4 h-4 text-emerald-400" /> Outbox Sent Mail Communications Logs
-                    </h3>
-                    <p className="text-[11px] text-slate-400">Tracking archive of sent underwriting confirmations, rejection letters, invoices or motor coverage certs:</p>
+                  {/* Filter Search controls bar */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-white p-3.5 rounded-2xl border border-gray-200">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Search stock models..."
+                        value={carSearch}
+                        onChange={(e) => setCarSearch(e.target.value)}
+                        className="w-full text-xs py-2.5 pl-8 pr-3 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl placeholder-gray-400 outline-none focus:bg-white focus:border-[#1F3F7A] transition"
+                      />
+                      <Search className="w-4 h-4 text-gray-400 absolute left-2.5 top-3" />
+                    </div>
+                    <div>
+                      <select
+                        value={carStatusFilter}
+                        onChange={(e) => setCarStatusFilter(e.target.value)}
+                        className="w-full text-xs py-2.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl outline-none focus:bg-white focus:border-[#1F3F7A] px-2 transition"
+                      >
+                        <option value="All">All Availabilities</option>
+                        <option value="Available">Available Status</option>
+                        <option value="Reserved">Reserved Hold</option>
+                        <option value="Out of Stock">Out of Stock</option>
+                      </select>
+                    </div>
+                  </div>
 
-                    {systemRecords.emails?.length === 0 ? (
-                      <p className="text-xs text-slate-450 py-12 text-center">No outgoing emails queued in DB logs.</p>
-                    ) : (
-                      <div className="divide-y divide-slate-850 space-y-3.5 max-h-[600px] overflow-y-auto pr-1 text-xs">
-                        {systemRecords.emails.map((m) => (
-                          <div key={m.id} className="pt-3.5 space-y-2">
-                            <div className="flex justify-between items-start text-[11px]">
-                              <div>
-                                <strong className="text-white block font-sans font-black leading-tight">{m.subject}</strong>
-                                <span className="text-[10px] text-slate-400 font-mono block">Recipient: <span className="text-slate-200">{m.userEmail}</span></span>
+                  {filteredCars.length === 0 ? (
+                    <div className="bg-white border border-gray-150 p-12 text-center rounded-2xl">
+                      <HelpCircle className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                      <span className="block text-gray-700 font-bold mb-1 col">Catalog item not found</span>
+                      <p className="text-xs text-gray-500">No vehicle matches your current filter selectors.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="vehicles-catalog-listing">
+                      {filteredCars.map((car) => {
+                        const imagesArray = Array.isArray(car.images) ? car.images : (car.image ? [car.image] : []);
+                        
+                        return (
+                          <div key={car.id} className="bg-white border border-gray-150 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition duration-300 flex flex-col justify-between">
+                            <div>
+                              {/* Main image with badge */}
+                              <div className="relative aspect-video bg-gray-100">
+                                <img 
+                                  src={getImageUrl(car.image)} 
+                                  alt={car.name} 
+                                  className="w-full h-full object-cover"
+                                  referrerPolicy="no-referrer"
+                                />
+                                {car.badge && (
+                                  <span className="absolute top-3 left-3 bg-[#1F3F7A] text-white text-[9px] font-black uppercase tracking-wider py-1 px-2.5 rounded-md leading-none">
+                                    {car.badge}
+                                  </span>
+                                )}
+                                <span className={`absolute top-3 right-3 py-1 px-2.5 rounded-md text-[9px] font-black uppercase tracking-wider leading-none ${
+                                  car.status === 'Available' ? 'bg-[#7CC242] text-white' : 'bg-amber-500 text-white'
+                                }`}>
+                                  {car.status}
+                                </span>
                               </div>
-                              <span className="text-[10px] text-slate-410 font-mono font-semibold shrink-0 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">{m.dateSent}</span>
+
+                              <div className="p-5 space-y-3">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <h4 className="font-sans font-black text-base text-[#1F3F7A] tracking-tight">{car.brand} {car.name}</h4>
+                                    <span className="text-[10px] text-gray-400 uppercase tracking-widest font-mono block mt-0.5">{car.model}</span>
+                                  </div>
+                                  <div className="text-right">
+                                    <span className="text-sm font-black text-emerald-600 block">£{car.weeklyRate || car.price} <span className="text-[10px] text-gray-400 font-bold col">/ wk</span></span>
+                                    <span className="text-[10px] text-gray-400 block font-mono mt-0.5">£{car.monthlyRate || (Number(car.weeklyRate || car.price) * 4)}/mo</span>
+                                  </div>
+                                </div>
+
+                                <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed h-8">
+                                  {car.description || 'No public model details available.'}
+                                </p>
+
+                                {/* Specs ticker summary */}
+                                <div className="grid grid-cols-2 gap-2 text-[10px] text-gray-550 border-t border-gray-100 pt-3 font-mono">
+                                  <span>Engine: {Array.isArray(car.specifications) ? car.specifications.find(s => s.toLowerCase().startsWith('engine:'))?.replace(/Engine:/i, '').trim() || '1.8L Hybrid' : '1.8L Hybrid'}</span>
+                                  <span>Fuel: {car.fuel || 'Hybrid'}</span>
+                                  <span>Trans: {car.transmission || 'Auto'}</span>
+                                  <span>Odom: {car.mileage || '15k miles'}</span>
+                                </div>
+
+                                {/* Images gallery count preview */}
+                                <div className="text-[9.5px] text-[#1F3F7A]/75 font-bold uppercase tracking-wider bg-gray-50 p-2 rounded-lg border border-gray-100 flex items-center justify-between">
+                                  <span>Catalog Gallery Media</span>
+                                  <span className="bg-white px-1.5 py-0.5 rounded shadow-2xs text-[#1F3F7A] font-bold font-mono text-[9px]">{imagesArray.length} photos</span>
+                                </div>
+                              </div>
                             </div>
 
-                            <p className="p-3 bg-slate-900 rounded-lg text-slate-350 leading-relaxed italic text-[11.5px] border border-slate-850">
-                              {m.content}
-                            </p>
+                            {/* Options action drawer */}
+                            <div className="p-5 border-t border-gray-100 bg-gray-50 flex items-center gap-2">
+                              <button
+                                onClick={() => handleToggleCarStatus(car.id, car.status)}
+                                className="flex-1 py-2 border border-gray-200 hover:bg-gray-100 text-[#1F3F7A] text-[10px] font-black uppercase tracking-wider rounded-xl transition cursor-pointer"
+                              >
+                                {car.status === 'Available' ? 'Hold / Reserve' : 'Set Available'}
+                              </button>
+                              
+                              <button
+                                onClick={() => {
+                                  setSelectedCar(car);
+                                  setCarViewMode('edit');
+                                }}
+                                className="px-3 py-2 bg-[#1F3F7A] hover:bg-opacity-90 text-white rounded-xl transition cursor-pointer"
+                                title="Edit specs"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
 
-                            {m.attachmentUrl && (
-                              <div className="flex items-center space-x-2 bg-emerald-500/5 p-2 rounded-lg border border-emerald-500/10 text-[10.5px]">
-                                <FileText className="w-4 h-4 text-emerald-400 shrink-0" />
-                                <span className="text-slate-200 truncate flex-1 font-mono">{m.attachmentUrl}</span>
-                                <a href={m.attachmentUrl} target="_blank" rel="noreferrer" className="text-emerald-400 hover:underline font-bold shrink-0">Open Policy File ↗</a>
-                              </div>
-                            )}
+                              <button
+                                onClick={() => handleDeleteCarAction(car.id)}
+                                className="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-650 border border-rose-200 rounded-xl transition cursor-pointer"
+                                title="Clear stock"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <AdminCarForm 
+                  car={selectedCar} 
+                  onCancel={() => {
+                    setCarViewMode('list');
+                    setSelectedCar(null);
+                  }}
+                  onSubmit={handleCarFormSubmit}
+                  isLoading={actionLoading}
+                  api={api}
+                />
+              )}
+            </div>
+          )}
+
+          {/* ==========================================
+              TAB 3: UNDERWRITING APPLICATIONS
+              ========================================== */}
+          {activeTab === 'applications' && (
+            <div className="space-y-6 animate-fade-in" id="applications-module">
+              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                <div>
+                  <h1 className="text-xl font-black text-[#1F3F7A] uppercase">Underwriting Verification Queue</h1>
+                  <p className="text-xs text-gray-400 mt-1">Audit complete driver applications dossiers. Review uploaded driving license letters and selfie credentials matching checklists.</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setActiveTab('all-applications');
+                    setAppCurrentPage(1);
+                  }}
+                  className="px-4 py-2 bg-[#1F3F7A] hover:bg-opacity-95 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition shadow cursor-pointer shrink-0"
+                >
+                  View All Applications
+                </button>
+              </div>
+
+              {/* Filters selector */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-white p-3.5 rounded-2xl border border-gray-200">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search applicant or vehicle..."
+                    value={appSearch}
+                    onChange={(e) => setAppSearch(e.target.value)}
+                    className="w-full text-xs py-2.5 pl-8 pr-3 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl outline-none focus:bg-white focus:border-[#1F3F7A] transition"
+                  />
+                  <Search className="w-4 h-4 text-gray-400 absolute left-2.5 top-3" />
+                </div>
+                <div>
+                  <select
+                    value={appStatusFilter}
+                    onChange={(e) => setAppStatusFilter(e.target.value)}
+                    className="w-full text-xs py-2.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl outline-none focus:bg-white px-2 transition"
+                  >
+                    <option value="All">All statuses</option>
+                    <option value="Pending">Pending / review required</option>
+                    <option value="Approved">Approved cleared</option>
+                    <option value="Rejected">Rejected</option>
+                  </select>
+                </div>
+              </div>
+
+              {filteredApplications.length === 0 ? (
+                <div className="bg-white border border-gray-255 p-12 text-center rounded-2xl">
+                  <FileText className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                  <span className="block text-gray-700 font-bold mb-1">Queue empty</span>
+                  <p className="text-xs text-gray-500">No applicant dossiers matched filtering parameters.</p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl border border-gray-150 overflow-hidden shadow-2xs">
+                  {/* Desktop View Table */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse font-sans">
+                      <thead>
+                        <tr className="bg-gray-50 text-gray-500 font-bold uppercase tracking-wider text-[10px] border-b border-gray-100">
+                          <th className="py-4 px-5">Applicant Name</th>
+                          <th className="py-4 px-5">Email Coordinates</th>
+                          <th className="py-4 px-5">Selected Vehicle</th>
+                          <th className="py-4 px-5">Income Summary</th>
+                          <th className="py-4 px-5">Date Logged</th>
+                          <th className="py-4 px-5">Status</th>
+                          <th className="py-4 px-5 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100 font-medium">
+                        {filteredApplications.map((app) => (
+                          <tr key={app.id} className="hover:bg-gray-50 transition border-b border-gray-50">
+                            <td className="py-4 px-5">
+                              <span className="font-sans font-black text-[#1F3F7A] text-sm block">
+                                {app.fullName || app.applyDetails?.fullName || "Not Specified"}
+                              </span>
+                              {app.phone && <span className="text-[10px] text-gray-400 block font-mono mt-0.5">Ph: {app.phone}</span>}
+                            </td>
+                            <td className="py-4 px-5 font-mono text-gray-600">
+                              {app.userEmail}
+                            </td>
+                            <td className="py-4 px-5 text-[#1F3F7A] font-semibold text-xs text-indigo-900">
+                              {app.carName}
+                            </td>
+                            <td className="py-4 px-5">
+                              <span className="font-mono text-emerald-600 font-bold text-xs">{app.applyDetails?.weeklyIncome ? `£${app.applyDetails.weeklyIncome}/wk` : 'N/A'}</span>
+                              <span className="text-[10px] text-gray-400 block mt-0.5">{app.applyDetails?.employment || 'Unknown'}</span>
+                            </td>
+                            <td className="py-4 px-5 text-gray-400 font-mono text-[11px]">
+                              {app.dateApplied || 'N/A'}
+                            </td>
+                            <td className="py-4 px-5">
+                              <span className={`inline-block px-2.5 py-0.5 rounded text-[10px] uppercase font-black tracking-wider leading-none ${
+                                app.status === 'Approved' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+                                app.status === 'Rejected' ? 'bg-red-50 text-red-750 border border-red-100' :
+                                'bg-amber-50 text-amber-700 border border-amber-100'
+                              }`}>
+                                {app.status || 'Pending'}
+                              </span>
+                            </td>
+                            <td className="py-4 px-5 text-right space-x-2">
+                              {/* View Documents Option Button */}
+                              <button
+                                onClick={() => setInspectedAppForDocs(app)}
+                                className="px-3 py-1.5 border border-indigo-200 text-indigo-700 hover:bg-[#1F3F7A]/5 font-bold text-[10px] uppercase tracking-wider rounded-lg transition"
+                                title="Load identity documents gallery"
+                              >
+                                View Papers
+                              </button>
+
+                              {/* View Full Application Detail modal */}
+                              <button
+                                onClick={() => setInspectedAppForFullView(app)}
+                                className="px-3 py-1.5 bg-[#1F3F7A] hover:bg-opacity-90 text-white font-bold text-[10px] uppercase tracking-wider rounded-lg transition"
+                                title="Inspect underwriting decision checks"
+                              >
+                                Audit Folder
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile Cards Queue (Highly responsive layout) */}
+                  <div className="md:hidden space-y-4 p-4 text-xs font-sans">
+                    {filteredApplications.map((app) => (
+                      <div key={app.id} className="border border-gray-150 rounded-xl p-4 bg-gray-50 space-y-3 shadow-3xs hover:border-[#1F3F7A]/30 transition">
+                        <div className="flex justify-between items-start select-none">
+                          <div>
+                            <strong className="text-sm font-sans font-black text-[#1F3F7A] block leading-none">{app.fullName || app.applyDetails?.fullName || 'Applicant'}</strong>
+                            <span className="text-[10px] text-gray-400 block mt-1">{app.userEmail}</span>
+                          </div>
+                          <span className={`inline-block px-2 py-0.5 rounded text-[9.5px] uppercase font-bold leading-none ${
+                            app.status === 'Approved' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+                            app.status === 'Rejected' ? 'bg-red-50 text-red-750 border border-red-100' :
+                            'bg-amber-50 text-amber-750 border border-amber-100'
+                          }`}>
+                            {app.status || 'Pending'}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-[11px] border-y border-gray-200/50 py-2.5 my-1 tracking-wide font-sans text-gray-600">
+                          <div>
+                            Target: <strong className="text-[#1F3F7A] block font-semibold text-xs mt-0.5 truncate">{app.carName}</strong>
+                          </div>
+                          <div>
+                            Date: <span className="text-gray-500 font-mono block text-xs mt-0.5">{app.dateApplied}</span>
+                          </div>
+                        </div>
+
+                        {/* Controls drawers info */}
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setInspectedAppForDocs(app)}
+                            className="flex-1 py-2 text-center border border-gray-200 text-[#1F3F7A] text-[10px] font-black uppercase tracking-wider rounded-xl transition bg-white cursor-pointer"
+                          >
+                            Read ID Files
+                          </button>
+                          
+                          <button
+                            onClick={() => setInspectedAppForFullView(app)}
+                            className="flex-1 py-2 text-center bg-[#1F3F7A] hover:bg-opacity-90 text-white text-[10px] font-black uppercase tracking-wider rounded-xl transition cursor-pointer"
+                          >
+                            Audit Status
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ==========================================
+              TAB 4: DRIVERS DATABASE INDEX
+              ========================================== */}
+          {activeTab === 'users' && (
+            <div className="space-y-6 animate-fade-in" id="driver-partners-module">
+              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                <div>
+                  <h1 className="text-xl font-black text-[#1F3F7A] uppercase">Driver Members Database</h1>
+                  <p className="text-xs text-gray-400 mt-1">Review authenticated profiles, manage role groups, or suspend active system login licenses.</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setActiveTab('all-users');
+                    setUserCurrentPage(1);
+                    setSelectedUserDetail(null);
+                  }}
+                  className="px-4 py-2 bg-[#1F3F7A] hover:bg-opacity-95 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition shadow cursor-pointer shrink-0"
+                >
+                  View All Users
+                </button>
+              </div>
+
+              {/* Filters selector */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white p-3.5 rounded-2xl border border-gray-200">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search by driver name or email..."
+                    value={userSearch}
+                    onChange={(e) => setUserSearch(e.target.value)}
+                    className="w-full text-xs py-2.5 pl-8 pr-3 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl placeholder-gray-400 outline-none focus:bg-white focus:border-[#1F3F7A] transition"
+                  />
+                  <Search className="w-4 h-4 text-gray-400 absolute left-2.5 top-3.5" />
+                </div>
+                <div>
+                  <select
+                    value={userRoleFilter}
+                    onChange={(e) => setUserRoleFilter(e.target.value)}
+                    className="w-full text-xs py-2.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl outline-none focus:bg-white px-2 transition"
+                  >
+                    <option value="All">All User Roles</option>
+                    <option value="admin">Administrators Only</option>
+                    <option value="user">Driver Partners Only</option>
+                  </select>
+                </div>
+              </div>
+
+              {filteredUsers.length === 0 ? (
+                <p className="text-xs text-gray-500 py-12 bg-white rounded-2xl border text-center">No driver profiles matched search filters.</p>
+              ) : (
+                <div className="bg-white rounded-2xl border border-gray-150 overflow-hidden shadow-2xs">
+                  {/* Table view */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse font-sans">
+                      <thead>
+                        <tr className="bg-gray-50 text-gray-500 font-bold uppercase tracking-wider text-[10px] border-b border-gray-100">
+                          <th className="py-3.5 px-5">Driver Name</th>
+                          <th className="py-3.5 px-5">Email Address</th>
+                          <th className="py-3.5 px-5">Role Group</th>
+                          <th className="py-3.5 px-5">Logged Files</th>
+                          <th className="py-3.5 px-5">System status</th>
+                          <th className="py-3.5 px-5 text-right">Administrative Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100 font-medium">
+                        {filteredUsers.map((usr) => {
+                          const userAppsCount = systemRecords.applications?.filter(a => a.userEmail?.toLowerCase() === usr.email?.toLowerCase()).length || 0;
+                          return (
+                            <tr key={usr.email} className="hover:bg-gray-50 transition border-b border-gray-50">
+                              <td className="py-3.5 px-5 text-[#1F3F7A] font-black text-sm">
+                                {usr.fullName || 'Driver Partner'}
+                              </td>
+                              <td className="py-3.5 px-5 font-mono text-gray-600">
+                                {usr.email}
+                              </td>
+                              <td className="py-3.5 px-5">
+                                <span className={`inline-block px-2 py-0.5 rounded text-[9.5px] font-black tracking-wider leading-none ${
+                                  usr.role === 'admin' ? 'bg-indigo-50 text-indigo-700 border border-indigo-100' : 'bg-gray-100 text-gray-700'
+                                }`}>
+                                  {usr.role || 'user'}
+                                </span>
+                              </td>
+                              <td className="py-3.5 px-5 font-mono text-gray-500">
+                                {userAppsCount} folder(s)
+                              </td>
+                              <td className="py-3.5 px-5">
+                                <span className={`inline-block px-2 py-0.5 rounded text-[9.5px] font-bold leading-none ${
+                                  usr.blocked ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+                                }`}>
+                                  {usr.blocked ? '✘ SUSPENDED' : '✔ ACTIVE'}
+                                </span>
+                              </td>
+                              <td className="py-3.5 px-5 text-right space-x-2">
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    const nextRole = usr.role === 'admin' ? 'user' : 'admin';
+                                    try {
+                                      await api.admin.updateUserRole(usr.email, nextRole);
+                                      setAlertBanner({ type: 'success', text: `Role for ${usr.email} set to ${nextRole.toUpperCase()}.` });
+                                      fetchAllData();
+                                    } catch (err) {
+                                      setAlertBanner({ type: 'error', text: err.message || 'Validation error' });
+                                    }
+                                  }}
+                                  className="px-3 py-1.5 border border-gray-255 text-gray-750 text-[10px] font-bold uppercase rounded-xl hover:bg-gray-100 transition"
+                                >
+                                  Make {usr.role === 'admin' ? 'Driver' : 'Admin'}
+                                </button>
+                                
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleBlockUser(usr.email, usr.blocked)}
+                                  className={`px-3 py-1.5 border text-[10px] font-black uppercase rounded-xl transition ${
+                                    usr.blocked 
+                                      ? 'border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100' 
+                                      : 'border-red-200 text-red-700 bg-red-50 hover:bg-red-100'
+                                  }`}
+                                >
+                                  {usr.blocked ? 'Activate' : 'Suspend'}
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteUser(usr.email)}
+                                  className="px-3 py-1.5 bg-rose-50 border border-rose-200 text-rose-650 text-[10px] font-bold uppercase rounded-xl hover:bg-rose-100 transition"
+                                >
+                                  Clear Profile
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile responsive logs user grid list */}
+                  <div className="md:hidden divide-y divide-gray-100 p-4 space-y-4">
+                    {filteredUsers.map((usr) => {
+                      const userAppsCount = systemRecords.applications?.filter(a => a.userEmail?.toLowerCase() === usr.email?.toLowerCase()).length || 0;
+                      return (
+                        <div key={usr.email} className="border border-gray-150 rounded-xl p-4 bg-gray-50 space-y-3.5">
+                          <div className="flex justify-between items-start select-none">
+                            <div>
+                              <strong className="text-sm font-sans font-black text-[#1F3F7A] block leading-none">{usr.fullName || 'Driver Partner'}</strong>
+                              <span className="text-[10.5px] text-gray-450 font-mono block mt-1">{usr.email}</span>
+                            </div>
+                            <span className="text-[9.5px] bg-[#1F3F7A]/10 text-[#1F3F7A] font-bold px-2 py-0.5 rounded uppercase">
+                              {usr.role || 'user'}
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2 text-[10px] border-y border-gray-200/50 py-2.5 my-1 text-gray-550">
+                            <div>
+                              Folders: <strong className="text-[#1F3F7A] font-mono leading-none font-bold block mt-0.5">{userAppsCount}</strong>
+                            </div>
+                            <div>
+                              System Status: <span className={`block font-bold leading-none mt-0.5 ${usr.blocked ? 'text-red-700' : 'text-emerald-700'}`}>{usr.blocked ? 'SUSPENDED' : '✔ ACTIVE'}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleBlockUser(usr.email, usr.blocked)}
+                              className={`flex-1 py-2 text-center text-[9px] font-black uppercase rounded-lg border transition cursor-pointer ${
+                                usr.blocked ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-red-50 border-red-200 text-red-700'
+                              }`}
+                            >
+                              {usr.blocked ? 'Activate Profile' : 'Suspend login'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteUser(usr.email)}
+                              className="px-3 py-2 bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-650 text-[9px] font-black uppercase rounded-lg transition"
+                            >
+                              Purge
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ==========================================
+              TAB 5: PAYMENTS JOURNAL LEDGER
+              ========================================== */}
+          {activeTab === 'payments' && (
+            <div className="space-y-6 animate-fade-in" id="payments-module">
+              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-gray-100 pb-4 col flex-wrap">
+                <div>
+                  <h1 className="text-xl font-black text-[#1F3F7A] uppercase">Receivables Payments Ledger</h1>
+                  <p className="text-xs text-gray-400 mt-1">Audit submitted deposits payments receipts, debit indices, and driver accounts logs.</p>
+                </div>
+                <div className="flex gap-2 items-center flex-wrap">
+                  <button
+                    onClick={() => {
+                      setActiveTab('all-payments');
+                      setPaymentCurrentPage(1);
+                    }}
+                    className="px-4 py-2 bg-[#1F3F7A] hover:bg-opacity-95 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition shadow cursor-pointer"
+                  >
+                    View All Payments
+                  </button>
+                  <div className="p-3 bg-[#7CC242]/5 border border-[#7CC242]/20 rounded-xl flex items-center gap-1.5 self-start sm:self-auto select-none">
+                    <span className="text-xs font-bold text-emerald-700 uppercase">Grand Receipts total:</span>
+                    <span className="text-sm font-black text-emerald-600 font-mono">£{totalRevenue} Paid</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Selector filters */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white p-3.5 rounded-2xl border border-gray-200">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search by driver email or target EV..."
+                    value={paymentSearch}
+                    onChange={(e) => setPaymentSearch(e.target.value)}
+                    className="w-full text-xs py-2.5 pl-8 pr-3 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl outline-none focus:bg-white focus:border-[#1F3F7A] transition"
+                  />
+                  <Search className="w-4 h-4 text-gray-400 absolute left-2.5 top-3.5" />
+                </div>
+                <div>
+                  <select
+                    value={paymentStatusFilter}
+                    onChange={(e) => setPaymentStatusFilter(e.target.value)}
+                    className="w-full text-xs py-2.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl outline-none focus:bg-white px-2 transition"
+                  >
+                    <option value="All">All Transactions</option>
+                    <option value="Pending">Pending Audit check</option>
+                    <option value="Verified">Verified Approved</option>
+                  </select>
+                </div>
+              </div>
+
+              {filteredPayments.length === 0 ? (
+                <p className="text-xs text-gray-400 py-12 text-center bg-white border rounded-2xl">No transaction records match filters.</p>
+              ) : (
+                <div className="bg-white rounded-2xl border border-gray-150 overflow-hidden shadow-2xs">
+                  {/* Table */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse font-sans">
+                      <thead>
+                        <tr className="bg-gray-50 text-gray-500 font-bold uppercase tracking-wider text-[10px] border-b border-gray-100">
+                          <th className="py-3 px-5">Receipt ID</th>
+                          <th className="py-3 px-5">Driver Account</th>
+                          <th className="py-3 px-5">License Model Target</th>
+                          <th className="py-3 px-5">Date Verified</th>
+                          <th className="py-3 px-5">Clearing Method</th>
+                          <th className="py-3 px-5">Clearing Amount</th>
+                          <th className="py-3 px-5 text-right">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100 font-medium">
+                        {filteredPayments.map((pay) => (
+                          <tr key={pay.id} className="hover:bg-gray-50 transition border-b border-gray-50">
+                            <td className="py-3.5 px-5 font-mono font-bold text-gray-650 text-xs">
+                              {pay.id}
+                            </td>
+                            <td className="py-3.5 px-5 font-mono text-gray-600">
+                              {pay.userEmail}
+                            </td>
+                            <td className="py-3.5 px-5 text-[#1F3F7A] font-bold">
+                              {pay.carName}
+                            </td>
+                            <td className="py-3.5 px-5 font-mono text-gray-400">
+                              {pay.date || 'N/A'}
+                            </td>
+                            <td className="py-3.5 px-5 text-gray-500">
+                              {pay.method || 'Card Authorization'}
+                            </td>
+                            <td className="py-3.5 px-5 font-mono text-emerald-600 font-bold font-sans text-sm">
+                              £{pay.amount}
+                            </td>
+                            <td className="py-3.5 px-5 text-right font-sans">
+                              {pay.status === 'Pending' ? (
+                                <button
+                                  onClick={() => handleVerifyManualPayment(pay.id)}
+                                  className="px-3 py-1.5 bg-[#7CC242] hover:bg-emerald-500 text-white font-bold text-[10px] uppercase tracking-wider rounded-lg transition"
+                                >
+                                  Verify Paid
+                                </button>
+                              ) : (
+                                <span className="inline-block px-2.5 py-1 bg-emerald-50 text-emerald-800 border border-emerald-100 rounded text-[9.5px] font-black uppercase tracking-wider leading-none">
+                                  ✓ Cleared Receipt
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile responsive lists */}
+                  <div className="md:hidden divide-y divide-gray-100 p-4 space-y-4">
+                    {filteredPayments.map((pay) => (
+                      <div key={pay.id} className="border border-gray-150 rounded-xl p-4 bg-gray-50 space-y-3 shadow-3xs">
+                        <div className="flex justify-between items-start select-none">
+                          <div>
+                            <span className="text-[10px] font-mono font-bold text-gray-400">Ref ID: {pay.id}</span>
+                            <strong className="text-xs font-sans font-black text-[#1F3F7A] block leading-none mt-1 truncate max-w-[200px]">{pay.carName}</strong>
+                          </div>
+                          <span className={`inline-block px-2 py-0.5 rounded text-[9px] uppercase font-bold leading-none ${
+                            pay.status === 'Verified' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                          }`}>
+                            {pay.status}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-[10px] border-y border-gray-200/50 py-2.5 my-1 text-gray-550">
+                          <div>
+                            Driver: <span className="text-gray-500 font-mono block text-xs mt-0.5 break-all">{pay.userEmail}</span>
+                          </div>
+                          <div className="text-right">
+                            Total: <strong className="text-emerald-600 block text-xs font-bold font-sans mt-0.5">£{pay.amount}</strong>
+                          </div>
+                        </div>
+
+                        {pay.status === 'Pending' && (
+                          <div className="pt-1">
+                            <button
+                              onClick={() => handleVerifyManualPayment(pay.id)}
+                              className="w-full py-2 text-center bg-[#7CC242] text-white text-[10px] font-black uppercase tracking-wider rounded-xl transition cursor-pointer"
+                            >
+                              Verify Clearing Receipt
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ==========================================
+              TAB 6: NOTIFICATIONS Couriers
+              ========================================== */}
+          {activeTab === 'emails' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-fade-in" id="emails-module">
+              
+              {/* Left Column Manual couplers */}
+              <div className="lg:col-span-6 space-y-6">
+                
+                {/* Send manual email trigger form */}
+                <div className="bg-white border border-gray-150 p-6 rounded-2xl shadow-sm space-y-4">
+                  <h3 className="font-sans font-black text-xs text-[#1F3F7A] uppercase tracking-wider border-b border-gray-100 pb-2">Manual courier Dispatcher</h3>
+                  
+                  <form onSubmit={handleSendManualEmail} className="space-y-4 text-xs font-sans">
+                    <div className="relative font-sans text-xs">
+                      {emailToIsOpen && (
+                        <div className="fixed inset-0 z-10" onClick={() => setEmailToIsOpen(false)} />
+                      )}
+                      <label className="block text-[#1F3F7A]/80 font-bold mb-1.5 uppercase">Target Recipient Address</label>
+                      <div className="relative z-20">
+                        <input
+                          type="text"
+                          placeholder="Type to search by name or email..."
+                          value={emailToSearch}
+                          onChange={(e) => {
+                            setEmailToSearch(e.target.value);
+                            setEmailToIsOpen(true);
+                            const matched = systemRecords.users?.find(u => `${u.fullName || ''} (${u.email})` === e.target.value || u.email === e.target.value);
+                            if (matched) {
+                              setEmailTo(matched.email);
+                            } else {
+                              setEmailTo('');
+                            }
+                          }}
+                          onFocus={() => setEmailToIsOpen(true)}
+                          className="w-full text-xs p-3 bg-gray-50 border border-gray-200 text-gray-800 outline-none rounded-xl focus:bg-white focus:border-[#1F3F7A] transition"
+                          required
+                        />
+                        {emailTo && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEmailTo('');
+                              setEmailToSearch('');
+                            }}
+                            className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 font-bold"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                      {emailToIsOpen && (
+                        <div className="absolute z-30 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto divide-y divide-gray-50">
+                          {systemRecords.users?.filter(u => {
+                            const term = emailToSearch.toLowerCase();
+                            return (u.fullName || '').toLowerCase().includes(term) || (u.email || '').toLowerCase().includes(term);
+                          }).map(u => (
+                            <button
+                              key={u.email}
+                              type="button"
+                              onClick={() => {
+                                setEmailTo(u.email);
+                                setEmailToSearch(`${u.fullName || u.email} (${u.email})`);
+                                setEmailToIsOpen(false);
+                              }}
+                              className="w-full text-left p-3 hover:bg-gray-50 text-xs transition flex justify-between gap-2"
+                            >
+                              <span className="font-bold text-[#1F3F7A]">{u.fullName || 'No Name'}</span>
+                              <span className="text-gray-400 font-mono truncate">{u.email}</span>
+                            </button>
+                          ))}
+                          {systemRecords.users?.filter(u => {
+                            const term = emailToSearch.toLowerCase();
+                            return (u.fullName || '').toLowerCase().includes(term) || (u.email || '').toLowerCase().includes(term);
+                          }).length === 0 && (
+                            <div className="p-3 text-center text-gray-400 italic">No matches found</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-[#1F3F7A]/80 font-bold mb-1.5 uppercase col">Alert Subject Line</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Schedule Heathrow Vehicle Collection Delivery Date"
+                        value={emailSubject}
+                        onChange={(e) => setEmailSubject(e.target.value)}
+                        className="w-full text-xs p-3 bg-gray-50 border border-gray-200 text-gray-800 outline-none rounded-xl focus:bg-white focus:border-[#1F3F7A] transition"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[#1F3F7A]/80 font-bold mb-1.5 uppercase col">Mail Body Content</label>
+                      <textarea
+                        required
+                        rows={5}
+                        placeholder="Describe collection steps, comprehensive insurance checks required, and logistics notes..."
+                        value={emailContent}
+                        onChange={(e) => setEmailContent(e.target.value)}
+                        className="w-full text-xs p-3.5 bg-gray-50 border border-gray-200 text-gray-800 outline-none rounded-xl focus:bg-white focus:border-[#1F3F7A] transition animate-fade-in"
+                      />
+                    </div>
+
+                    <div className="pt-2">
+                      <button
+                        type="submit"
+                        disabled={actionLoading}
+                        className="w-full py-3 bg-[#1F3F7A] hover:bg-opacity-90 text-white text-xs font-black uppercase tracking-wider rounded-xl transition shadow flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <Send className="w-3.5 h-3.5 text-white/80" />
+                        <span>Dispatch Courier Notification</span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* Insurance Policy dispatch */}
+                <div className="bg-white border border-gray-150 p-6 rounded-2xl shadow-sm space-y-4">
+                  <h3 className="font-sans font-black text-xs text-[#1F3F7A] uppercase border-b border-gray-100 pb-2">Attach comprehensive motor cover policy</h3>
+                  
+                  <form onSubmit={handleUploadInsuranceAction} className="space-y-4 text-xs font-sans">
+                    <div className="relative font-sans text-xs">
+                      {insuranceIsOpen && (
+                        <div className="fixed inset-0 z-10" onClick={() => setInsuranceIsOpen(false)} />
+                      )}
+                      <label className="block text-[#1F3F7A]/80 font-bold mb-1.5 uppercase">Select Target driver</label>
+                      <div className="relative z-20">
+                        <input
+                          type="text"
+                          placeholder="Type to search by name or email..."
+                          value={insuranceSearch}
+                          onChange={(e) => {
+                            setInsuranceSearch(e.target.value);
+                            setInsuranceIsOpen(true);
+                            const matched = systemRecords.users?.find(u => `${u.fullName || ''} (${u.email})` === e.target.value || u.email === e.target.value);
+                            if (matched) {
+                              setInsuranceTargetEmail(matched.email);
+                            } else {
+                              setInsuranceTargetEmail('');
+                            }
+                          }}
+                          onFocus={() => setInsuranceIsOpen(true)}
+                          className="w-full text-xs p-3 bg-gray-50 border border-gray-200 text-gray-800 outline-none rounded-xl focus:bg-white focus:border-[#1F3F7A] transition"
+                          required
+                        />
+                        {insuranceTargetEmail && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setInsuranceTargetEmail('');
+                              setInsuranceSearch('');
+                            }}
+                            className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 font-bold"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                      {insuranceIsOpen && (
+                        <div className="absolute z-30 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto divide-y divide-gray-50">
+                          {systemRecords.users?.filter(u => {
+                            const term = insuranceSearch.toLowerCase();
+                            return (u.fullName || '').toLowerCase().includes(term) || (u.email || '').toLowerCase().includes(term);
+                          }).map(u => (
+                            <button
+                              key={u.email}
+                              type="button"
+                              onClick={() => {
+                                setInsuranceTargetEmail(u.email);
+                                setInsuranceSearch(`${u.fullName || u.email} (${u.email})`);
+                                setInsuranceIsOpen(false);
+                              }}
+                              className="w-full text-left p-3 hover:bg-gray-50 text-xs transition flex justify-between gap-2"
+                            >
+                              <span className="font-bold text-[#1F3F7A]">{u.fullName || 'No Name'}</span>
+                              <span className="text-gray-400 font-mono truncate">{u.email}</span>
+                            </button>
+                          ))}
+                          {systemRecords.users?.filter(u => {
+                            const term = insuranceSearch.toLowerCase();
+                            return (u.fullName || '').toLowerCase().includes(term) || (u.email || '').toLowerCase().includes(term);
+                          }).length === 0 && (
+                            <div className="p-3 text-center text-gray-400 italic">No matches found</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-[#1F3F7A]/80 font-bold mb-1.5 uppercase">Motor cover PDF or image URL</label>
+                      <input
+                        type="url"
+                        required
+                        placeholder="Paste comprehensive cover URL or certificate reference..."
+                        value={insurancePolicyUrl}
+                        onChange={(e) => setInsurancePolicyUrl(e.target.value)}
+                        className="w-full text-xs p-3 bg-gray-50 border border-gray-200 text-gray-800 outline-none rounded-xl font-mono"
+                      />
+                    </div>
+
+                    <div className="pt-2">
+                      <button
+                        type="submit"
+                        disabled={actionLoading}
+                        className="w-full py-3 bg-[#7CC242] hover:bg-emerald-500 text-white text-xs font-black uppercase tracking-wider rounded-xl transition shadow cursor-pointer"
+                      >
+                        Publish Coverage and Alert Partner
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+
+              {/* Right Column Sentinel Outbox logs */}
+              <div className="lg:col-span-6 bg-white border border-gray-150 p-6 rounded-2xl shadow-sm space-y-4">
+                <h3 className="font-sans font-black text-xs text-[#1F3F7A] uppercase tracking-wider border-b border-gray-100 pb-2">Courier Dispatch Log Ledger</h3>
+                {systemRecords.emails?.length === 0 ? (
+                  <p className="text-xs text-gray-400 py-12 text-center font-sans">Sent archives folder empty.</p>
+                ) : (
+                  <div className="divide-y divide-gray-100 space-y-4 max-h-[60vh] overflow-y-auto pr-1 text-xs">
+                    {systemRecords.emails.map(email => (
+                      <div key={email.id} className="pt-3.5 space-y-2">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <strong className="text-gray-900 block font-sans font-black leading-tight">{email.subject}</strong>
+                            <span className="text-[10.5px] text-gray-400 font-mono block mt-0.5">To: {email.userEmail}</span>
+                          </div>
+                          <span className="text-[9.5px] text-gray-400 font-mono bg-gray-50 border px-1.5 py-0.5 rounded leading-none shrink-0">{email.dateSent || 'Just now'}</span>
+                        </div>
+                        <p className="p-3 bg-gray-50 rounded-xl text-gray-650 italic text-[11px] leading-relaxed border border-gray-100">
+                          {email.content}
+                        </p>
+                        {email.attachmentUrl && (
+                          <div className="p-2 bg-emerald-50 rounded-lg border border-emerald-100 flex justify-between items-center text-[10px] text-emerald-800">
+                            <span className="truncate font-mono font-medium flex-1">Attached PDF: {email.attachmentUrl}</span>
+                            <a href={email.attachmentUrl} target="_blank" rel="noreferrer" className="text-emerald-700 hover:underline font-bold shrink-0 block ml-2">Open File ↗</a>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ==========================================
+              TAB 7: CUSTOMERS INQUIRIES INBOX
+              ========================================== */}
+          {activeTab === 'settings' && (
+            <div className="bg-white border border-gray-150 p-6 rounded-2xl shadow-sm space-y-4 animate-fade-in" id="settings-module">
+              <div>
+                <h1 className="text-xl font-black text-[#1F3F7A] uppercase">Income Inquiries Inbox</h1>
+                <p className="text-xs text-gray-400 mt-1">Examine and reply to driver requests and sales inquiries submitted from standard guest contact forms.</p>
+              </div>
+
+              {systemRecords.inquiries?.length === 0 ? (
+                <div className="py-16 text-center border-2 border-dashed border-gray-200 rounded-xl">
+                  <span className="block text-gray-400 text-xs uppercase font-bold">Mailbox threads empty</span>
+                  <p className="text-[11px] text-gray-400 mt-1">Guest submissions from the frontend contact screen automatically index here.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {systemRecords.inquiries.map(inq => (
+                    <div key={inq.id} className="border border-gray-150 rounded-2xl p-5 space-y-3.5 text-xs bg-gray-50">
+                      <div className="flex justify-between items-start border-b border-gray-200/50 pb-2.5">
+                        <div>
+                          <strong className="text-[#1F3F7A] text-sm block font-sans font-black">{inq.name}</strong>
+                          <span className="text-[10px] text-gray-450 font-mono block mt-0.5">Email address: {inq.email}</span>
+                        </div>
+                        <span className="text-[9.5px] text-gray-400 font-mono bg-white border px-2 py-0.5 rounded shadow-2xs leading-none">{inq.dateReceived}</span>
+                      </div>
+
+                      <p className="p-3 bg-white text-gray-700 rounded-xl leading-relaxed border border-gray-100 font-light">
+                        "{inq.msg}"
+                      </p>
+
+                      <div className="flex justify-between items-center pt-1 font-sans">
+                        <span className="text-[#7CC242] font-black uppercase tracking-wider text-[9.5px]">● Dispatch couriers standby</span>
+                        <a 
+                          href={`mailto:${inq.email}?subject=Heathrow Fleet Inquiry Response`}
+                          className="px-4 py-2 bg-[#1F3F7A] hover:bg-opacity-90 text-white font-bold text-[10px] uppercase rounded-xl transition cursor-pointer"
+                        >
+                          Reply via email client ✉
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ==========================================
+              TAB: ALL APPLICATIONS (PAGINATED)
+              ========================================== */}
+          {activeTab === 'all-applications' && (
+            <div className="space-y-6 animate-fade-in" id="all-applications-module">
+              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                <div>
+                  <h1 className="text-xl font-black text-[#1F3F7A] uppercase">All Applications Ledger</h1>
+                  <p className="text-xs text-gray-400 mt-1">Full database registry of submitted applicant files, with pagination and search.</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setActiveTab('applications');
+                  }}
+                  className="px-4 py-2 border border-gray-200 text-gray-600 hover:bg-gray-50 text-xs font-bold uppercase rounded-xl transition cursor-pointer"
+                >
+                  Back to Queue
+                </button>
+              </div>
+
+              {/* Filters selector */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white p-3.5 rounded-2xl border border-gray-200">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search applicant, vehicle or email..."
+                    value={appSearch}
+                    onChange={(e) => {
+                      setAppSearch(e.target.value);
+                      setAppCurrentPage(1);
+                    }}
+                    className="w-full text-xs py-2.5 pl-8 pr-3 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl outline-none focus:bg-white focus:border-[#1F3F7A] transition"
+                  />
+                  <Search className="w-4 h-4 text-gray-400 absolute left-2.5 top-3" />
+                </div>
+                <div>
+                  <select
+                    value={appStatusFilter}
+                    onChange={(e) => {
+                      setAppStatusFilter(e.target.value);
+                      setAppCurrentPage(1);
+                    }}
+                    className="w-full text-xs py-2.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl outline-none focus:bg-white px-2 transition"
+                  >
+                    <option value="All">All statuses</option>
+                    <option value="Pending">Pending / review required</option>
+                    <option value="Approved">Approved cleared</option>
+                    <option value="Rejected">Rejected</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Application Table/Cards */}
+              {filteredApplications.length === 0 ? (
+                <div className="bg-white border border-gray-200 p-12 text-center rounded-2xl">
+                  <FileText className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                  <span className="block text-gray-700 font-bold mb-1">No Applications Found</span>
+                  <p className="text-xs text-gray-500">Could not find any applications matching the filters.</p>
+                </div>
+              ) : (() => {
+                const itemsPerPage = 30;
+                const totalPages = Math.ceil(filteredApplications.length / itemsPerPage);
+                const startIndex = (appCurrentPage - 1) * itemsPerPage;
+                const paginatedApps = filteredApplications.slice(startIndex, startIndex + itemsPerPage);
+
+                return (
+                  <div className="space-y-4">
+                    <div className="bg-white rounded-2xl border border-gray-150 overflow-hidden shadow-2xs">
+                      {/* Desktop */}
+                      <div className="hidden md:block overflow-x-auto font-sans">
+                        <table className="w-full text-left text-xs border-collapse">
+                          <thead>
+                            <tr className="bg-gray-50 text-gray-500 font-bold uppercase tracking-wider text-[10px] border-b border-gray-100 font-sans">
+                              <th className="py-4 px-5">Applicant</th>
+                              <th className="py-4 px-5">Email</th>
+                              <th className="py-4 px-5">Selected Vehicle</th>
+                              <th className="py-4 px-5">Income Summary</th>
+                              <th className="py-4 px-5">Date Logged</th>
+                              <th className="py-4 px-5">Status</th>
+                              <th className="py-4 px-5 text-right">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100 font-medium">
+                            {paginatedApps.map((app) => (
+                              <tr key={app.id} className="hover:bg-gray-50 transition">
+                                <td className="py-4 px-5">
+                                  <span className="font-sans font-black text-[#1F3F7A] text-sm block">
+                                    {app.fullName || app.applyDetails?.fullName || "Not Specified"}
+                                  </span>
+                                  {app.phone && <span className="text-[10px] text-gray-400 block font-mono mt-0.5">Ph: {app.phone}</span>}
+                                </td>
+                                <td className="py-4 px-5 font-mono text-gray-650">{app.userEmail}</td>
+                                <td className="py-4 px-5 text-gray-855 text-xs font-semibold">{app.carName}</td>
+                                <td className="py-4 px-5 font-sans">
+                                  <span className="font-mono text-emerald-600 font-bold text-xs">{app.applyDetails?.weeklyIncome ? `£${app.applyDetails.weeklyIncome}/wk` : 'N/A'}</span>
+                                  <span className="text-[10px] text-gray-450 block mt-0.5">{app.applyDetails?.employment || 'Unknown'}</span>
+                                </td>
+                                <td className="py-4 px-5 text-gray-400 font-mono text-[11px]">{app.dateApplied || 'N/A'}</td>
+                                <td className="py-4 px-5 font-sans">
+                                  <span className={`inline-block px-2.5 py-0.5 rounded text-[10px] uppercase font-black tracking-wider leading-none ${
+                                    app.status === 'Approved' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+                                    app.status === 'Rejected' ? 'bg-red-50 text-red-750 border border-red-100' :
+                                    'bg-amber-50 text-amber-700 border border-amber-100'
+                                  }`}>
+                                    {app.status || 'Pending'}
+                                  </span>
+                                </td>
+                                <td className="py-4 px-5 text-right space-x-2">
+                                  <button
+                                    onClick={() => setInspectedAppForDocs(app)}
+                                    className="px-3 py-1.5 border border-[#1F3F7A]/20 text-[#1F3F7A] hover:bg-[#1F3F7A]/5 font-bold text-[10px] uppercase tracking-wider rounded-lg transition"
+                                  >
+                                    View Papers
+                                  </button>
+                                  <button
+                                    onClick={() => setInspectedAppForFullView(app)}
+                                    className="px-3 py-1.5 bg-[#1F3F7A] hover:bg-opacity-90 text-white font-bold text-[10px] uppercase tracking-wider rounded-lg transition"
+                                  >
+                                    Audit Folder
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Mobile */}
+                      <div className="md:hidden space-y-4 p-4 text-xs font-sans">
+                        {paginatedApps.map((app) => (
+                          <div key={app.id} className="border border-gray-150 rounded-xl p-4 bg-gray-50 space-y-3">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <strong className="text-sm font-black text-[#1F3F7A] block leading-none">{app.fullName || app.applyDetails?.fullName || 'Applicant'}</strong>
+                                <span className="text-[10px] text-gray-400 block mt-1">{app.userEmail}</span>
+                              </div>
+                              <span className={`inline-block px-2 py-0.5 rounded text-[9.5px] uppercase font-bold leading-none ${
+                                app.status === 'Approved' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+                                app.status === 'Rejected' ? 'bg-red-50 text-red-750 border border-red-100' :
+                                'bg-amber-50 text-amber-755 border border-amber-100'
+                              }`}>
+                                {app.status || 'Pending'}
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 text-[11px] border-y border-gray-200/50 py-2.5 my-1 text-gray-600">
+                              <div>Vehicle: <span className="font-semibold text-gray-905 block mt-0.5">{app.carName}</span></div>
+                              <div>Income: <span className="text-emerald-600 font-mono font-bold block mt-0.5">£{app.applyDetails?.weeklyIncome || 0}/wk</span></div>
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => setInspectedAppForDocs(app)}
+                                className="flex-1 py-1.5 text-center border border-gray-200 text-[#1F3F7A] text-[10px] uppercase font-bold rounded-lg bg-white"
+                              >
+                                ID Files
+                              </button>
+                              <button
+                                onClick={() => setInspectedAppForFullView(app)}
+                                className="flex-1 py-1.5 text-center bg-[#1F3F7A] text-white text-[10px] uppercase font-bold rounded-lg"
+                              >
+                                Audit
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Pagination Indicators */}
+                    {totalPages > 1 && (
+                      <div className="flex justify-center items-center gap-1.5 pt-2">
+                        {Array.from({ length: totalPages }).map((_, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => {
+                              setAppCurrentPage(i + 1);
+                              document.getElementById('super-admin-root')?.scrollIntoView({ behavior: 'smooth' });
+                            }}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                              appCurrentPage === i + 1
+                                ? 'bg-[#1F3F7A] text-white'
+                                : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200'
+                            }`}
+                          >
+                            {i + 1}
+                          </button>
                         ))}
                       </div>
                     )}
                   </div>
+                );
+              })()}
+            </div>
+          )}
 
-                </div>
-              )}
-
-
-              {/* ==========================================
-                  TAB 7: CUSTOMERS INCOMING INBOX (CONTACT CONTEXT)
-                  ========================================== */}
-              {activeTab === 'settings' && (
-                <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 space-y-4 animate-fade-in" id="settings-module">
-                  <div>
-                    <h3 className="font-sans font-black text-white text-base flex items-center gap-1.5 uppercase">
-                      <MessageSquare className="w-5 h-5 text-emerald-400" /> Incoming customer Inquiries Inbox
-                    </h3>
-                    <p className="text-xs text-slate-400">Examine real-time messages submitted from web-guests inquiring on fleet vehicle options or underwriting criteria.</p>
+          {/* ==========================================
+              TAB: ALL USERS (PAGINATED WITH DETAILS)
+              ========================================== */}
+          {activeTab === 'all-users' && (
+            <div className="space-y-6 animate-fade-in" id="all-users-module">
+              {selectedUserDetail ? (
+                // USER DETAIL SUBPAGE
+                <div className="space-y-6 font-sans">
+                  <div className="flex items-center justify-between border-b border-gray-100 pb-4 flex-wrap gap-3">
+                    <div>
+                      <h1 className="text-xl font-black text-[#1F3F7A] uppercase">Driver Profile Details</h1>
+                      <p className="text-xs text-gray-400 mt-1">Detailed history, receivables, ledger logs and status checks for {selectedUserDetail.fullName || selectedUserDetail.email}.</p>
+                    </div>
+                    <button
+                      onClick={() => setSelectedUserDetail(null)}
+                      className="px-4 py-2 border border-gray-200 text-gray-600 hover:bg-gray-50 text-xs font-bold uppercase rounded-xl transition cursor-pointer font-sans"
+                    >
+                      Back to Drivers
+                    </button>
                   </div>
 
-                  {systemRecords.inquiries?.length === 0 ? (
-                    <div className="py-24 text-center border border-dashed border-slate-800 rounded-xl bg-slate-900/20">
-                      <MessageSquare className="w-10 h-10 text-slate-700 mx-auto mb-2" />
-                      <span className="block text-slate-300 font-bold mb-1">Customers Inbox Empty</span>
-                      <p className="text-xs text-slate-450 max-w-xs mx-auto">Messages generated from your public Contact Form screen automatically register thread lines here.</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {systemRecords.inquiries.map((inq) => (
-                        <div key={inq.id} className="bg-slate-900 rounded-2xl border border-slate-800 p-5 space-y-3.5 text-xs animate-fade-in">
-                          <div className="flex justify-between items-start gap-2 border-b border-slate-850 pb-2.5">
-                            <div>
-                              <strong className="text-white block text-sm">{inq.name}</strong>
-                              <span className="text-[10.5px] text-slate-400 font-mono block">Sender coordinates: {inq.email}</span>
+                  {(() => {
+                    const u = selectedUserDetail;
+                    const uApps = systemRecords.applications?.filter(a => a.userEmail === u.email) || [];
+                    const uPayments = systemRecords.payments?.filter(p => p.userEmail === u.email) || [];
+                    const approvedApps = uApps.filter(a => a.status === 'Approved');
+                    const rejectedApps = uApps.filter(a => a.status === 'Rejected');
+                    const totalPaymentsSum = uPayments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+                    const currentVehicle = approvedApps[0]?.carName || uApps[0]?.carName || 'No active vehicle';
+
+                    return (
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start font-sans">
+                        {/* Summary Column */}
+                        <div className="lg:col-span-4 space-y-6">
+                          <div className="bg-white border border-gray-150 p-6 rounded-2xl shadow-sm space-y-4">
+                            <div className="flex items-center gap-4">
+                              <div className="w-14 h-14 rounded-full bg-[#1F3F7A]/8 text-lg font-bold text-[#1F3F7A] flex items-center justify-center uppercase shadow-3xs">
+                                {u.fullName ? u.fullName.substring(0, 2) : 'DR'}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <h3 className="text-base font-black text-[#1F3F7A] leading-tight truncate">{u.fullName || 'Heathrow Driver'}</h3>
+                                <p className="text-xs text-gray-405 mt-1 truncate">{u.email}</p>
+                              </div>
                             </div>
-                            <div className="text-right">
-                              <span className="text-[10px] text-slate-450 font-mono bg-slate-950 px-2 py-0.5 rounded border border-slate-800">{inq.dateReceived}</span>
-                              <span className="text-[10.5px] text-amber-500 font-black font-mono block mt-1">{inq.id}</span>
+
+                            <div className="border-t border-gray-100 pt-4 space-y-3 text-xs font-sans">
+                              <div className="flex justify-between">
+                                <span className="text-gray-450 font-medium">Phone Support:</span>
+                                <span className="font-bold text-gray-800">{u.phone || 'Not provided'}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-455 font-medium">Registered On:</span>
+                                <span className="font-bold text-gray-800 font-mono">{u.dateCreated || u.createdAt?.substring(0, 10) || 'N/A'}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-455 font-medium">Account Status:</span>
+                                <span className={`px-2 py-0.5 rounded text-[9px] uppercase font-bold leading-none ${
+                                  u.blocked ? 'bg-rose-50 border border-rose-105 text-rose-700 font-sans font-semibold' : 'bg-emerald-50 border border-emerald-105 text-emerald-750 font-semibold'
+                                }`}>
+                                  {u.blocked ? 'Suspended' : 'Active'}
+                                </span>
+                              </div>
+                              <div className="flex justify-between gap-2">
+                                <span className="text-gray-455 font-medium shrink-0">Current Stock:</span>
+                                <span className="font-bold text-[#1F3F7A] truncate max-w-[150px]">{currentVehicle}</span>
+                              </div>
+                            </div>
+
+                            <div className="pt-2">
+                              <button
+                                onClick={() => handleToggleBlockUser(u.email, u.blocked)}
+                                className={`w-full py-2.5 text-center text-xs font-black uppercase tracking-wider rounded-xl transition cursor-pointer ${
+                                  u.blocked 
+                                    ? 'bg-[#7CC242] hover:bg-emerald-550 text-white' 
+                                    : 'bg-rose-600 hover:bg-rose-700 text-white'
+                                }`}
+                              >
+                                {u.blocked ? 'Unblock Driver' : 'Suspend Driver'}
+                              </button>
                             </div>
                           </div>
 
-                          <p className="p-3 bg-slate-950/60 text-slate-200 rounded-xl text-xs italic leading-relaxed font-light border border-slate-850">
-                            "{inq.msg}"
-                          </p>
-
-                          <div className="flex justify-between items-center text-[10.5px] pt-1">
-                            <span className="text-emerald-400 font-mono font-bold uppercase tracking-wider">● Dispatch Ready</span>
-                            <div className="space-x-2">
-                              <a 
-                                href={`mailto:${inq.email}?subject=Inquiry Reply: rent2buyfleet Heathrow`} 
-                                className="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-440 text-gray-950 font-black rounded-lg transition"
-                              >
-                                Reply via Email Client ✉
-                              </a>
+                          {/* Quick Stats Widget */}
+                          <div className="bg-white border border-gray-150 p-6 rounded-2xl shadow-sm text-xs space-y-4">
+                            <h4 className="font-black text-[#1F3F7A] uppercase tracking-wider border-b border-gray-50 pb-1.5">Metrics Ledger</h4>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="bg-gray-50 p-3 rounded-xl font-sans">
+                                <span className="text-[10px] text-gray-400 font-bold uppercase block leading-none">Submitted</span>
+                                <span className="text-lg font-black text-[#1F3F7A] font-mono mt-1 block">{uApps.length} files</span>
+                              </div>
+                              <div className="bg-gray-50 p-3 rounded-xl">
+                                <span className="text-[10px] text-gray-400 font-bold uppercase block leading-none">Approved</span>
+                                <span className="text-lg font-black text-emerald-505 font-mono mt-1 block">{approvedApps.length} clears</span>
+                              </div>
+                              <div className="bg-gray-50 p-3 rounded-xl font-sans">
+                                <span className="text-[10px] text-gray-400 font-bold uppercase block leading-none">Rejected</span>
+                                <span className="text-lg font-black text-rose-505 font-mono mt-1 block">{rejectedApps.length} logs</span>
+                              </div>
+                              <div className="bg-gray-50 p-3 rounded-xl font-sans">
+                                <span className="text-[10px] text-gray-400 font-bold uppercase block leading-none">Cleared Fees</span>
+                                <span className="text-lg font-black text-[#7CC242] font-mono mt-1 block">£{totalPaymentsSum}</span>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
 
+                        {/* History Tabs Column */}
+                        <div className="lg:col-span-8 space-y-6">
+                          {/* Applications list */}
+                          <div className="bg-white border border-gray-150 p-6 rounded-2xl shadow-sm space-y-4">
+                            <h3 className="font-black text-xs text-[#1F3F7A] uppercase tracking-wider border-b border-gray-100 pb-2">Rent-to-Buy Archives</h3>
+                            {uApps.length === 0 ? (
+                              <p className="text-xs text-gray-400 py-6 text-center">No dossiers associated with this driver profile.</p>
+                            ) : (
+                              <div className="space-y-3">
+                                {uApps.map((a) => (
+                                  <div key={a.id} className="p-4 bg-gray-50 border border-gray-100 rounded-xl flex flex-col sm:flex-row justify-between sm:items-center gap-3 text-xs font-sans">
+                                    <div>
+                                      <strong className="text-gray-900 block font-bold text-sm">{a.carName}</strong>
+                                      <span className="text-[10px] text-gray-400 font-mono block mt-1">Submitted: {a.dateApplied || 'N/A'}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3 font-sans">
+                                      <span className="font-mono text-emerald-600 font-bold">£{a.applyDetails?.weeklyIncome || 0}/wk</span>
+                                      <span className={`inline-block px-2 py-0.5 rounded text-[9px] uppercase font-bold leading-none ${
+                                        a.status === 'Approved' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+                                        a.status === 'Rejected' ? 'bg-red-50 text-red-750 border border-red-100' :
+                                        'bg-amber-50 text-amber-700 border border-amber-100'
+                                      }`}>
+                                        {a.status || 'Pending'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Payments Table */}
+                          <div className="bg-white border border-gray-150 p-6 rounded-2xl shadow-sm space-y-4 font-sans">
+                            <h3 className="font-black text-xs text-[#1F3F7A] uppercase tracking-wider border-b border-gray-100 pb-2">Cleared Deposits History</h3>
+                            {uPayments.length === 0 ? (
+                              <p className="text-xs text-gray-400 py-6 text-center">No payment registers tracked for this driver account.</p>
+                            ) : (
+                              <div className="overflow-x-auto text-xs">
+                                <table className="w-full text-left">
+                                  <thead>
+                                    <tr className="bg-gray-50 text-gray-500 font-bold uppercase tracking-wider text-[10px] border-b border-gray-100">
+                                      <th className="py-2.5 px-3">Transaction ID</th>
+                                      <th className="py-2.5 px-3">Vehicle Class</th>
+                                      <th className="py-2.5 px-3">Payment Date</th>
+                                      <th className="py-2.5 px-3">Amount</th>
+                                      <th className="py-2.5 px-3">Status</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-gray-100 font-medium text-gray-750">
+                                    {uPayments.map((p) => (
+                                      <tr key={p.id} className="border-b border-gray-50">
+                                        <td className="py-2.5 px-3 font-mono text-[10.5px] text-gray-500">#{p.id || 'N/A'}</td>
+                                        <td className="py-2.5 px-3">{p.carName || 'General Account'}</td>
+                                        <td className="py-2.5 px-3 font-mono text-[11px] text-gray-400">{p.datePaid || 'N/A'}</td>
+                                        <td className="py-2.5 px-3 font-mono text-emerald-600 font-bold">£{p.amount}</td>
+                                        <td className="py-2.5 px-3">
+                                          <span className={`inline-block px-1.5 py-0.5 rounded text-[8.5px] uppercase font-bold leading-none ${
+                                            p.status === 'Verified' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                                          }`}>
+                                            {p.status || 'Pending'}
+                                          </span>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              ) : (
+                // USERS LIST PAGE
+                <>
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 font-sans">
+                    <div>
+                      <h1 className="text-xl font-black text-[#1F3F7A] uppercase">All Driver Profiles</h1>
+                      <p className="text-xs text-gray-400 mt-1">Full database directory of drivers registered on Heathrow Hub, with stats detail auditing.</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setActiveTab('users');
+                      }}
+                      className="px-4 py-2 border border-gray-200 text-gray-600 hover:bg-gray-50 text-xs font-bold uppercase rounded-xl transition cursor-pointer"
+                    >
+                      Back to Directory
+                    </button>
+                  </div>
+
+                  {/* Search Bar */}
+                  <div className="bg-white p-3.5 rounded-2xl border border-gray-200">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Search full name or email address..."
+                        value={userSearch}
+                        onChange={(e) => {
+                          setUserSearch(e.target.value);
+                          setUserCurrentPage(1);
+                        }}
+                        className="w-full text-xs py-2.5 pl-8 pr-3 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl outline-none focus:bg-white focus:border-[#1F3F7A] transition font-sans"
+                      />
+                      <Search className="w-4 h-4 text-gray-400 absolute left-2.5 top-3" />
+                    </div>
+                  </div>
+
+                  {/* Filter Results */}
+                  {filteredUsers.length === 0 ? (
+                    <div className="bg-white border border-gray-200 p-12 text-center rounded-2xl">
+                      <Users className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                      <span className="block text-gray-700 font-bold mb-1">No Drivers Registered</span>
+                      <p className="text-xs text-gray-500">No profiles matched your search terms parameters.</p>
+                    </div>
+                  ) : (() => {
+                    const itemsPerPage = 30;
+                    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+                    const startIndex = (userCurrentPage - 1) * itemsPerPage;
+                    const paginatedUsers = filteredUsers.slice(startIndex, startIndex + itemsPerPage);
+
+                    return (
+                      <div className="space-y-4 font-sans text-xs">
+                        <div className="bg-white rounded-2xl border border-gray-150 overflow-hidden shadow-2xs">
+                          {/* Desktop Tables View */}
+                          <div className="hidden md:block overflow-x-auto">
+                            <table className="w-full text-left">
+                              <thead>
+                                <tr className="bg-gray-50 text-gray-500 font-bold uppercase tracking-wider text-[10px] border-b border-gray-100 font-sans font-black">
+                                  <th className="py-4 px-5">Driver Name</th>
+                                  <th className="py-4 px-5">Email Address</th>
+                                  <th className="py-4 px-5">Phone Contact</th>
+                                  <th className="py-4 px-5">Role</th>
+                                  <th className="py-4 px-5">Dossiers Handled</th>
+                                  <th className="py-4 px-5">Status</th>
+                                  <th className="py-4 px-5 text-right">Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-gray-100 font-medium text-gray-700">
+                                {paginatedUsers.map((u) => {
+                                  const appCount = systemRecords.applications?.filter(a => a.userEmail === u.email)?.length || 0;
+                                  return (
+                                    <tr key={u.email} className="hover:bg-gray-50 transition">
+                                      <td className="py-4 px-5 font-bold text-[#1F3F7A] text-sm">{u.fullName || 'No Name'}</td>
+                                      <td className="py-4 px-5 font-mono text-gray-500 truncate max-w-[200px]">{u.email}</td>
+                                      <td className="py-4 px-5">{u.phone || 'N/A'}</td>
+                                      <td className="py-4 px-5 text-[10px] font-bold uppercase tracking-wide">{u.role || 'Driver'}</td>
+                                      <td className="py-4 px-5 font-mono font-bold text-gray-500">{appCount} apps</td>
+                                      <td className="py-4 px-5">
+                                        <span className={`inline-block px-2 py-0.5 rounded text-[9px] uppercase font-bold leading-none ${
+                                          u.blocked ? 'bg-rose-50 text-rose-700 border border-rose-100' : 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+                                        }`}>
+                                          {u.blocked ? 'Blocked' : 'Active'}
+                                        </span>
+                                      </td>
+                                      <td className="py-4 px-5 text-right space-x-2 font-sans">
+                                        <button
+                                          onClick={() => setSelectedUserDetail(u)}
+                                          className="px-3 py-1.5 border border-[#1F3F7A]/20 text-[#1F3F7A] hover:bg-[#1F3F7A]/5 font-bold text-[10px] uppercase tracking-wider rounded-lg transition cursor-pointer"
+                                        >
+                                          View User Details
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+
+                          {/* Mobile Cards View */}
+                          <div className="md:hidden space-y-4 p-4 font-sans">
+                            {paginatedUsers.map((u) => {
+                              const appCount = systemRecords.applications?.filter(a => a.userEmail === u.email)?.length || 0;
+                              return (
+                                <div key={u.email} className="border border-gray-150 rounded-xl p-4 bg-gray-50 flex flex-col gap-3">
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <strong className="text-sm font-black text-[#1F3F7A] block leading-none">{u.fullName || 'Driver'}</strong>
+                                      <span className="text-[10px] text-gray-400 block mt-1">{u.email}</span>
+                                    </div>
+                                    <span className={`inline-block px-1.5 py-0.5 rounded text-[8.5px] uppercase font-bold leading-none ${
+                                      u.blocked ? 'bg-rose-50 text-rose-700 border border-rose-100' : 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+                                    }`}>
+                                      {u.blocked ? 'Blocked' : 'Active'}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between text-[11px] text-gray-600 border-t border-gray-200/50 pt-2 font-sans">
+                                    <span>Phone: <span className="font-semibold text-gray-905">{u.phone || 'N/A'}</span></span>
+                                    <span>Dossiers: <span className="font-semibold text-gray-905 font-mono">{appCount}</span></span>
+                                  </div>
+                                  <button
+                                    onClick={() => setSelectedUserDetail(u)}
+                                    className="w-full py-2 bg-[#1F3F7A] text-white text-[10px] uppercase font-bold rounded-lg hover:bg-opacity-95 text-center mt-1 cursor-pointer"
+                                  >
+                                    View User Details
+                                  </button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Pagination */}
+                        {totalPages > 1 && (
+                          <div className="flex justify-center items-center gap-1.5 pt-2">
+                            {Array.from({ length: totalPages }).map((_, i) => (
+                              <button
+                                key={i}
+                                type="button"
+                                onClick={() => {
+                                  setUserCurrentPage(i + 1);
+                                  document.getElementById('super-admin-root')?.scrollIntoView({ behavior: 'smooth' });
+                                }}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                                  userCurrentPage === i + 1
+                                    ? 'bg-[#1F3F7A] text-white'
+                                    : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200'
+                                }`}
+                              >
+                                {i + 1}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </>
+              )}
+            </div>
+          )}
+
+          {/* ==========================================
+              TAB: ALL PAYMENTS (PAGINATED WITH FILTERS)
+              ========================================== */}
+          {activeTab === 'all-payments' && (
+            <div className="space-y-6 animate-fade-in" id="all-payments-module">
+              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 font-sans">
+                <div>
+                  <h1 className="text-xl font-black text-[#1F3F7A] uppercase">All Cleared Receivables</h1>
+                  <p className="text-xs text-gray-400 mt-1">Receipted deposits, weekly balances payment ledger registry logs catalog, with pagination.</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setActiveTab('payments');
+                  }}
+                  className="px-4 py-2 border border-gray-200 text-gray-600 hover:bg-gray-50 text-xs font-bold uppercase rounded-xl transition cursor-pointer"
+                >
+                  Back to Ledger
+                </button>
+              </div>
+
+              {/* Filters search */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white p-3.5 rounded-2xl border border-gray-200">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search by user email, vehicle name..."
+                    value={paymentSearch}
+                    onChange={(e) => {
+                      setPaymentSearch(e.target.value);
+                      setPaymentCurrentPage(1);
+                    }}
+                    className="w-full text-xs py-2.5 pl-8 pr-3 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl outline-none focus:bg-white focus:border-[#1F3F7A] transition font-sans"
+                  />
+                  <Search className="w-4 h-4 text-gray-400 absolute left-2.5 top-3" />
+                </div>
+                <div>
+                  <select
+                    value={paymentStatusFilter}
+                    onChange={(e) => {
+                      setPaymentStatusFilter(e.target.value);
+                      setPaymentCurrentPage(1);
+                    }}
+                    className="w-full text-xs py-2.5 bg-gray-50 border border-gray-200 text-gray-800 rounded-xl outline-none focus:bg-white px-2 transition font-sans"
+                  >
+                    <option value="All">All payments statuses</option>
+                    <option value="Verified">Verified receipt</option>
+                    <option value="Pending">Awaiting verification</option>
+                  </select>
+                </div>
+              </div>
+
+              {filteredPayments.length === 0 ? (
+                <div className="bg-white border border-gray-200 p-12 text-center rounded-2xl">
+                  <DollarSign className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                  <span className="block text-gray-700 font-bold mb-1">No Receivables Found</span>
+                  <p className="text-xs text-gray-500">No payment transaction entries matching filtering parameters.</p>
+                </div>
+              ) : (() => {
+                const itemsPerPage = 30;
+                const totalPages = Math.ceil(filteredPayments.length / itemsPerPage);
+                const startIndex = (paymentCurrentPage - 1) * itemsPerPage;
+                const paginatedPayments = filteredPayments.slice(startIndex, startIndex + itemsPerPage);
+
+                return (
+                  <div className="space-y-4 font-sans text-xs">
+                    <div className="bg-white rounded-2xl border border-gray-150 overflow-hidden shadow-2xs">
+                      {/* Desktop */}
+                      <div className="hidden md:block overflow-x-auto">
+                        <table className="w-full text-left">
+                          <thead>
+                            <tr className="bg-gray-50 text-gray-500 font-bold uppercase tracking-wider text-[10px] border-b border-gray-100 font-sans font-black">
+                              <th className="py-4 px-5">Driver Account</th>
+                              <th className="py-4 px-5">Target Vehicle</th>
+                              <th className="py-4 px-5">Transaction ID</th>
+                              <th className="py-4 px-5">Payment Date</th>
+                              <th className="py-4 px-5">Amount Dues</th>
+                              <th className="py-4 px-5">Status</th>
+                              <th className="py-4 px-5 text-right">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100 font-medium text-gray-700 font-sans">
+                            {paginatedPayments.map((p) => {
+                              const driverObj = systemRecords.users?.find(u => u.email === p.userEmail);
+                              return (
+                                <tr key={p.id} className="hover:bg-gray-50 transition border-b border-gray-50">
+                                  <td className="py-4 px-5">
+                                    <strong className="text-gray-905 block font-bold text-sm">{driverObj?.fullName || 'Heathrow Account'}</strong>
+                                    <span className="text-[10.5px] text-gray-400 font-mono block mt-0.5">{p.userEmail}</span>
+                                  </td>
+                                  <td className="py-4 px-5 font-semibold text-indigo-900">{p.carName || 'Account Credit'}</td>
+                                  <td className="py-4 px-5 font-mono text-gray-500">#{p.id || p.stripeSessionId?.substring(0, 10) || 'N/A'}</td>
+                                  <td className="py-4 px-5 font-mono text-[11px] text-gray-400">{p.datePaid || 'N/A'}</td>
+                                  <td className="py-4 px-5 font-mono text-emerald-600 font-bold text-sm">£{p.amount}</td>
+                                  <td className="py-4 px-5">
+                                    <span className={`inline-block px-2.5 py-0.5 rounded text-[10px] uppercase font-black tracking-wider leading-none ${
+                                      p.status === 'Verified' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-amber-50 text-amber-700 border border-amber-100'
+                                    }`}>
+                                      {p.status || 'Pending'}
+                                    </span>
+                                  </td>
+                                  <td className="py-4 px-5 text-right font-sans">
+                                    {p.status !== 'Verified' && (
+                                      <button
+                                        onClick={() => handleVerifyManualPayment(p.id)}
+                                        className="px-3 py-1.5 bg-[#7CC242] hover:bg-emerald-500 text-white font-bold text-[10px] uppercase tracking-wider rounded-lg transition shadow-xs cursor-pointer font-sans"
+                                      >
+                                        Verify Receipt
+                                      </button>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Mobile */}
+                      <div className="md:hidden space-y-4 p-4 font-sans text-xs">
+                        {paginatedPayments.map((p) => {
+                          const driverObj = systemRecords.users?.find(u => u.email === p.userEmail);
+                          return (
+                            <div key={p.id} className="border border-gray-150 rounded-xl p-4 bg-gray-50 space-y-3">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <strong className="text-sm font-black text-[#1F3F7A] block leading-none">{driverObj?.fullName || 'Driver'}</strong>
+                                  <span className="text-[10px] text-gray-400 block mt-1">{p.userEmail}</span>
+                                </div>
+                                <span className={`inline-block px-1.5 py-0.5 rounded text-[8.5px] uppercase font-bold leading-none ${
+                                  p.status === 'Verified' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                                }`}>
+                                  {p.status || 'Pending'}
+                                </span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2 text-[11px] border-y border-gray-200/50 py-2 pt-2 text-gray-650 font-sans">
+                                <div>Dues: <strong className="text-emerald-600 font-mono block text-xs mt-0.5">£{p.amount}</strong></div>
+                                <div>Target: <span className="text-indigo-950 font-semibold block text-xs mt-0.5">{p.carName || 'General'}</span></div>
+                              </div>
+                              <div className="flex justify-between items-center text-[10px] text-gray-400 font-mono">
+                                <span>Ref: #{p.id}</span>
+                                <span>Date: {p.datePaid}</span>
+                              </div>
+                              {p.status !== 'Verified' && (
+                                <button
+                                  onClick={() => handleVerifyManualPayment(p.id)}
+                                  className="w-full py-2 bg-[#7CC242] hover:bg-emerald-505 text-white text-[10px] uppercase font-black rounded-lg transition cursor-pointer"
+                                >
+                                  Verify Clearing Receipt
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                      <div className="flex justify-center items-center gap-1.5 pt-2">
+                        {Array.from({ length: totalPages }).map((_, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => {
+                              setPaymentCurrentPage(i + 1);
+                              document.getElementById('super-admin-root')?.scrollIntoView({ behavior: 'smooth' });
+                            }}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                              paymentCurrentPage === i + 1
+                                ? 'bg-[#1F3F7A] text-white'
+                                : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200'
+                            }`}
+                          >
+                            {i + 1}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           )}
 
         </div>
       </main>
+
+      {/* RENDER MODAL LAYOUT OVERLAYS */}
+      {inspectedAppForDocs && (
+        <DocumentViewerModal 
+          app={inspectedAppForDocs} 
+          onClose={() => setInspectedAppForDocs(null)} 
+        />
+      )}
+
+      {inspectedAppForFullView && (
+        <FullApplicationModal 
+          app={inspectedAppForFullView} 
+          onClose={() => setInspectedAppForFullView(null)} 
+          onAction={handleUnderwritingAction}
+          actionLoading={actionLoading}
+        />
+      )}
 
     </div>
   );
