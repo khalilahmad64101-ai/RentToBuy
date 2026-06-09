@@ -18,7 +18,14 @@ import {
   ChevronDown,
   ChevronUp,
   FileText,
-  DollarSign
+  DollarSign,
+  Upload,
+  Calendar,
+  Key,
+  Check,
+  ThumbsUp,
+  ShieldCheck,
+  ListTodo
 } from 'lucide-react';
 import { useSEO } from '../hooks/useSEO';
 
@@ -38,11 +45,10 @@ export function TrackRide() {
   const [searchResult, setSearchResult] = useState(null);
   const [searchError, setSearchError] = useState('');
 
-  // Active step state for the vertical timeline
-  // Defaults to index 3 ("Approved") for a premium feel
-  const [activeStep, setActiveStep] = useState(3); 
+  // Active step index state for the redesigned 7-step timeline (0 to 6)
+  const [activeStep, setActiveStep] = useState(3); // Defaults to index 3 ("Approved") for preview
   
-  // Custom interactive FAQ index
+  // Custom interactive FAQ index in support section
   const [openFaqIdx, setOpenFaqIdx] = useState(null);
 
   // Pre-configured simulated database for testing statuses instantly
@@ -53,11 +59,6 @@ export function TrackRide() {
       deposit: '£800',
       status: 'Approved',
       stepIndex: 3, 
-      updates: [
-        { text: 'Deposit pending settlement', date: 'Just now' },
-        { text: 'Underwriting check approved by Agent', date: '2 hours ago' },
-        { text: 'DVLA License check verification completed', date: '1 day ago' },
-      ]
     },
     'RTB-8291': {
       vehicle: 'Toyota Aqua',
@@ -65,11 +66,6 @@ export function TrackRide() {
       deposit: '£1000',
       status: 'Under Review',
       stepIndex: 2, 
-      updates: [
-        { text: 'Insurance processing started', date: '5 hours ago' },
-        { text: 'Verification started by Risk Team', date: '1 day ago' },
-        { text: 'Documents received & processed', date: '2 days ago' },
-      ]
     },
     'RTB-1004': {
       vehicle: 'Tesla Model 3',
@@ -77,11 +73,6 @@ export function TrackRide() {
       deposit: '£1500',
       status: 'Vehicle Ready',
       stepIndex: 5,
-      updates: [
-        { text: 'Pristine fleet unit allocated', date: 'Yesterday' },
-        { text: 'Deposit verified in secure escrow', date: '3 days ago' },
-        { text: 'Underwriting check approved in full', date: '4 days ago' },
-      ]
     }
   };
 
@@ -92,18 +83,19 @@ export function TrackRide() {
       // Auto pre-populate a sample track if they have no backend records yet
       const defaultApp = driverData?.applications?.[0];
       if (defaultApp) {
+        let matchedIdx = 2; // Under review as default fallback
+        if (defaultApp.status === 'Approved') matchedIdx = 3;
+        else if (defaultApp.status === 'Paid' || defaultApp.status === 'Completed') matchedIdx = 4;
+        else if (defaultApp.status === 'Submitted') matchedIdx = 0;
+        
         setSearchResult({
           vehicle: defaultApp.carName || 'Toyota Aqua',
           monthly: defaultApp.weeklyPrice ? `£${defaultApp.weeklyPrice * 4}` : '£250',
           deposit: defaultApp.depositAmount ? `£${defaultApp.depositAmount}` : '£1000',
           status: defaultApp.status || 'Under Review',
-          stepIndex: defaultApp.status === 'Approved' ? 3 : 2,
-          updates: [
-            { text: 'Documents received safely', date: '1 day ago' },
-            { text: 'Verification started', date: '2 days ago' },
-            { text: 'Insurance processing', date: '2 days ago' }
-          ]
+          stepIndex: matchedIdx,
         });
+        setActiveStep(matchedIdx);
       }
     }
   }, [user, driverData]);
@@ -124,10 +116,10 @@ export function TrackRide() {
     setIsSearching(true);
     setSearchResult(null);
 
-    // Dynamic loading delay to mimic advanced backend lookup
+    // Dynamic loading delay to mimic advanced search log
     setTimeout(() => {
       const normalizedID = appNumber.trim().toUpperCase();
-      const match = simulatedApps[normalizedID] || simulatedApps['RTB-8291']; // Fallback to Aqua mock
+      const match = simulatedApps[normalizedID] || simulatedApps['RTB-8291']; // Fallback
       
       setSearchResult({
         id: normalizedID,
@@ -136,69 +128,64 @@ export function TrackRide() {
         deposit: match.deposit,
         status: match.status,
         stepIndex: match.stepIndex,
-        updates: match.updates
       });
 
       setActiveStep(match.stepIndex);
       setIsSearching(false);
       
-      // Auto scroll to tracking section below hero
+      // Auto scroll to connection journey
       const elem = document.getElementById('tracking-timeline-section');
       if (elem) {
         elem.scrollIntoView({ behavior: 'smooth' });
       }
-    }, 900);
+    }, 850);
   };
 
-  // Timeline Step Configurations
+  // Timeline Step Configurations (Exactly the 7 steps requested)
   const timelineSteps = [
-    { label: 'Application Submitted', status: 'completed' },
-    { label: 'Documents Uploaded', status: 'completed' },
-    { label: 'Verification In Progress', status: 'completed' },
-    { label: 'Approved', status: 'completed' },
-    { label: 'Deposit Pending', status: 'pending' },
-    { label: 'Vehicle Ready', status: 'upcoming' },
+    { label: 'Application Submitted', desc: 'Use Budget Meter results & complete application form.', icon: FileText },
+    { label: 'Documents Uploaded', desc: 'Securely submit license statement checklist.', icon: Upload },
+    { label: 'Application Under Review', desc: 'Underwriting team checks files for regulatory validation.', icon: Clock },
+    { label: 'Approved', desc: 'Application approved! Proceed to digital contract.', icon: CheckCircle2 },
+    { label: 'Payment Completed', desc: 'Contribution or secure deposit receipt verified.', icon: DollarSign },
+    { label: 'Vehicle Ready', desc: 'Fleet allocated & keys prepared for active dispatch.', icon: Car },
+    { label: 'Collection Scheduled', desc: 'Schedule London key handoff & drive away!', icon: Key }
   ];
 
   return (
-    <div className="bg-gray-50/50 min-h-screen pb-16 font-sans antialiased" id="track-ride-page-root">
+    <div className="bg-white min-h-screen pb-16 font-sans antialiased" id="track-ride-page-root">
       
-      {/* 1. VIP Hero Section (500px height, luxury layout) */}
+      {/* 1. HERO SECTION REDESIGN */}
       <section 
-        className="relative w-full h-[500px] bg-cover bg-center flex items-center px-4 sm:px-6 lg:px-8 overflow-hidden shadow-2xl animate-fade-in"
+        className="relative w-full h-[550px] bg-cover bg-center flex items-center px-4 sm:px-6 lg:px-8 overflow-hidden shadow-sm animate-fade-in"
         style={{
-          backgroundImage: `linear-gradient(90deg, rgba(8, 14, 28, 0.96) 0%, rgba(12, 22, 44, 0.72) 45%, rgba(15, 23, 42, 0.25) 100%), url('https://images.unsplash.com/photo-161843479313-40f8afb4b4d8?auto=format&fit=crop&q=80&w=1600')`
+          backgroundImage: `linear-gradient(90deg, rgba(8, 14, 28, 0.98) 0%, rgba(12, 22, 44, 0.85) 45%, rgba(15, 23, 42, 0.45) 100%), url('https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&q=80&w=1600')`
         }}
         id="track-journey-hero"
       >
-        {/* Subtle grid pattern overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:24px_24px] opacity-25 pointer-events-none z-0"></div>
-        
-        {/* Decorative graphic overlay */}
-        <div className="absolute top-0 right-0 w-[45%] h-full bg-gradient-to-l from-black/20 to-transparent pointer-events-none z-0"></div>
+        {/* Premium ambient grid lines */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff02_1px,transparent_1px),linear-gradient(to_bottom,#ffffff02_1px,transparent_1px)] bg-[size:32px_32px] opacity-20 pointer-events-none"></div>
 
-        {/* Two-Column Grid layout: Left-Text layout & Right-Car layout */}
-        <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
-          
-          {/* Left text block: Title, subtitle & custom badges with logo colors (#7CC242, #1F3F7A) */}
-          <div className="lg:col-span-12 xl:col-span-8 space-y-5 text-left">
-            <div className="inline-flex items-center gap-1.5 bg-white/10 text-white text-[11px] font-black uppercase tracking-widest px-3.5 py-1.5 rounded-md border border-white/20">
-              ⭐ Real-time Status Portal
+        <div className="w-full max-w-7xl mx-auto z-10 text-left">
+          <div className="max-w-2xl space-y-6">
+            <div className="inline-flex items-center gap-1.5 bg-white/10 text-[#7CC242] text-[11px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full border border-white/10 backdrop-blur-md">
+              <span className="w-2 h-2 rounded-full bg-[#7CC242] animate-pulse"></span>
+              Track Your Application
             </div>
             
-            <h1 className="font-sans font-black text-3xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-none uppercase">
-              Track Your <br />
-              <span className="text-[#7CC242]">Ride Journey</span>
+            <h1 className="font-sans font-black text-3xl sm:text-5xl text-white tracking-tight leading-tight uppercase">
+              Monitor Your Vehicle <br />
+              <span className="text-[#7CC242]">Application Progress</span>
             </h1>
             
-            <p className="text-gray-300 text-xs sm:text-sm md:text-base leading-relaxed max-w-xl font-normal">
-              Stay updated with your application and vehicle status. Get real-time updates of your onboarding steps in one unified location.
+            <p className="text-slate-350 text-slate-350 text-sm sm:text-base leading-relaxed font-normal text-slate-200">
+              Stay updated with every stage of your Rent-To-Buy application, from submission to approval and vehicle collection.
             </p>
 
             <div className="pt-2">
               <button 
                 onClick={() => {
-                  const searchForm = document.getElementById('track-by-id-form');
+                  const searchForm = document.getElementById('tracking-timeline-section');
                   if (searchForm) searchForm.scrollIntoView({ behavior: 'smooth' });
                 }}
                 className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-[#7CC242] hover:bg-[#6bb033] text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-[#7CC242]/20 transition-all duration-200 active:scale-95 cursor-pointer font-sans"
@@ -207,52 +194,103 @@ export function TrackRide() {
               </button>
             </div>
           </div>
-
-          {/* Right Image element: stylish premium SUV */}
-          <div className="hidden lg:flex lg:col-span-4 relative items-center justify-center select-none">
-            <div className="w-full max-w-[400px] flex items-center justify-center relative">
-              <img
-                src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=800"
-                alt="R2BuyCar Modern Hybrid SUV Asset"
-                className="w-full object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)] transform -scale-x-100 lg:-mr-6 animate-fade-in"
-              />
-            </div>
-          </div>
-
         </div>
       </section>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 space-y-12">
-
-        {/* 2. Application Tracking Section */}
-        <section 
-          className="bg-white rounded-3xl border border-gray-150 p-4 sm:p-10 shadow-sm relative overflow-hidden"
-          id="tracking-timeline-section"
-        >
-          <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-100 pb-6 mb-8 gap-4">
-            <div className="space-y-1">
-              <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest">Active Stages</span>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tight">
-                Application Routing Timeline
-              </h2>
-            </div>
-            <div className="inline-flex items-center gap-2 bg-brand-primary/10 text-brand-secondary px-3.5 py-1.5 rounded-xl border border-brand-primary/10 text-xs font-bold font-mono">
-              <span className="w-2 h-2 rounded-full bg-brand-primary animate-pulse"></span>
-              Currently View State: {timelineSteps[activeStep]?.label || 'Active Status'}
-            </div>
+      {/* 2. SECTION 1 – APPLICATION JOURNEY */}
+      <section className="bg-white py-16 sm:py-24 border-b border-gray-150" id="tracking-timeline-section">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="font-sans font-black text-2xl sm:text-3xl text-[#1F3F7A] tracking-tight uppercase">
+              Track Every Step
+            </h2>
+            <div className="h-1.5 w-24 bg-[#7CC242] mx-auto my-4 rounded-full"></div>
+            <p className="text-xs sm:text-sm text-slate-500 font-bold uppercase tracking-wider text-slate-400">
+              Your real-time progress update from initial sign-up to ignition.
+            </p>
           </div>
 
-          {/* Interactive Timeline Controls for easy testing/review */}
-          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 mb-8 flex flex-wrap items-center gap-3 justify-center">
-            <span className="text-xs font-bold text-slate-500">Live Simulation Status Indicator:</span>
+          {/* User Sleek Search Row integrated natively without heavy box borders */}
+          <div className="max-w-4xl mx-auto mb-16 bg-slate-50 p-6 sm:p-8 rounded-3xl border border-slate-100 shadow-xs" id="track-lookup-form-container">
+            <form onSubmit={handleTrackSubmit} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+              <div className="md:col-span-5 text-left">
+                <label className="block text-[10px] font-black uppercase text-[#1F3F7A] tracking-wider mb-2">
+                  Application ID / Reference
+                </label>
+                <input 
+                  type="text"
+                  required
+                  value={appNumber}
+                  onChange={(e) => setAppNumber(e.target.value)}
+                  placeholder="e.g. RTB-7729"
+                  className="w-full bg-white px-4 py-3 rounded-xl border border-gray-200 text-xs font-bold text-[#1F3F7A] placeholder-slate-400 focus:ring-2 focus:ring-[#7CC242]/20 focus:border-[#7CC242] transition-all outline-none"
+                />
+              </div>
+              <div className="md:col-span-5 text-left">
+                <label className="block text-[10px] font-black uppercase text-[#1F3F7A] tracking-wider mb-2">
+                  Associated Email Address
+                </label>
+                <input 
+                  type="email"
+                  required
+                  value={emailAddress}
+                  onChange={(e) => setEmailAddress(e.target.value)}
+                  placeholder="e.g. driver@rental.co.uk"
+                  className="w-full bg-white px-4 py-3 rounded-xl border border-gray-200 text-xs font-bold text-[#1F3F7A] placeholder-slate-400 focus:ring-2 focus:ring-[#7CC242]/20 focus:border-[#7CC242] transition-all outline-none"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <button 
+                  type="submit"
+                  disabled={isSearching}
+                  className="w-full bg-[#1F3F7A] hover:bg-[#152e5c] text-white font-extrabold text-xs uppercase tracking-wider py-4 rounded-xl cursor-pointer transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-md shadow-[#1F3F7A]/10"
+                >
+                  {isSearching ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  ) : (
+                    <>
+                      <span>Search</span>
+                      <Search className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+            {searchError && (
+              <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-xl border border-red-100 text-xs font-bold flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4" />
+                {searchError}
+              </div>
+            )}
+            {searchResult && (
+              <div className="mt-4 p-4 bg-[#7CC242]/10 text-[#1F3F7A] rounded-2xl border border-[#7CC242]/20 animate-fade-in flex flex-col sm:flex-row sm:items-center sm:justify-between text-left gap-2">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-[#7CC242] px-2.5 py-0.5 rounded-md">
+                    {searchResult.id || 'SUCCESS'}
+                  </span>
+                  <span className="font-extrabold text-xs ml-2 text-[#1F3F7A]">
+                    Vehicle: {searchResult.vehicle} — Status: {searchResult.status}
+                  </span>
+                </div>
+                <div className="text-xs text-slate-500 font-bold">
+                  Weekly Contribution Level Loaded
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Simulated Controls badges */}
+          <div className="bg-slate-50/50 max-w-4xl mx-auto p-4 rounded-2xl border border-slate-100 mb-12 flex flex-wrap items-center gap-3 justify-center">
+            <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Preview Timeline Stages:</span>
             {timelineSteps.map((s, idx) => (
               <button
                 key={idx}
                 onClick={() => setActiveStep(idx)}
-                className={`px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider transition-all cursor-pointer ${
                   activeStep === idx 
-                    ? 'bg-slate-950 text-white shadow-xs' 
-                    : 'bg-white hover:bg-slate-100 text-slate-600 border border-slate-150'
+                    ? 'bg-[#1F3F7A] text-white shadow-xs' 
+                    : 'bg-white hover:bg-slate-100 text-[#1F3F7A] border border-gray-200'
                 }`}
               >
                 {idx + 1}. {s.label}
@@ -260,266 +298,60 @@ export function TrackRide() {
             ))}
           </div>
 
-          <div className="relative mt-8">
-            {/* Timeline Progress Bar (Vertical on mobile, horizontal on desktop) */}
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-6 relative">
+          {/* Premium Stepper Grid */}
+          <div className="relative max-w-5xl mx-auto">
+            {/* Visual connecting line */}
+            <div className="absolute top-[35px] left-8 right-8 h-1 bg-slate-150 hidden lg:block z-0">
+              <div 
+                className="h-full bg-gradient-to-r from-[#7CC242] to-[#1F3F7A] transition-all duration-500"
+                style={{ width: `${(activeStep / (timelineSteps.length - 1)) * 100}%` }}
+              ></div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-6 relative z-10">
               {timelineSteps.map((step, idx) => {
                 const isPassed = idx < activeStep;
                 const isCurrent = idx === activeStep;
                 const isUpcoming = idx > activeStep;
+                const StepIcon = step.icon;
 
                 return (
                   <div 
-                    key={idx} 
+                    key={idx}
                     onClick={() => setActiveStep(idx)}
-                    className={`relative p-5 rounded-2xl border transition-all duration-300 cursor-pointer ${
+                    className="flex flex-col items-center group cursor-pointer"
+                  >
+                    {/* Badge Icon */}
+                    <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 ${
                       isCurrent 
-                        ? 'bg-brand-secondary border-brand-secondary text-white shadow-lg shadow-brand-secondary/15 scale-105' 
+                        ? 'bg-[#7CC242] text-white shadow-lg shadow-[#7CC242]/30 scale-110 ring-4 ring-[#7CC242]/20' 
                         : isPassed 
-                        ? 'bg-brand-primary/5 border-brand-primary/15 text-slate-800 hover:bg-brand-primary/10' 
-                        : 'bg-white border-gray-200 text-slate-400 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <span className={`text-[10px] font-bold uppercase tracking-widest ${isCurrent ? 'text-brand-primary' : 'text-slate-400'}`}>
-                        Step 0{idx + 1}
+                        ? 'bg-[#1F3F7A] text-white' 
+                        : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'
+                    }`}>
+                      <StepIcon className="w-5 h-5" />
+                    </div>
+
+                    <div className="mt-4 text-center">
+                      <span className={`text-[9px] font-extrabold uppercase tracking-wider block mb-1 ${
+                        isCurrent ? 'text-[#7CC242]' : isPassed ? 'text-[#1F3F7A]' : 'text-slate-450'
+                      }`}>
+                        Stage 0{idx + 1}
                       </span>
-                      {isPassed ? (
-                        <CheckCircle2 className="w-5 h-5 text-brand-primary" />
-                      ) : isCurrent ? (
-                        <span className="flex h-5 w-5 relative">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-5 w-5 bg-brand-primary/30 border-2 border-white items-center justify-center text-[9px] font-black text-white">●</span>
-                        </span>
-                      ) : (
-                        <Circle className="w-5 h-5 text-slate-200" />
-                      )}
+                      <h4 className="font-sans font-black text-xs text-[#1F3F7A] tracking-tight uppercase max-w-[120px] mx-auto min-h-[32px] flex items-center justify-center">
+                        {step.label}
+                      </h4>
+                      <p className="text-[10px] text-slate-400 leading-tight mt-1 max-w-[110px] mx-auto opacity-75">
+                        {isPassed ? 'Completed' : isCurrent ? 'Active review' : 'Upcoming Stage'}
+                      </p>
                     </div>
-                    <h4 className="font-sans font-black text-xs sm:text-xs tracking-tight line-clamp-1">
-                      {step.label}
-                    </h4>
-                    <p className={`text-[10px] mt-1.5 leading-relaxed font-sans ${isCurrent ? 'text-indigo-100' : 'text-slate-400'}`}>
-                      {isPassed 
-                        ? 'Task fully verified and completed.' 
-                        : isCurrent 
-                        ? 'Active reviewer handling underwriting.' 
-                        : 'Pending preliminary tasks completion.'}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
 
-        {/* Two-Column Midsection: Track by ID Form & How Tracking Works */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
-          
-          {/* 3. Enter Reference / Application ID */}
-          <div 
-            className="bg-white rounded-3xl border border-gray-150 p-4 sm:p-8 shadow-sm flex flex-col justify-between"
-            id="track-by-id-form"
-          >
-            <div className="space-y-4">
-              <div className="space-y-1">
-                <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Manual Lookup</span>
-                <h3 className="text-lg sm:text-xl font-black text-slate-950 tracking-tight">
-                  Enter Reference or Application ID
-                </h3>
-                <p className="text-xs text-slate-400 font-sans">
-                  If you are checking status offline, enter your unique ID below. Try default code <span className="font-bold text-indigo-600">RTB-7729</span> or <span className="font-bold text-indigo-600">RTB-8291</span> for full simulated demo profiles.
-                </p>
-              </div>
-
-              {searchError && (
-                <div className="p-3 bg-rose-50 text-rose-700 rounded-xl border border-rose-100 text-xs font-bold flex items-center gap-2">
-                  <ShieldAlert className="w-4 h-4" />
-                  {searchError}
-                </div>
-              )}
-
-              <form onSubmit={handleTrackSubmit} className="space-y-4 mt-2">
-                <div>
-                  <label className="block text-[10px] font-black uppercase text-slate-700 tracking-wider mb-1.5">
-                    Application Number
-                  </label>
-                  <input 
-                    type="text"
-                    required
-                    value={appNumber}
-                    onChange={(e) => setAppNumber(e.target.value)}
-                    placeholder="e.g. RTB-7729"
-                    className="w-full bg-slate-50/50 px-4 py-3 rounded-xl border border-gray-150 text-xs font-bold text-slate-850 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-indigo-600/10 focus:border-indigo-600 transition-all outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-black uppercase text-slate-700 tracking-wider mb-1.5">
-                    Email Address
-                  </label>
-                  <input 
-                    type="email"
-                    required
-                    value={emailAddress}
-                    onChange={(e) => setEmailAddress(e.target.value)}
-                    placeholder="e.g. driver@rental.co.uk"
-                    className="w-full bg-slate-50/50 px-4 py-3 rounded-xl border border-gray-150 text-xs font-bold text-slate-850 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-indigo-600/10 focus:border-indigo-600 transition-all outline-none"
-                  />
-                </div>
-
-                <div className="pt-2">
-                  <button 
-                    type="submit"
-                    disabled={isSearching}
-                    className="w-full bg-slate-950 hover:bg-slate-900 text-white font-extrabold text-xs uppercase tracking-wider py-4.5 rounded-xl cursor-pointer transition-all flex items-center justify-center gap-1.5 active:scale-98"
-                  >
-                    {isSearching ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                        <span>Retrieving Status File...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>Track Status</span>
-                        <Search className="w-4 h-4" />
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            </div>
-
-            {searchResult && (
-              <div className="mt-6 p-4.5 bg-brand-primary/5 text-brand-secondary rounded-2xl border border-brand-primary/10 animate-fade-in flex flex-col gap-2">
-                <span className="text-[9px] font-bold uppercase tracking-wider text-brand-secondary bg-white border border-brand-primary/20 px-2.5 py-0.5 rounded-md self-start">Match Found: {searchResult.id || 'RTB-8291'}</span>
-                <span className="font-extrabold text-sm block">
-                  Status: {searchResult.status}
-                </span>
-                <p className="text-[11px] text-slate-650 leading-tight">
-                  Lease vehicle is currently marked as <span className="font-bold underline">{searchResult.vehicle}</span>. Review timeline and updates accordingly.
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* 4. How Tracking Works */}
-          <div className="bg-white rounded-3xl border border-gray-150 p-4 sm:p-8 shadow-sm flex flex-col justify-between" id="how-tracking-steps">
-            <div className="space-y-4">
-              <div className="space-y-1">
-                <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest">Simple Explanation</span>
-                <h3 className="text-lg sm:text-xl font-black text-slate-950 tracking-tight">
-                  How Tracking Works
-                </h3>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                {[
-                  { title: 'Submit Application', desc: 'Securely submit your application profile along with vehicle preferences.' },
-                  { title: 'Upload Documents', desc: 'Provide proof of ID, DVLA licenses & clean private-hire status parameters.' },
-                  { title: 'Get Approved', desc: 'Our underwriters check your direct wage profiles quickly and fairly.' },
-                  { title: 'Complete Deposit & Collect', desc: 'Pay your direct deposit, finalize signatures, & collect ready units.' }
-                ].map((step, sIdx) => (
-                  <div key={sIdx} className="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-1 hover:border-indigo-100 transition-all">
-                    <span className="text-[10px] font-mono text-indigo-600 font-extrabold block">Step 0{sIdx + 1}</span>
-                    <h5 className="font-sans font-black text-xs text-[#111A2E] tracking-tight">{step.title}</h5>
-                    <p className="text-[10px] font-sans text-slate-500 leading-relaxed font-light">{step.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        {/* Two-Column Left/Right: Current Ride Information & Recent Updates */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
-          {/* 5. Current Ride Information */}
-          <div className="lg:col-span-7 bg-white rounded-3xl border border-gray-150 p-4 sm:p-8 shadow-sm space-y-6" id="current-ride-section">
-            <div className="space-y-1">
-              <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Allocated Assets</span>
-              <h3 className="text-lg sm:text-xl font-black text-slate-950 tracking-tight">
-                Current Ride Information
-              </h3>
-              <p className="text-xs text-slate-400 font-sans">
-                Review key stats, active deposit status, & leasing parameters of your requested vehicle below.
-              </p>
-            </div>
-
-            {/* Premium Interactive Asset Panel */}
-            <div className="bg-slate-950 text-white rounded-2xl p-6 relative overflow-hidden group">
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-brand-primary/20 via-transparent to-transparent"></div>
-              
-              <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-                <div className="space-y-4">
-                  <div className="inline-flex items-center gap-1.5 bg-brand-primary/10 text-brand-primary text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md border border-brand-primary/20">
-                    <Car className="w-3.5 h-3.5" />
-                    Toyota Aqua
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <span className="text-[10px] text-slate-400 font-mono tracking-wider uppercase block">Monthly Payment Scale</span>
-                    <div className="flex items-baseline text-2xl font-black text-white">
-                      £250<span className="text-xs text-slate-400 font-sans font-normal ml-1">/ Month Contribution</span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <span className="text-[10px] text-slate-400 font-mono tracking-wider uppercase block">Escrow Refundable Deposit</span>
-                    <div className="flex items-baseline text-lg font-extrabold text-white">
-                      £1,000<span className="text-xs text-slate-400 font-sans font-normal ml-1">Paid Base</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col items-start sm:items-end justify-between gap-4 self-stretch sm:self-center">
-                  <div className="bg-brand-secondary border border-brand-secondary/50 rounded-2xl p-4 flex flex-col items-center justify-center text-center w-full min-w-[140px]">
-                    <span className="text-[9px] text-brand-primary font-mono tracking-widest uppercase">UNDER REVIEW</span>
-                    <span className="text-lg font-black leading-none mt-1 text-white">82% Verified</span>
-                  </div>
-                  
-                  {user && (
-                    <div className="flex items-center gap-2 text-[10px] font-mono text-slate-400">
-                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                      Assigned to: {user.fullName || user.email}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 6. Notifications & Updates */}
-          <div className="lg:col-span-5 bg-white rounded-3xl border border-gray-150 p-4 sm:p-8 shadow-sm space-y-6 animate-fade-in" id="notifications-logs">
-            <div className="space-y-1">
-              <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest">Activity Audit</span>
-              <h3 className="text-lg sm:text-xl font-black text-slate-950 tracking-tight">
-                Notifications & Updates
-              </h3>
-              <p className="text-xs text-slate-400 font-sans">
-                Review recent system updates completed by Underwriters.
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              {[
-                { label: 'Insurance processing', status: 'Pending review of clean coverage policy parameters.', date: 'Today at 10:24 AM', icon: Bell },
-                { label: 'Verification started', status: 'Security risk check flagged green for manual check.', date: 'Yesterday at 3:15 PM', icon: Clock },
-                { label: 'Documents received', status: 'Licensing PDFs & address statements validated.', date: '2 days ago at 11:32 AM', icon: FileCheck2 },
-              ].map((notif, nIdx) => {
-                const IconComp = notif.icon;
-                return (
-                  <div key={nIdx} className="flex gap-4 p-4.5 bg-slate-50/50 border border-gray-150/80 rounded-2xl relative overflow-hidden group hover:border-brand-primary/20 transition-all">
-                    <div className="shrink-0 p-2.5 bg-slate-100 text-slate-700 group-hover:bg-brand-primary/10 group-hover:text-brand-secondary rounded-xl transition-all duration-300">
-                      <IconComp className="w-4 h-4" />
-                    </div>
-                    <div className="space-y-1 flex-1">
-                      <div className="flex items-center justify-between">
-                        <h5 className="font-sans font-black text-xs text-slate-950 leading-none">{notif.label}</h5>
-                        <span className="text-[9px] text-slate-400 font-mono">{notif.date}</span>
+                    {/* Mobil Connection Arrow indicator */}
+                    {idx < timelineSteps.length - 1 && (
+                      <div className="my-3 block lg:hidden font-black text-[#7CC242]">
+                        ⬇
                       </div>
-                      <p className="text-[10px] text-slate-500 font-sans leading-relaxed">{notif.status}</p>
-                    </div>
+                    )}
                   </div>
                 );
               })}
@@ -527,96 +359,181 @@ export function TrackRide() {
           </div>
 
         </div>
+      </section>
 
-        {/* 7. FAQ Section */}
-        <section className="bg-white rounded-3xl border border-gray-150 p-4 sm:p-10 shadow-sm space-y-8" id="tracking-faqs">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Portal Queries</span>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight">
-              Tracking & Underwriting FAQs
-            </h2>
-            <p className="text-xs sm:text-sm text-gray-500 font-sans">
-              Frequently asked questions regarding processing latency, required verification paperwork, and deposit rules.
-            </p>
-          </div>
-
-          <div className="max-w-4xl mx-auto divide-y divide-gray-100">
-            {[
-              {
-                q: 'How long does approval take?',
-                a: 'Most underwritings are completed and checked within 24 to 48 hours of initial verification. Providing clean, crisp documents and correct direct banking profiles accelerates this turnaround significantly.'
-              },
-              {
-                q: 'What documents are required?',
-                a: 'Please upload: 1) Both sides of your DVLA Photocard Driving License, 2) A recent utility statement or council tax documentation as Proof of Address, and 3) A summary or profile parameter representation printout.'
-              },
-              {
-                q: 'When can I pay the deposit?',
-                a: 'Deposits should be settled in full once your application status updates to APPROVED. Do not submit your deposit while validation checks are under active verification.'
-              },
-              {
-                q: 'How do I update my documents?',
-                a: 'If any paper requires correction, you can easily select or drag files to update them on your dashboard portal, or submit secure attachments of revised documents to our Agent support email.'
-              }
-            ].map((faq, fIdx) => (
-              <div key={fIdx} className="py-4 font-sans">
-                <button
-                  onClick={() => setOpenFaqIdx(openFaqIdx === fIdx ? null : fIdx)}
-                  className="w-full flex items-center justify-between text-left py-2 group focus:outline-none cursor-pointer"
-                >
-                  <h4 className="font-extrabold text-sm text-slate-950 group-hover:text-indigo-600 transition-colors">
-                    {faq.q}
-                  </h4>
-                  {openFaqIdx === fIdx ? (
-                    <ChevronUp className="w-4 h-4 text-slate-500 group-hover:text-indigo-600" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-indigo-605" />
-                  )}
-                </button>
-                {openFaqIdx === fIdx && (
-                  <div className="p-3 bg-slate-50 rounded-xl mt-2 text-xs text-slate-600 leading-relaxed animate-fade-in font-light">
-                    {faq.a}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* 8. Contact Support Section */}
-        <section className="bg-slate-950 text-white rounded-3xl p-4 sm:p-12 relative overflow-hidden shadow-xl border border-slate-850 text-center space-y-6" id="contact-support-cta">
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:16px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_80%,transparent_100%)]"></div>
+      {/* 3. SECTION 2 – STATUS EXPLANATION */}
+      <section className="bg-slate-50 py-16 sm:py-24 border-b border-gray-150" id="status-explanations-section">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="relative z-10 space-y-4 max-w-2xl mx-auto">
-            <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest bg-white/5 px-2.5 py-1 rounded-md border border-white/5">
-              Instant Touchpoint
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white leading-none">
-              Need Help?
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="font-sans font-black text-2xl sm:text-3xl text-[#1F3F7A] tracking-tight uppercase">
+              What Each Status Means
             </h2>
-            <p className="text-xs sm:text-sm text-slate-300 font-sans leading-relaxed">
-              If you have custom requests regarding status tracking, or run into verification issues, contact our support team immediately.
+            <div className="h-1.5 w-24 bg-[#7CC242] mx-auto my-4 rounded-full"></div>
+            <p className="text-xs sm:text-sm text-slate-500 font-bold uppercase tracking-wider text-slate-450">
+              Clear definitions to keep you informed of your underwriters' review status.
             </p>
           </div>
 
-          <div className="relative z-10 flex flex-col sm:flex-row gap-4 items-center justify-center pt-2">
-            <a href="tel:+442079460192" className="w-full sm:w-auto">
-              <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-brand-primary hover:bg-brand-primary-hover border border-brand-primary/20 text-brand-secondary font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer transition-all">
-                <Phone className="w-4 h-4" />
-                Call Us
-              </button>
-            </a>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             
-            <a href="mailto:support@rent2go-buycarz.co.uk" className="w-full sm:w-auto">
-              <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white/10 hover:bg-white/15 border border-white/10 text-white font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer transition-all">
-                <Mail className="w-4 h-4 text-brand-primary" />
-                Email Us
-              </button>
+            {/* Status 1 */}
+            <div className="p-6 bg-white rounded-2xl hover:shadow-lg transition-all duration-300 group text-left border border-slate-100 flex gap-4">
+              <div className="shrink-0 w-11 h-11 bg-amber-55 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center font-bold">
+                ⌛
+              </div>
+              <div>
+                <h3 className="font-black text-sm uppercase text-[#1F3F7A] mb-1 tracking-tight">Pending Review</h3>
+                <p className="text-xs text-slate-400 leading-relaxed font-semibold">
+                  Your application is waiting to be reviewed. Our underwriters will verify your credentials shortly.
+                </p>
+              </div>
+            </div>
+
+            {/* Status 2 */}
+            <div className="p-6 bg-white rounded-2xl hover:shadow-lg transition-all duration-300 group text-left border border-slate-100 flex gap-4">
+              <div className="shrink-0 w-11 h-11 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center font-bold">
+                📁
+              </div>
+              <div>
+                <h3 className="font-black text-sm uppercase text-[#1F3F7A] mb-1 tracking-tight">Documents Required</h3>
+                <p className="text-xs text-slate-400 leading-relaxed font-semibold">
+                  Additional information is needed. Check your messages or email portal to re-upload license statements.
+                </p>
+              </div>
+            </div>
+
+            {/* Status 3 */}
+            <div className="p-6 bg-white rounded-2xl hover:shadow-lg transition-all duration-300 group text-left border border-slate-100 flex gap-4">
+              <div className="shrink-0 w-11 h-11 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center font-bold">
+                ✓
+              </div>
+              <div>
+                <h3 className="font-black text-sm uppercase text-[#1F3F7A] mb-1 tracking-tight">Approved</h3>
+                <p className="text-xs text-slate-400 leading-relaxed font-semibold">
+                  Your application has been accepted. Your vehicle is matched and ready for deposit settlement phases.
+                </p>
+              </div>
+            </div>
+
+            {/* Status 4 */}
+            <div className="p-6 bg-white rounded-2xl hover:shadow-lg transition-all duration-300 group text-left border border-slate-100 flex gap-4">
+              <div className="shrink-0 w-11 h-11 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center font-bold">
+                £
+              </div>
+              <div>
+                <h3 className="font-black text-sm uppercase text-[#1F3F7A] mb-1 tracking-tight">Payment Pending</h3>
+                <p className="text-xs text-slate-400 leading-relaxed font-semibold">
+                  Complete payment to continue. Once verified, we will flag your vehicle for ready pickup stages.
+                </p>
+              </div>
+            </div>
+
+            {/* Status 5 */}
+            <div className="p-6 bg-white rounded-2xl hover:shadow-lg transition-all duration-300 group text-left border border-slate-100 flex gap-4">
+              <div className="shrink-0 w-11 h-11 bg-[#7CC242]/10 text-[#7CC242] rounded-xl flex items-center justify-center font-bold">
+                🚗
+              </div>
+              <div>
+                <h3 className="font-black text-sm uppercase text-[#1F3F7A] mb-1 tracking-tight">Vehicle Ready</h3>
+                <p className="text-xs text-slate-400 leading-relaxed font-semibold">
+                  Your vehicle is ready for collection. Fully prepped, polished, detailed, and waiting under our dispatch line.
+                </p>
+              </div>
+            </div>
+
+            {/* Status 6 */}
+            <div className="p-6 bg-white rounded-2xl hover:shadow-lg transition-all duration-300 group text-left border border-slate-100 flex gap-4">
+              <div className="shrink-0 w-11 h-11 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center font-bold">
+                ★
+              </div>
+              <div>
+                <h3 className="font-black text-sm uppercase text-[#1F3F7A] mb-1 tracking-tight">Completed</h3>
+                <p className="text-xs text-slate-400 leading-relaxed font-semibold">
+                  The process has been successfully completed. Keys allocated and driver journey began, welcome to ownership!
+                </p>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* 4. SECTION 3 – CUSTOMER SUPPORT */}
+      <section className="bg-white py-16 sm:py-24" id="customer-support-help-section">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="font-sans font-black text-2xl sm:text-3xl text-[#1F3F7A] tracking-tight uppercase">
+              Need Help With Your Application?
+            </h2>
+            <div className="h-1.5 w-24 bg-[#7CC242] mx-auto my-4 rounded-full"></div>
+            <p className="text-xs sm:text-sm text-slate-500 font-bold uppercase tracking-wider text-slate-400">
+              Get in touch with our operations support team now.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12 max-w-6xl mx-auto text-left">
+            
+            {/* Contact Support */}
+            <div className="space-y-3 p-4 hover:bg-slate-50 rounded-2xl transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                <Phone className="w-5 h-5" />
+              </div>
+              <h4 className="font-sans font-black text-xs uppercase text-[#1F3F7A] tracking-tight">Contact Support</h4>
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Our operations team is available Monday to Friday from 9 AM to 5 PM. Dial +44 20 7946 0192 for direct updates.
+              </p>
+            </div>
+
+            {/* Email Assistance */}
+            <div className="space-y-3 p-4 hover:bg-slate-50 rounded-2xl transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center font-bold">
+                <Mail className="w-5 h-5" />
+              </div>
+              <h4 className="font-sans font-black text-xs uppercase text-[#1F3F7A] tracking-tight">Email Assistance</h4>
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Submit updated licensing, change request details, or other queries with your reference index directly to support@r2buy.com.
+              </p>
+            </div>
+
+            {/* Track Application Help */}
+            <div className="space-y-3 p-4 hover:bg-slate-50 rounded-2xl transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-[#7CC242]/10 text-[#7CC242] flex items-center justify-center font-bold">
+                <Search className="w-5 h-5" />
+              </div>
+              <h4 className="font-sans font-black text-xs uppercase text-[#1F3F7A] tracking-tight">Track Application Help</h4>
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Your reference ID was dispatched to your sign-up email inbox. If misplaced, request reference recovery from the login portal.
+              </p>
+            </div>
+
+            {/* Frequently Asked Questions */}
+            <div className="space-y-3 p-4 hover:bg-slate-50 rounded-2xl transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center font-bold">
+                <HelpCircle className="w-5 h-5" />
+              </div>
+              <h4 className="font-sans font-black text-xs uppercase text-[#1F3F7A] tracking-tight">Frequently Asked Questions</h4>
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Access self-service guides concerning insurance coverage parameters, standard weekly rent calculations, and bad debit limits.
+              </p>
+            </div>
+
+          </div>
+
+          <div className="pt-4">
+            <a 
+              href="/contact"
+              className="inline-flex items-center justify-center px-10 py-4 bg-[#1F3F7A] hover:bg-[#152e5c] text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-lg transition-transform hover:-translate-y-0.5 active:translate-y-0 duration-200"
+            >
+              Contact Support
             </a>
           </div>
-        </section>
 
-      </div>
+        </div>
+      </section>
+
     </div>
   );
 }

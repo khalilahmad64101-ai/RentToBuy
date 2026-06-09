@@ -1,24 +1,26 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Button } from '../components/ui/Button';
 import { 
   Car, 
-  UserPlus, 
+  Search, 
+  Sparkles, 
   FileText, 
   UploadCloud, 
-  Clock, 
+  Key, 
+  MapPin, 
+  User, 
   ShieldCheck, 
-  CreditCard, 
-  Sparkles, 
-  Check, 
+  Calendar,
+  CheckCircle, 
+  DollarSign, 
+  Clock, 
+  ChevronRight, 
   UserCheck, 
-  Shield, 
-  TrendingUp, 
-  HelpCircle, 
-  PhoneCall, 
-  CheckCircle,
-  ChevronDown,
-  ChevronUp,
+  CreditCard, 
+  BadgePercent,
+  TrendingUp,
+  Gauge,
+  Zap,
   ArrowRight
 } from 'lucide-react';
 import { useSEO } from '../hooks/useSEO';
@@ -30,423 +32,379 @@ export function HowItWorks() {
     keywords: 'how rent to buy works, hire purchase car, bad credit car lease UK, buycarz roadmap, R2BuyCar guide'
   });
 
-  const [openFaqIdx, setOpenFaqIdx] = useState(null);
+  // Interactive timeline preview active step state (indexes 0 to 5)
+  const [activeStep, setActiveStep] = useState(0);
 
-  const steps = [
+  // SECTION 1 - The 6 Steps Dataset
+  const processSteps = [
     {
-      num: '1',
-      title: 'Browse Available Cars',
-      desc: 'Choose from our range of quality vehicles and find the one that suits your needs.',
+      step: 'Step 1',
+      title: 'Choose Your Budget',
+      desc: 'Determine your realistic weekly contribution rate with our smart affordability features.',
+      icon: DollarSign,
+    },
+    {
+      step: 'Step 2',
+      title: 'Browse Matching Vehicles',
+      desc: 'Explore available fuel-efficient, high-spec hybrid and electric cars that fit your budget.',
+      icon: Search,
+    },
+    {
+      step: 'Step 3',
+      title: 'Select Your Vehicle',
+      desc: 'Pick your perfect vehicle and lock in pricing, features, and key specifications.',
       icon: Car,
-      accent: 'indigo'
     },
     {
-      num: '2',
-      title: 'Create Your Account',
-      desc: 'Register and complete your profile to begin your application.',
-      icon: UserPlus,
-      accent: 'indigo'
-    },
-    {
-      num: '3',
-      title: 'Submit Application',
-      desc: 'Fill out the application form and provide the required information.',
+      step: 'Step 4',
+      title: 'Complete Your Application',
+      desc: 'Submit your fast, secure digital application online to get fast response underwriting.',
       icon: FileText,
-      accent: 'indigo'
     },
     {
-      num: '4',
-      title: 'Upload Documents',
-      desc: 'Upload your driving licence, address proof, and identification documents.',
+      step: 'Step 5',
+      title: 'Upload Required Documents',
+      desc: 'Securely upload clear digital copies of your DVLA driving license and basic identification documents.',
       icon: UploadCloud,
-      accent: 'indigo'
     },
     {
-      num: '5',
-      title: 'Verification Process',
-      desc: 'Our team reviews your application and verifies your documents.',
-      icon: Clock,
-      accent: 'indigo'
-    },
-    {
-      num: '6',
-      title: 'Application Approval',
-      desc: 'Once approved, you will receive confirmation and insurance details.',
-      icon: ShieldCheck,
-      accent: 'indigo'
-    },
-    {
-      num: '7',
-      title: 'Pay Deposit',
-      desc: 'Secure your vehicle by completing the required deposit payment.',
-      icon: CreditCard,
-      accent: 'indigo'
-    },
-    {
-      num: '8',
-      title: 'Drive Away',
-      desc: 'Collect your vehicle and begin your rent-to-buy journey.',
-      icon: Sparkles,
-      accent: 'indigo'
+      step: 'Step 6',
+      title: 'Get Approved & Collect Your Vehicle',
+      desc: 'Sign your digital agreement, finalise your starter deposit, and collect your keys.',
+      icon: Key,
     }
   ];
 
-  const docs = [
+  // SECTION 2 - Required Documents Dataset
+  const requiredDocs = [
     {
-      title: 'Driving Licence',
-      desc: 'Both sides of your valid photocard DVLA driving licence with relevant badges/underwriting details.',
+      title: 'Driving Licence Front',
+      desc: 'A clear scan or color photo of the front of your valid photocard DVLA driving licence showing your name and photograph clearly.',
       icon: UserCheck
     },
     {
-      title: 'Proof of Address',
-      desc: 'Two separate utility bills, bank statements or council tax summaries generated within the last 3 months.',
+      title: 'Driving Licence Back',
+      desc: 'A clear photo of the back of your DVLA driving licence card to check category approvals, restrictions, and expiry dates.',
       icon: FileText
     },
     {
-      title: 'Photo ID / Selfie Verification',
-      desc: 'A quick, stateful biometric facial selfie confirmation of identity matching your photocards.',
-      icon: Shield
+      title: 'Selfie Verification Photo',
+      desc: 'A quick digital selfie confirming your live face matches the valid photocard identification provided.',
+      icon: User
     },
     {
-      title: 'Income or Employment Information',
-      desc: 'Consistent gig-partner earnings reports, PCO earnings invoices, or basic direct banking transaction history.',
-      icon: TrendingUp
+      title: 'Proof of Address (if required)',
+      desc: 'Utility bills (water, council tax, or electricity) or standard bank statements issued within the past 90 days.',
+      icon: MapPin
     }
   ];
 
-  const eligibility = [
-    'Minimum age requirement (Generally 21+ with verified record)',
-    'Valid DVLA driving licence (No major serious endorsements)',
-    'Proof of UK address (Consistent utilities or tenancy letters)',
-    'Ability to meet payment requirements (Clean record and secure banking details)'
-  ];
-
-  const triggers = [
+  // SECTION 3 - Why Choose Us Dataset
+  const keyBenefits = [
     {
-      title: 'Fast Approval',
-      desc: 'Decisions are generated by our underwriting team within days, getting you to step 8 quickly.',
-      icon: ShieldCheck
+      title: 'No Large Upfront Cost',
+      desc: 'Bypass hefty high-street hire purchase down payments. Pay a minimal initial deposit to secure your vehicle.',
+      icon: DollarSign,
+      color: 'bg-[#7CC242]/10 text-[#7CC242]'
     },
     {
-      title: 'Flexible Payments',
-      desc: 'Weekly contributions are automatically debited. Predictable and easy to track.',
-      icon: CreditCard
+      title: 'Flexible Weekly Payments',
+      desc: 'Enjoy manageable, predictable weekly contributions directly debited and aligned with your driving schedule.',
+      icon: Calendar,
+      color: 'bg-indigo-50 text-[#1F3F7A]'
     },
     {
-      title: 'Trusted Process',
-      desc: 'Clear legal parameters and complete transparency at every single step of your lease.',
-      icon: Sparkles
+      title: 'Build Towards Ownership',
+      desc: 'A structured, interest-free portion of every payment translates into real equity ownership over time.',
+      icon: TrendingUp,
+      color: 'bg-emerald-50 text-emerald-600'
     },
     {
-      title: 'Dedicated Support',
-      desc: 'Your designated concierge account rep handles all servicing, repairs, & questions instantly.',
-      icon: PhoneCall
-    }
-  ];
-
-  const faqs = [
-    {
-      q: 'How long does approval take?',
-      a: 'Once steps 1 to 4 are completed (account created, profile saved, papers uploaded), our agent reviews and underwrites details within 24 to 48 hours.'
+      title: 'Suitable For Drivers With Limited Credit History',
+      desc: 'We look at your current income stability, driving status, and identification — not past credit score metrics.',
+      icon: ShieldCheck,
+      color: 'bg-teal-50 text-teal-600'
     },
     {
-      q: 'What documents do I need?',
-      a: 'We require a valid photocard driving licence, two current utility proof of address papers (within 90 days), and stable wage or direct debit profiles.'
+      title: 'Road-Ready Vehicles',
+      desc: 'Every vehicle is fully inspected, serviced, detailed, and thoroughly roadtested before handover.',
+      icon: Gauge,
+      color: 'bg-rose-50 text-rose-600'
     },
     {
-      q: 'Can I apply online?',
-      a: 'Yes! The entire application, from browse to upload to electronic underwriting signatures, is fully online.'
-    },
-    {
-      q: 'When do I pay the deposit?',
-      a: 'The deposit is paid after Stage 6 (Application Approval) to secure the selected vehicle in preparation for you to drive away.'
+      title: 'Fast Application Process',
+      desc: 'Our administrative pipeline ensures verification and underwriting review results within 48 hours.',
+      icon: Zap,
+      color: 'bg-amber-50 text-amber-600'
     }
   ];
 
   return (
-    <div className="bg-gray-50/50 min-h-screen pb-16 font-sans antialiased" id="how-it-works-page">
+    <div className="bg-white min-h-screen pb-16 font-sans antialiased" id="how-it-works-page">
       
-      {/* 1. VIP Hero Section (500px height, luxury layout) */}
+      {/* 1. HERO SECTION (SAME STYLE AS TRACK RIDE PAGE) */}
       <section 
-        className="relative w-full h-[500px] bg-cover bg-center flex items-center px-4 sm:px-6 lg:px-8 overflow-hidden shadow-2xl animate-fade-in"
+        className="relative w-full h-[500px] bg-cover bg-center flex items-center px-4 sm:px-6 lg:px-8 overflow-hidden shadow-sm animate-fade-in"
         style={{
-          backgroundImage: `linear-gradient(90deg, rgba(8, 14, 28, 0.96) 0%, rgba(12, 22, 44, 0.72) 45%, rgba(15, 23, 42, 0.25) 100%), url('https://images.unsplash.com/photo-161843479313-40f8afb4b4d8?auto=format&fit=crop&q=80&w=1600')`
+          backgroundImage: `linear-gradient(90deg, rgba(8, 14, 28, 0.98) 0%, rgba(12, 22, 44, 0.85) 45%, rgba(15, 23, 42, 0.45) 100%), url('https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&q=80&w=1600')`
         }}
-        id="how-works-hero-seq"
+        id="how-works-hero"
       >
-        {/* Subtle grid pattern overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:24px_24px] opacity-25 pointer-events-none z-0"></div>
-        
-        {/* Decorative graphic overlay */}
-        <div className="absolute top-0 right-0 w-[45%] h-full bg-gradient-to-l from-black/20 to-transparent pointer-events-none z-0"></div>
+        {/* Premium ambient grid lines */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff02_1px,transparent_1px),linear-gradient(to_bottom,#ffffff02_1px,transparent_1px)] bg-[size:32px_32px] opacity-20 pointer-events-none"></div>
 
-        {/* Two-Column Grid layout: Left-Text layout & Right-Car layout */}
-        <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
-          
-          {/* Left text block: Title, subtitle & custom badges with logo colors (#7CC242, #1F3F7A) */}
-          <div className="lg:col-span-7 space-y-5 text-left">
-            <div className="inline-flex items-center gap-1.5 bg-white/10 text-white text-[11px] font-black uppercase tracking-widest px-3.5 py-1.5 rounded-md border border-white/20">
-              ⭐ Clear Path to Vehicle Ownership
+        <div className="w-full max-w-7xl mx-auto z-10 text-left">
+          <div className="max-w-2xl space-y-6">
+            <div className="inline-flex items-center gap-1.5 bg-white/10 text-[#7CC242] text-[11px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full border border-white/10 backdrop-blur-md">
+              <span className="w-2 h-2 rounded-full bg-[#7CC242] animate-pulse"></span>
+              How Rent-To-Buy Works
             </div>
             
-            <h1 className="font-sans font-black text-3xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-none uppercase">
-              How Our Rent-To-Buy <br />
-              <span className="text-[#7CC242]">Process Works</span>
+            <h1 className="font-sans font-black text-3xl sm:text-5xl text-white tracking-tight leading-tight uppercase">
+              Your Simple Path To <br />
+              <span className="text-[#7CC242]">Vehicle Ownership</span>
             </h1>
             
-            <p className="text-gray-300 text-xs sm:text-sm md:text-base leading-relaxed max-w-xl font-normal">
-              A simple step-by-step process to get behind the wheel of your next vehicle. Our simplified system bypasses heavy bank constraints.
+            <p className="text-slate-350 text-sm sm:text-base leading-relaxed font-normal text-slate-200">
+              From selecting a vehicle to collecting the keys, our straightforward Rent-To-Buy process helps drivers get on the road quickly and confidently.
+            </p>
+
+            <div className="pt-2">
+              <button 
+                onClick={() => {
+                  const scrollDestination = document.getElementById('six-step-timeline-section');
+                  if (scrollDestination) scrollDestination.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-[#7CC242] hover:bg-[#6bb033] text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-[#7CC242]/20 transition-all duration-200 active:scale-95 cursor-pointer font-sans"
+              >
+                Start Your Journey
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 1 – HOW THE PROCESS WORKS */}
+      <section className="bg-white py-16 sm:py-24 border-b border-gray-150" id="six-step-timeline-section">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="font-sans font-black text-2xl sm:text-3xl text-[#1F3F7A] tracking-tight uppercase">
+              Simple 6-Step Process
+            </h2>
+            <div className="h-1.5 w-24 bg-[#7CC242] mx-auto my-4 rounded-full"></div>
+            <p className="text-xs sm:text-sm text-slate-500 font-bold uppercase tracking-wider text-slate-400">
+              Step-by-step from budget determination to vehicle collection keys handoff.
             </p>
           </div>
 
-          {/* Right Image element: stylish premium SUV */}
-          <div className="hidden lg:flex lg:col-span-5 relative items-center justify-center select-none">
-            <div className="w-full max-w-[400px] flex items-center justify-center relative">
-              <img
-                src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=800"
-                alt="R2BuyCar Modern Hybrid SUV Asset"
-                className="w-full object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)] transform -scale-x-100 lg:-mr-6 animate-fade-in"
-              />
+          {/* Interactive controls simulation to explore active steps */}
+          <div className="bg-slate-50/70 max-w-4xl mx-auto p-4 rounded-2xl border border-slate-100 mb-12 flex flex-wrap items-center gap-2 justify-center">
+            <span className="text-[10px] font-black uppercase text-slate-450 tracking-wider mr-2">Highlight Step:</span>
+            {processSteps.map((s, idx) => (
+              <button
+                key={idx}
+                onClick={() => setActiveStep(idx)}
+                className={`px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider transition-all cursor-pointer ${
+                  activeStep === idx 
+                    ? 'bg-[#1F3F7A] text-white shadow-xs' 
+                    : 'bg-white hover:bg-slate-100 text-[#1F3F7A] border border-gray-200'
+                }`}
+              >
+                Step {idx + 1}
+              </button>
+            ))}
+          </div>
+
+          {/* Premium Timeline Design Flow */}
+          <div className="relative max-w-6xl mx-auto mt-12 pb-8">
+            
+            {/* Horizontal timeline connect line for Desktop/Lg Screens */}
+            <div className="absolute top-[35px] left-12 right-12 h-1 bg-slate-150 hidden lg:block z-0">
+              <div 
+                className="h-full bg-gradient-to-r from-[#7CC242] to-[#1F3F7A] transition-all duration-500"
+                style={{ width: `${(activeStep / (processSteps.length - 1)) * 100}%` }}
+              ></div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-8 relative z-10">
+              {processSteps.map((st, idx) => {
+                const StepIcon = st.icon;
+                const isPassed = idx < activeStep;
+                const isCurrent = idx === activeStep;
+                const isUpcoming = idx > activeStep;
+
+                return (
+                  <div 
+                    key={idx}
+                    onClick={() => setActiveStep(idx)}
+                    className="flex flex-col items-center group cursor-pointer transition-all duration-300"
+                  >
+                    {/* Circle Step Number Frame */}
+                    <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 ${
+                      isCurrent 
+                        ? 'bg-[#7CC242] text-white shadow-lg shadow-[#7CC242]/30 scale-110 ring-4 ring-[#7CC242]/20' 
+                        : isPassed 
+                        ? 'bg-[#1F3F7A] text-white' 
+                        : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'
+                    }`}>
+                      <StepIcon className="w-6 h-6 stroke-[2]" />
+                    </div>
+
+                    <div className="mt-5 text-center px-2">
+                      <span className={`text-[10px] font-black uppercase tracking-widest block mb-1.5 ${
+                        isCurrent ? 'text-[#7CC242]' : 'text-slate-400'
+                      }`}>
+                        {st.step}
+                      </span>
+                      <h4 className="font-sans font-black text-xs text-[#1F3F7A] tracking-tight uppercase min-h-[36px] flex items-center justify-center">
+                        {st.title}
+                      </h4>
+                      <p className="text-[11px] text-slate-500 leading-relaxed mt-2 max-w-[170px] mx-auto">
+                        {st.desc}
+                      </p>
+                    </div>
+
+                    {/* Mobile Down Arrow indicator */}
+                    {idx < processSteps.length - 1 && (
+                      <div className="my-4 block lg:hidden font-black text-[#7CC242] animate-bounce">
+                        ⬇
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* SECTION 2 – REQUIRED DOCUMENTS */}
+      <section className="bg-slate-50 py-16 sm:py-24 border-b border-gray-150" id="required-documents-section">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="font-sans font-black text-2xl sm:text-3xl text-[#1F3F7A] tracking-tight uppercase">
+              Documents You'll Need
+            </h2>
+            <div className="h-1.5 w-24 bg-[#7CC242] mx-auto my-4 rounded-full"></div>
+            <p className="text-xs sm:text-sm text-slate-500 font-bold uppercase tracking-wider text-slate-450">
+              Prepare these standard items beforehand for an instant underwriting turn-around.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {requiredDocs.map((doc, idx) => {
+              const DocIcon = doc.icon;
+              return (
+                <div 
+                  key={idx}
+                  className="flex flex-col p-8 bg-white rounded-2xl hover:shadow-lg transition-all duration-300 border border-slate-100 text-left"
+                >
+                  <div className="w-12 h-12 bg-[#7CC242]/10 text-[#7CC242] rounded-xl flex items-center justify-center mb-6 font-bold">
+                    <DocIcon className="w-6 h-6 stroke-[2]" />
+                  </div>
+                  
+                  <div className="flex-1 flex flex-col justify-between">
+                    <div>
+                      <h3 className="font-sans font-black text-sm uppercase text-[#1F3F7A] mb-2 tracking-tight flex items-center gap-1.5">
+                        <span className="text-[#7CC242] font-black font-mono">✓</span> {doc.title}
+                      </h3>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        {doc.desc}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
+      </section>
+
+      {/* SECTION 3 – WHY CHOOSE RENT-TO-BUY */}
+      <section className="bg-white py-16 sm:py-24 border-b border-gray-150" id="why-choose-rtb-section">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="font-sans font-black text-2xl sm:text-3xl text-[#1F3F7A] tracking-tight uppercase">
+              Why Drivers Choose Rent-To-Buy
+            </h2>
+            <div className="h-1.5 w-24 bg-[#7CC242] mx-auto my-4 rounded-full"></div>
+            <p className="text-xs sm:text-sm text-slate-500 font-bold uppercase tracking-wider text-slate-400">
+              Unpack the key advantages of our streamlined path to ultimate vehicle ownership.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {keyBenefits.map((benefit, idx) => {
+              const IconComp = benefit.icon;
+              return (
+                <div 
+                  key={idx}
+                  className="p-8 bg-slate-50 hover:bg-slate-50/30 rounded-2xl hover:shadow-md border border-slate-100 transition-all duration-300 flex gap-5 items-start text-left"
+                >
+                  <div className={`shrink-0 w-12 h-12 rounded-xl flex items-center justify-center font-bold font-sans ${benefit.color}`}>
+                    <IconComp className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-sans font-black text-sm uppercase text-[#1F3F7A] mb-2 tracking-tight">
+                      {benefit.title}
+                    </h3>
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      {benefit.desc}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
+      </section>
+
+      {/* SECTION 4 – READY TO GET STARTED */}
+      <section className="bg-white py-16 sm:py-24" id="ready-get-started-cta-section">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          
+          <div className="bg-[#111A2E] text-white rounded-3xl p-8 sm:p-16 relative overflow-hidden text-center space-y-8 shadow-xl">
+            {/* Subtle decor grid matching Track Ride support style */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:24px_24px] opacity-25 pointer-events-none"></div>
+
+            <div className="relative z-10 max-w-2xl mx-auto space-y-4">
+              <span className="text-[10px] font-black text-[#7CC242] uppercase tracking-widest bg-white/5 px-3.5 py-1.5 rounded-md border border-white/5 inline-block">
+                Start Today
+              </span>
+              <h2 className="text-2xl sm:text-4xl font-sans font-black tracking-tight text-white uppercase leading-tight">
+                Ready To Find Your Next Vehicle?
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-300 font-sans leading-relaxed">
+                Use our affordability meter, browse available vehicles, and start your application today.
+              </p>
+            </div>
+
+            <div className="relative z-10 flex flex-col sm:flex-row gap-4 items-center justify-center pt-2">
+              <Link to="/cars" className="w-full sm:w-auto">
+                <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#7CC242] hover:bg-[#6bb033] text-white font-black text-xs uppercase tracking-wider rounded-xl cursor-pointer hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150">
+                  Browse Vehicles
+                </button>
+              </Link>
+              
+              <Link to="/apply" className="w-full sm:w-auto">
+                <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 hover:bg-white/15 border border-white/15 text-white font-black text-xs uppercase tracking-wider rounded-xl cursor-pointer active:scale-98 transition-all duration-150">
+                  Start Application
+                  <ArrowRight className="w-4 h-4 text-[#7CC242]" />
+                </button>
+              </Link>
             </div>
           </div>
 
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 space-y-24">
-
-        {/* 2. Process Timeline (Main Section) */}
-        <section className="space-y-12" id="process-timeline-main">
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest block">The Journey Overview</span>
-            <h2 className="text-3xl font-black text-slate-950 tracking-tight leading-none sm:text-4xl">
-              Roadmap to Drive Away
-            </h2>
-            <p className="text-sm text-gray-500 font-sans leading-relaxed">
-              We design simple steps focusing entirely on process clarity so you understand exactly what to expect.
-            </p>
-          </div>
-
-          {/* Connected timeline steps - 8 connected steps layout */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative">
-            
-            {steps.map((st, i) => {
-              const IconComponent = st.icon;
-              return (
-                <div 
-                  key={i} 
-                  className="group relative bg-white border border-gray-150 p-6 rounded-2xl flex flex-col justify-between space-y-6 hover:border-indigo-400 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-                  id={`process-card-step-${st.num}`}
-                >
-                  {/* Backdrop Giant Number for premium modern look */}
-                  <span className="absolute top-4 right-6 text-5xl font-sans font-black text-slate-100 group-hover:text-indigo-50 select-none transition-colors duration-300 leading-none">
-                    0{st.num}
-                  </span>
-
-                  <div className="space-y-4">
-                    {/* Icon frame code matching user branding perfectly */}
-                    <div className="inline-flex p-3.5 bg-slate-50 text-slate-800 group-hover:bg-brand-secondary group-hover:text-brand-primary rounded-xl transition-all duration-300 shadow-xs">
-                      <IconComponent className="w-5 h-5 stroke-[2]" />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <h4 className="font-sans font-black text-sm text-slate-950 group-hover:text-indigo-600 transition-colors">
-                        {st.title}
-                      </h4>
-                      <p className="text-[11px] text-gray-500 leading-relaxed font-sans font-light">
-                        {st.desc}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Connecting indicator bar bottom */}
-                  <div className="w-8 h-1 bg-gray-100 group-hover:w-full group-hover:bg-indigo-600 rounded-full transition-all duration-300"></div>
-                </div>
-              );
-            })}
-
-          </div>
-        </section>
-
-        {/* 3. Documents Required Section */}
-        <section className="bg-white rounded-3xl border border-gray-150 p-4 sm:p-12 shadow-sm space-y-10" id="documents-required-section">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest block">Verification Checklist</span>
-            <h2 className="text-3xl font-black text-slate-950 tracking-tight leading-none sm:text-4xl">
-              Required Documents
-            </h2>
-            <p className="text-sm text-gray-500 font-sans leading-relaxed">
-              To proceed through step 4 quickly, please prepare these standard verification items in digital or photograph format.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {docs.map((d, index) => {
-              const DocIcon = d.icon;
-              return (
-                <div 
-                  key={index} 
-                  className="p-6 bg-slate-50/50 rounded-2xl border border-gray-150 hover:border-indigo-200 transition-all flex flex-col space-y-4"
-                  id={`required-doc-box-${index}`}
-                >
-                  <div className="p-3.5 bg-indigo-50 text-indigo-600 rounded-xl self-start">
-                    <DocIcon className="w-5 h-5" />
-                  </div>
-                  <div className="space-y-1">
-                    <h4 className="font-sans font-extrabold text-[#111A2E] text-sm">
-                      {d.title}
-                    </h4>
-                    <p className="text-[11px] text-slate-500 font-sans leading-relaxed font-light">
-                      {d.desc}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* 4. Eligibility Requirements */}
-        <section className="bg-slate-950 text-white rounded-3xl p-4 sm:p-12 relative overflow-hidden shadow-xl border border-slate-850" id="eligibility-checklist-section">
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:20px_20px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
-          
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            <div className="lg:col-span-5 space-y-4">
-              <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest">Pre-approval Parameters</span>
-              <h3 className="font-sans font-black text-2xl sm:text-3xl tracking-tight leading-tight text-white mb-2">
-                Eligibility Requirements Check
-              </h3>
-              <p className="text-xs text-slate-400 font-sans leading-relaxed font-light">
-                Our simple underwriting metrics bypass standard high street credit reviews. Check if you meet the active criteria parameters shown here.
-              </p>
-            </div>
-
-            <div className="lg:col-span-7 bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-8 space-y-4.5">
-              {eligibility.map((item, index) => (
-                <div key={index} className="flex items-start gap-3">
-                  <div className="p-1.5 bg-indigo-500/10 text-indigo-400 rounded-lg shrink-0 border border-indigo-500/25">
-                    <Check className="w-3.5 h-3.5 stroke-[2.5]" />
-                  </div>
-                  <div className="space-y-0.5">
-                    <p className="text-xs font-sans font-extrabold text-white leading-tight">
-                      {item}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* 5. Why Choose Us */}
-        <section className="space-y-12" id="why-choose-us-grid">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest block">Key Advantages</span>
-            <h2 className="text-3xl font-black text-slate-950 tracking-tight leading-none sm:text-4xl">
-              Why Choose Our Rent-to-Buy Process?
-            </h2>
-            <p className="text-sm text-gray-500 font-sans leading-relaxed">
-              We focus purely on vehicle logistics availability and complete transparency rather than administrative delays.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {triggers.map((item, index) => {
-              const CompIcon = item.icon;
-              return (
-                <div 
-                  key={index}
-                  className="p-6 bg-white border border-gray-150 rounded-2xl hover:border-indigo-400 group transition-all hover:shadow-lg flex flex-col space-y-4"
-                >
-                  <div className="p-3.5 bg-slate-50 text-slate-800 group-hover:bg-brand-secondary group-hover:text-brand-primary rounded-xl self-start transition-all duration-300">
-                    <CompIcon className="w-5 h-5" />
-                  </div>
-                  <div className="space-y-1">
-                    <h4 className="font-sans font-black text-sm text-slate-950">
-                      {item.title}
-                    </h4>
-                    <p className="text-[11px] text-slate-500 font-sans leading-relaxed font-light">
-                      {item.desc}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* 6. Frequently Asked Questions */}
-        <section className="bg-white rounded-3xl border border-gray-150 p-4 sm:p-10 shadow-sm space-y-8 animate-fade-in" id="timeline-faqs">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest block">Quick Answers</span>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight">
-              Process & Timeline FAQs
-            </h2>
-            <p className="text-xs sm:text-sm text-gray-500 font-sans">
-              Frequently asked questions regarding processing latency, paperwork parameters, and deposit guidelines.
-            </p>
-          </div>
-
-          <div className="max-w-3xl mx-auto divide-y divide-gray-105">
-            {faqs.map((faq, fIdx) => (
-              <div key={fIdx} className="py-4.5 font-sans">
-                <button
-                  onClick={() => setOpenFaqIdx(openFaqIdx === fIdx ? null : fIdx)}
-                  className="w-full flex items-center justify-between text-left py-2 group focus:outline-none cursor-pointer"
-                >
-                  <h4 className="font-extrabold text-sm text-slate-950 group-hover:text-indigo-600 transition-colors">
-                    {faq.q}
-                  </h4>
-                  {openFaqIdx === fIdx ? (
-                    <ChevronUp className="w-4 h-4 text-slate-500 group-hover:text-indigo-600" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-indigo-600" />
-                  )}
-                </button>
-                {openFaqIdx === fIdx && (
-                  <div className="p-3 bg-slate-50 rounded-xl mt-2 text-xs text-slate-600 leading-relaxed font-light animate-fade-in">
-                    {faq.a}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* 7. Call To Action (Last section) */}
-        <section className="bg-[#111A2E] text-white rounded-3xl p-4 sm:p-14 relative overflow-hidden text-center space-y-6" id="process-page-cta">
-          {/* Subtle decoration matching visual look */}
-          <div className="absolute inset-0 bg-brand-primary/5 [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_80%,transparent_100%)]"></div>
-          
-          <div className="relative z-10 space-y-3.5 max-w-xl mx-auto">
-            <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest bg-white/5 px-2.5 py-1.5 rounded-md border border-white/5 inline-block">
-              Drive Towards Auto Ownership
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white leading-none">
-              Ready to Get Started?
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-400 font-sans font-light">
-              Submit your direct document checklist parameters or browse available active transport stocks below to secure instant leasing.
-            </p>
-          </div>
-
-          <div className="relative z-10 flex flex-col sm:flex-row gap-4 items-center justify-center pt-2">
-            <Link to="/cars" className="w-full sm:w-auto">
-              <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-brand-primary text-brand-secondary font-extrabold text-xs uppercase tracking-wider rounded-xl cursor-pointer hover:bg-brand-primary-hover active:scale-98 transition-all">
-                Browse Cars
-              </button>
-            </Link>
-            
-            <Link to="/apply" className="w-full sm:w-auto">
-              <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 hover:bg-white/15 border border-white/15 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl cursor-pointer active:scale-98 transition-all">
-                Apply Now
-                <ArrowRight className="w-4 h-4 text-brand-primary" />
-              </button>
-            </Link>
-          </div>
-        </section>
-
-      </div>
     </div>
   );
 }

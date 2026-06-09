@@ -4,11 +4,7 @@ import { Car } from 'lucide-react';
 
 import { HeroSection } from './Cars/HeroSection';
 import { CarsGridSection } from './Cars/CarsGridSection';
-import { WhyChooseSection } from './Cars/WhyChooseSection';
-import { FeaturesSection } from './Cars/FeaturesSection';
-import { RoadmapSection } from './Cars/RoadmapSection';
 import { FaqSection } from './Cars/FaqSection';
-import { FinalCtaSection } from './Cars/FinalCtaSection';
 import { useSEO } from '../hooks/useSEO';
 
 const BUDGET_STEPS = [30, 40, 50, 60, 70, 80, 90, 100];
@@ -289,20 +285,9 @@ export function Cars() {
           resetFilters={resetFilters} 
         />
 
-        {/* 4. Why Choose Our Vehicles cards */}
-        <WhyChooseSection />
 
-        {/* 5. Custom high-spec conveniences accessories details list */}
-        <FeaturesSection />
-
-        {/* 6. Simple roadmap road-preview segment timeline cards */}
-        <RoadmapSection />
-
-        {/* 7. FAQ accordion list list template elements */}
+        {/* 4. FAQ accordion list list template elements */}
         <FaqSection />
-
-        {/* 8. Rapid licensing review final CTA banner */}
-        <FinalCtaSection />
       </div>
     </div>
   );
