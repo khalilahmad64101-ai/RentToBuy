@@ -5,15 +5,21 @@ import { Payment } from "../models/Payment.js";
 import { Application } from "../models/Application.js";
 import { Reminder } from "../models/Reminder.js";
 
-// Lazy initialize transport to capture env vars properly
+// Helper to sanitize env variable string values (trim spaces and surrounding quotes)
+const sanitizeEnv = (val) => {
+  if (!val) return "";
+  return String(val).trim().replace(/^['"]|['"]$/g, "").trim();
+};
+
+// Lazy initialize transport to capture env vars properly with production-ready timeouts
 let transporter = null;
 
 function getTransporter() {
   if (!transporter) {
-    const user = process.env.BREVO_SMTP_USER || process.env.EMAIL_USER;
-    const pass = process.env.BREVO_SMTP_PASSWORD || process.env.EMAIL_PASS;
-    const host = process.env.BREVO_SMTP_HOST || 'smtp-relay.brevo.com';
-    const port = Number(process.env.BREVO_SMTP_PORT) || 587;
+    const user = sanitizeEnv(process.env.BREVO_SMTP_USER || process.env.EMAIL_USER);
+    const pass = sanitizeEnv(process.env.BREVO_SMTP_PASSWORD || process.env.EMAIL_PASS);
+    const host = sanitizeEnv(process.env.BREVO_SMTP_HOST || 'smtp-relay.brevo.com');
+    const port = Number(sanitizeEnv(process.env.BREVO_SMTP_PORT)) || 587;
 
     if (user && pass) {
       console.log(`[SMTP] Initializing Brevo SMTP relay connection (${host}:${port}) with user ${user}`);
@@ -25,19 +31,94 @@ function getTransporter() {
           user,
           pass,
         },
+        connectionTimeout: 30000, // 30 seconds connection timeout
+        greetingTimeout: 30000,   // 30 seconds greeting timeout
+        socketTimeout: 30000,     // 30 seconds socket timeout
       });
     } else {
-      console.warn("[SMTP WATCH] Brevo SMTP credentials not found. Mails will be simulated and logged in DB.");
+      console.warn("[SMTP WATCH] Brevo SMTP credentials not found or empty. Mails will be simulated and logged in DB.");
     }
   }
   return transporter;
 }
 
 /**
+ * Service Connection Verification on startup
+ */
+export async function verifySMTPOnStartup() {
+  const user = sanitizeEnv(process.env.BREVO_SMTP_USER || process.env.EMAIL_USER);
+  const pass = sanitizeEnv(process.env.BREVO_SMTP_PASSWORD || process.env.EMAIL_PASS);
+  const host = sanitizeEnv(process.env.BREVO_SMTP_HOST || 'smtp-relay.brevo.com');
+  const port = Number(sanitizeEnv(process.env.BREVO_SMTP_PORT)) || 587;
+
+  console.log(`\n======================================================`);
+  console.log(`📡 [SMTP STARTUP VERIFICATION] Init check...`);
+  console.log(`   Host: ${host}`);
+  console.log(`   Port: ${port}`);
+  console.log(`   Secure: ${port === 465}`);
+  console.log(`   Auth User: ${user || "Not configured"}`);
+  console.log(`======================================================`);
+
+  if (!user || !pass) {
+    console.warn("⚠️ [SMTP STARTUP WARNING] No SMTP auth credentials configured. Moving into Simulation mode.");
+    console.log(`======================================================\n`);
+    return false;
+  }
+
+  const client = getTransporter();
+  if (!client) {
+    console.warn("⚠️ [SMTP STARTUP WARNING] Transporter failed to initialize. Simulation fallback active.");
+    console.log(`======================================================\n`);
+    return false;
+  }
+
+  try {
+    console.log("[SMTP STARTUP] Testing connection verify with standard server limits...");
+    await client.verify();
+    console.log("✅ [SMTP STARTUP SUCCESS] Nodemailer transporter verified successfully! Channels operational.");
+    console.log(`======================================================\n`);
+    return true;
+  } catch (err) {
+    console.error("❌ [SMTP STARTUP FAILURE] Nodemailer verify test threw an exception:");
+    console.error(`   Error code: ${err.code}`);
+    console.error(`   Message: ${err.message}`);
+    console.error(`   Details:`, err);
+    console.log(`======================================================\n`);
+    return false;
+  }
+}
+
+/**
+ * Highly robust sendMail with custom linear backoff retry mechanism (max 3 attempts)
+ */
+async function sendMailWithRetry(client, mailOptions, maxRetries = 3, initialDelay = 1000) {
+  let attempt = 0;
+  while (attempt < maxRetries) {
+    attempt++;
+    try {
+      console.log(`[SMTP] Attempt ${attempt} of ${maxRetries} to send email...`);
+      const info = await client.sendMail(mailOptions);
+      if (!info) {
+        throw new Error("sendMail returned invalid response or empty payload");
+      }
+      return info; // Return success immediately
+    } catch (err) {
+      console.error(`[SMTP ATTEMPT ${attempt} FAILED] Error:`, err.message || err);
+      if (attempt >= maxRetries) {
+        throw err; // Re-throw the error on the final attempt
+      }
+      const waitTime = initialDelay * attempt;
+      console.log(`[SMTP] Waiting ${waitTime}ms before retrying next attempt...`);
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
+    }
+  }
+}
+
+/**
  * Sends a generic HTML/text email using Brevo SMTP and keeps database logs in Email collection.
  */
 export async function sendEmailDirect({ to, subject, html, text, allowDuplicates = false }) {
-  const sender = process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_USER || "noreply@rent2buy.com";
+  const sender = sanitizeEnv(process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_USER) || "noreply@rent2buy.com";
   const userEmail = to.toLowerCase().trim();
 
   // Prevent duplicate email sending for static notifications (non-payment, non-admin)
@@ -46,7 +127,7 @@ export async function sendEmailDirect({ to, subject, html, text, allowDuplicates
       const alreadySent = await Email.findOne({ userEmail, subject });
       if (alreadySent) {
         console.log(`[SMTP DUPLICATE DETECTED] Email with subject "${subject}" already delivered to ${userEmail}. Suppressing send to prevent spam duplicates.`);
-        return { message: "Duplicate suppressed" };
+        return { message: "Duplicate suppressed", suppressed: true };
       }
     } catch (err) {
       console.error("[SMTP DUPLICATE CHECK WARNING] Failed to search for duplicate logs, continuing:", err);
@@ -71,7 +152,8 @@ export async function sendEmailDirect({ to, subject, html, text, allowDuplicates
   const client = getTransporter();
   if (client) {
     try {
-      const info = await client.sendMail({
+      // Use retry mechanism with custom high-standard logging
+      const info = await sendMailWithRetry(client, {
         from: `"Rent2Buy Support" <${sender}>`,
         to: userEmail,
         subject,
@@ -81,10 +163,12 @@ export async function sendEmailDirect({ to, subject, html, text, allowDuplicates
       console.log(`[SMTP] Email successfully delivered to ${userEmail}. MessageID: ${info.messageId}`);
       return info;
     } catch (err) {
-      console.error(`[SMTP ERROR] Failed to send email to ${userEmail}:`, err);
+      console.error(`[SMTP ERROR] All delivery attempts failed. Failed to send email to ${userEmail}:`, err);
+      throw err; // Re-throw so caller acts correctly
     }
   } else {
     console.log(`[SMTP SIMULATION] Mail printed for ${userEmail}:\nSubject: ${subject}\nBody preview: ${logContent.substring(0, 150)}...`);
+    return { message: "Simulation success", simulated: true };
   }
 }
 
@@ -248,21 +332,25 @@ function getHTMLTemplate(title, bodyHtml) {
 /**
  * 1. Application Submitted confirmation
  */
-export async function sendApplicationSubmitted({ to, userName, applicationId, submissionDate }) {
+export async function sendApplicationSubmitted({ to, userName, applicationId, submissionDate, carName }) {
   const subject = `RENT2BUY: Underwriting File Received [ID: ${applicationId}]`;
   const html = getHTMLTemplate(subject, `
     <h2>Application Received</h2>
     <p>Dear ${userName},</p>
+    <p>Your application has been submitted successfully and is currently under review.</p>
     <p>Thank you for choosing Rent2Buy. Your underwriting credentials file and eligibility checks folder has been received successfully by our Heathrow administration database.</p>
     <p>Our leasing specialists are currently conducting a soft review of your driving history and proof of address certificates.</p>
     <div class="details-box">
       <table>
-        <tr><td class="label">Primary Applicant:</td><td class="value">${userName}</td></tr>
-        <tr><td class="label">Folder Ticket ID:</td><td class="value">${applicationId}</td></tr>
+        <tr><td class="label">Application ID:</td><td class="value"><b>${applicationId}</b></td></tr>
+        <tr><td class="label">Applicant Name:</td><td class="value">${userName}</td></tr>
+        <tr><td class="label">Vehicle Name:</td><td class="value">${carName || 'Custom Vehicle Spec'}</td></tr>
         <tr><td class="label">Submission Date:</td><td class="value">${submissionDate}</td></tr>
-        <tr><td class="label">Review Status:</td><td class="value"><span style="color:#d97706; font-weight: 800;">Pending Review</span></td></tr>
+        <tr><td class="label">Current Status:</td><td class="value"><span style="color:#d97706; font-weight: 800;">Pending</span></td></tr>
       </table>
     </div>
+    <p><strong>Tracking Instructions:</strong></p>
+    <p>You can track your application status anytime using our <a href="${process.env.APP_URL || 'https://r2buy.com'}/track-ride">Track Ride page</a> by entering your Application ID: <b>${applicationId}</b>.</p>
     <p>We process standard Heathrow driver dispatch clearance checks in <b>24 hours</b>. You will receive an automated follow-up notification as soon as verification completes.</p>
     <p>Best regards,<br/>The Underwriting Team</p>
   `);
