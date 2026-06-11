@@ -68,8 +68,21 @@ export async function createApp() {
   // Double submit pattern CSRF protection on mutation routes
   app.use(csrfProtection);
 
-  // Mount simulated & Mongoose Mongo routes on /api
-  app.use('/api', apiRouter);
+  // Mount simulated & Mongoose Mongo routes on /api with hit logging
+  app.use('/api', (req, res, next) => {
+    console.log(`[API-ROUTE-HIT] Request matches /api prefix: ${req.method} ${req.originalUrl || req.url}`);
+    next();
+  }, apiRouter);
+
+  // Prevent any /api/* requests from ever falling into static file middleware or frontend wildcard routing catchall
+  app.all('/api/*', (req, res) => {
+    console.warn(`[API-FALLBACK-WARNING] Unmatched API path requested: ${req.method} ${req.originalUrl || req.url}`);
+    res.status(404).json({
+      success: false,
+      error: `API endpoint not found: ${req.method} ${req.originalUrl || req.url}`,
+      message: "This API route does not exist or has been configured incorrectly."
+    });
+  });
 
   // Setup Vite development environment or production static assets distribution
   if (process.env.NODE_ENV !== 'production') {
@@ -95,16 +108,6 @@ export async function createApp() {
       : path.resolve(process.cwd(), '..', 'dist');
     // Serve production built frontend bundles
     app.use(express.static(distPath));
-
-    // Handle any unmatched API requests specifically with a JSON 404 instead of letting them fall through to index.html
-    app.all('/api/*', (req, res) => {
-      console.warn(`[API-FALLBACK-WARNING] Unmatched API path requested: ${req.method} ${req.url}`);
-      res.status(404).json({
-        success: false,
-        error: `API endpoint not found: ${req.method} ${req.url}`,
-        message: "This API route does not exist or has been configured incorrectly."
-      });
-    });
 
     app.get('*', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
