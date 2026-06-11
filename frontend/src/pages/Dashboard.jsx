@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { Button } from '../components/ui/Button';
 import { Loader } from '../components/ui/Loader';
+import { mapFriendlyFeedback } from '../utils/feedbackHelper.js';
 import { 
   LayoutDashboard, 
   FileText, 
@@ -103,6 +104,18 @@ export function Dashboard() {
     }
   }, [user]);
 
+  // Set up automatic real-time background synchronization to keep the driver workspace fresh
+  useEffect(() => {
+    if (!user?.email) return;
+
+    const intervalId = setInterval(() => {
+      console.log('[Dashboard] Executing real-time background state synchronization update...');
+      syncDriverData();
+    }, 8000); // Polling every 8 seconds
+
+    return () => clearInterval(intervalId);
+  }, [user?.email, syncDriverData]);
+
   // Pre-fill fields for Documents and Payments if applications exist
   useEffect(() => {
     const { applications = [] } = driverData;
@@ -125,7 +138,7 @@ export function Dashboard() {
 
   if (!user) return null;
 
-  const { applications = [], agreements = [], payments = [] } = driverData;
+  const { applications = [], agreements = [], payments = [], notifications = [] } = driverData;
 
   // Calculative stats
   const submittedCount = applications.length;
@@ -159,10 +172,10 @@ export function Dashboard() {
         await api.applications.updateStep(targetApp.id, 4);
       }
 
-      setPayMessage({ type: 'success', text: `Successful deposit billing of £${payAmount} logged on our Heathrow servers!` });
+      setPayMessage({ type: 'success', text: "Payment completed successfully." });
       await syncDriverData();
     } catch (err) {
-      setPayMessage({ type: 'error', text: err.message || 'Payment simulation failed.' });
+      setPayMessage({ type: 'error', text: mapFriendlyFeedback(err) });
     } finally {
       setPayLoading(false);
     }
@@ -188,7 +201,7 @@ export function Dashboard() {
       setDocMessage({ type: 'success', text: 'Driver credentials and file references updated successfully!' });
       await syncDriverData();
     } catch (err) {
-      setDocMessage({ type: 'error', text: err.message || 'Document coordinates change failed.' });
+      setDocMessage({ type: 'error', text: mapFriendlyFeedback(err) });
     } finally {
       setDocLoading(false);
     }
@@ -217,7 +230,7 @@ export function Dashboard() {
       setProfilePassword('');
       setProfileConfirmPassword('');
     } catch (err) {
-      setProfileMessage({ type: 'error', text: err.message || 'Settings write operation failed.' });
+      setProfileMessage({ type: 'error', text: mapFriendlyFeedback(err) });
     } finally {
       setProfileLoading(false);
     }
@@ -278,6 +291,7 @@ export function Dashboard() {
     { id: 'documents', label: 'My Documents', icon: FolderOpen },
     { id: 'payments', label: 'Payments', icon: CreditCard, badge: payments.length > 0 ? null : 'Pending' },
     { id: 'insurance', label: 'Motor Insurance', icon: ShieldCheck },
+    { id: 'notifications', label: 'Inbox Notifications', icon: Bell, badge: notifications.length > 0 ? notifications.length : null, badgeColor: 'bg-indigo-600 text-white' },
     { id: 'profile', label: 'Profile Settings', icon: User },
   ];
 
@@ -810,48 +824,74 @@ export function Dashboard() {
                     </Link>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto" id="user-applications-list">
                     <table className="w-full text-left text-xs border-collapse">
                       <thead>
                         <tr className="bg-slate-50 border-b border-slate-200/80 text-slate-450 font-bold uppercase tracking-wider text-[10px]">
-                          <th className="py-3 px-4">Applied Vehicle specs</th>
-                          <th className="py-3 px-4">Filing Date</th>
-                          <th className="py-3 px-4">Soft Credit checks</th>
-                          <th className="py-3 px-4">Status & Step</th>
+                          <th className="py-3 px-4">Application ID</th>
+                          <th className="py-3 px-4">Vehicle Name</th>
+                          <th className="py-3 px-4">Submission Date</th>
+                          <th className="py-3 px-4">Current Status</th>
+                          <th className="py-3 px-4">Payment Status</th>
                           <th className="py-3 px-4 text-right">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 font-sans text-xs">
-                        {applications.map((app) => (
-                          <tr key={app.id} className="hover:bg-slate-50/50 transition">
-                            <td className="py-3.5 px-4">
-                              <div className="font-bold text-gray-900 text-sm leading-snug">{app.carName}</div>
-                              <div className="text-[10px] text-gray-400 font-mono mt-0.5">Reference ID: {app.id}</div>
-                            </td>
-                            <td className="py-3.5 px-4 font-mono text-slate-600">{app.dateApplied}</td>
-                            <td className="py-3.5 px-4">
-                              <span className="flex items-center text-emerald-600 font-bold tracking-wide">
-                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mr-1 shrink-0" />
-                                {app.creditCheckStatus || 'PASSED'}
-                              </span>
-                            </td>
-                            <td className="py-3.5 px-4">
-                              <div className="space-y-1">
-                                {renderStatusBadge(app.status, app.step)}
-                                <span className="block text-[10px] text-slate-500 font-bold font-mono">Stage {app.step}/4 completed</span>
-                              </div>
-                            </td>
-                            <td className="py-3.5 px-4 text-right">
-                              <button
-                                onClick={() => setSelectedApp(app)}
-                                className="inline-flex items-center text-xs font-bold font-sans bg-slate-900 text-white hover:bg-slate-800 transition px-3.5 py-1.5 rounded-lg focus:outline-none cursor-pointer"
-                              >
-                                View Folder Page 
-                                <ChevronRight className="w-3.5 h-3.5 ml-1" />
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
+                        {[...applications]
+                          .sort((a, b) => {
+                            const dateA = new Date(a.createdAt || a.dateApplied || 0);
+                            const dateB = new Date(b.createdAt || b.dateApplied || 0);
+                            return dateB - dateA;
+                          })
+                          .map((app) => (
+                            <tr key={app.id} className="hover:bg-slate-50/50 transition">
+                              <td className="py-3.5 px-4 font-mono font-bold text-indigo-900">
+                                {app.id}
+                              </td>
+                              <td className="py-3.5 px-4">
+                                <div className="font-bold text-gray-900 text-sm leading-snug">{app.carName}</div>
+                              </td>
+                              <td className="py-3.5 px-4 font-mono text-slate-600">{app.dateApplied || 'N/A'}</td>
+                              <td className="py-3.5 px-4">
+                                <div className="space-y-1">
+                                  {renderStatusBadge(app.status, app.step)}
+                                  <span className="block text-[10px] text-slate-500 font-bold font-mono">Stage {app.step}/4 completed</span>
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-4">
+                                {(() => {
+                                  if (app.status === 'Approved' || app.step >= 4) {
+                                    return (
+                                      <span className="inline-flex items-center px-2 py-1 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800">
+                                        Paid
+                                      </span>
+                                    );
+                                  }
+                                  if (app.step === 3 || app.status === 'Awaiting Payment' || app.status === 'Approved' || app.step === 3) {
+                                    return (
+                                      <span className="inline-flex items-center px-2 py-1 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 animate-pulse">
+                                        Awaiting Payment
+                                      </span>
+                                    );
+                                  }
+                                  return (
+                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-[11px] font-semibold bg-gray-150 text-gray-650">
+                                      N/A
+                                    </span>
+                                  );
+                                })()}
+                              </td>
+                              <td className="py-3.5 px-4 text-right">
+                                <button
+                                  onClick={() => setSelectedApp(app)}
+                                  className="inline-flex items-center text-xs font-bold font-sans bg-slate-900 text-white hover:bg-slate-800 transition px-3.5 py-1.5 rounded-lg focus:outline-none cursor-pointer"
+                                >
+                                  View Details
+                                  <ChevronRight className="w-3.5 h-3.5 ml-1" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
                       </tbody>
                     </table>
                   </div>
@@ -1333,6 +1373,63 @@ export function Dashboard() {
 
             </div>
 
+          </div>
+        )}
+
+        {/* TAB 5b: INBOX NOTIFICATIONS */}
+        {activeTab === 'notifications' && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="bg-white border border-gray-150 rounded-2xl p-6 shadow-xs space-y-6 relative animate-fade-in">
+              <div className="border-b border-gray-100 pb-4">
+                <h3 className="font-sans font-black text-slate-900 text-base leading-none flex items-center justify-between">
+                  <span>Driver Message Center Inbox</span>
+                  <span className="text-[10px] font-bold text-indigo-650 bg-indigo-50 px-2.5 py-0.5 rounded uppercase tracking-wider">{notifications.length} message(s)</span>
+                </h3>
+                <p className="text-xs text-slate-500 mt-1 font-sans">Official advisories, dispatch certifications releases, and underwriting reports issued to your profile account.</p>
+              </div>
+
+              {notifications.length === 0 ? (
+                <div className="text-center py-12 space-y-4">
+                  <div className="w-14 h-14 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-400 border border-slate-150 animate-pulse">
+                    <Bell className="w-6 h-6 text-slate-400" />
+                  </div>
+                  <div className="max-w-md mx-auto space-y-1">
+                    <h4 className="font-bold text-sm text-gray-800">Your dispatch inbox is currently quiet.</h4>
+                    <p className="text-xs text-gray-400 leading-normal">
+                      When London Heathrow underwriting coordinates progress or billing schedules update, your administrative notification transcripts will list here in real-time.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-100 space-y-4">
+                  {notifications.map((notif, idx) => (
+                    <div key={notif.id || idx} className="pt-4 first:pt-0 hover:bg-slate-50/20 transition rounded-xl">
+                      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 border border-slate-150 bg-slate-50/55 p-4 rounded-t-xl">
+                        <div className="space-y-1">
+                          <strong className="block text-sm text-slate-900 font-bold tracking-tight">{notif.subject}</strong>
+                          <div className="flex items-center gap-2 text-[10px] text-gray-450 font-mono">
+                            <span>Sent: {notif.dateSent || (notif.createdAt && new Date(notif.createdAt).toLocaleDateString()) || 'Recent'}</span>
+                          </div>
+                        </div>
+                        {notif.attachmentUrl && (
+                          <a 
+                            href={notif.attachmentUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center text-[10px] font-extrabold text-[#1F3F7A] bg-[#1F3F7A]/10 border border-[#1F3F7A]/30 hover:bg-[#1F3F7A]/20 transition px-2.5 py-1 rounded-lg shrink-0 cursor-pointer"
+                          >
+                            <Download className="w-3 h-3 mr-1" /> Download Attachment
+                          </a>
+                        )}
+                      </div>
+                      <div className="text-xs text-slate-650 bg-white border-x border-b border-slate-150 p-4 rounded-b-xl whitespace-pre-wrap font-sans font-medium leading-relaxed">
+                        {notif.content}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 

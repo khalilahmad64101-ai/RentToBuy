@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 
 import { useSEO } from '../hooks/useSEO';
+import { mapFriendlyFeedback } from '../utils/feedbackHelper.js';
 
 // Form Zod validation schema matching strict UK mobile standards
 const signupSchema = z.object({
@@ -57,7 +58,9 @@ export function Signup() {
   // UI elements triggers
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googlePopupLoading, setGooglePopupLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   // React Hook Form initialization
   const {
@@ -132,6 +135,7 @@ export function Signup() {
     if (loading) return; // double submit prevention guard
     setLoading(true);
     setErrorMsg('');
+    setSuccessMsg('');
 
     try {
       const payload = {
@@ -142,11 +146,14 @@ export function Signup() {
       };
 
       await signup(payload);
-      navigate(redirectUrl);
+      setSuccessMsg("Account created successfully.");
+      setTimeout(() => {
+        navigate(redirectUrl);
+      }, 1500);
 
     } catch (err) {
       console.error("Backend validation trigger crash:", err);
-      setErrorMsg(err?.message || "An authentication connection error occurred. Please try again.");
+      setErrorMsg(mapFriendlyFeedback(err));
     } finally {
       setLoading(false);
     }
@@ -174,10 +181,14 @@ export function Signup() {
               try {
                 setGooglePopupLoading(true);
                 setErrorMsg('');
+                setSuccessMsg('');
                 await googleLogin(response.credential);
-                navigate(redirectUrl);
+                setSuccessMsg("Account created successfully.");
+                setTimeout(() => {
+                  navigate(redirectUrl);
+                }, 1500);
               } catch (err) {
-                setErrorMsg(err?.message || "Google signup failed");
+                setErrorMsg(mapFriendlyFeedback(err));
               } finally {
                 setGooglePopupLoading(false);
               }
@@ -235,6 +246,13 @@ export function Signup() {
           <div className="bg-red-50 text-red-700 text-xs p-3.5 rounded-xl border border-red-100 font-medium mb-4 flex items-center gap-2" id="signup-error-alert" role="alert">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{errorMsg}</span>
+          </div>
+        )}
+
+        {successMsg && (
+          <div className="bg-emerald-50 text-emerald-800 text-xs p-3.5 rounded-xl border border-emerald-100 font-semibold mb-4 flex items-center gap-2" id="signup-success-alert" role="alert">
+            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{successMsg}</span>
           </div>
         )}
 

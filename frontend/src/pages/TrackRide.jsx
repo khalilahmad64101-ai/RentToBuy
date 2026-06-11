@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { Button } from '../components/ui/Button';
+import { mapFriendlyFeedback } from '../utils/feedbackHelper.js';
 import { 
   CheckCircle2, 
   Circle, 
@@ -80,35 +81,56 @@ export function TrackRide() {
   useEffect(() => {
     if (user?.email) {
       setEmailAddress(user.email);
-      // Auto pre-populate a sample track if they have no backend records yet
       const defaultApp = driverData?.applications?.[0];
       if (defaultApp) {
-        let matchedIdx = 2; // Under review as default fallback
-        if (defaultApp.status === 'Approved') matchedIdx = 3;
-        else if (defaultApp.status === 'Paid' || defaultApp.status === 'Completed') matchedIdx = 4;
-        else if (defaultApp.status === 'Submitted') matchedIdx = 0;
+        setAppNumber(defaultApp.id);
         
+        let licenseStatus = "Pending Verification";
+        if (defaultApp.step >= 3 || defaultApp.status === "Approved" || defaultApp.status === "Awaiting Payment") {
+          licenseStatus = "Approved / Validated";
+        } else if (defaultApp.step === 2) {
+          licenseStatus = "In Progress / Scanning";
+        } else if (defaultApp.status === "Action Required") {
+          licenseStatus = "Action Required / Re-upload Needed";
+        } else if (defaultApp.status === "Rejected") {
+          licenseStatus = "Declined";
+        }
+
+        let customStepIndex = 2; // Under review as default fallback
+        if (defaultApp.status === 'Approved') {
+          customStepIndex = 3;
+        } else if (defaultApp.status === 'Awaiting Payment') {
+          customStepIndex = 3;
+        } else if (defaultApp.step >= 4 || defaultApp.status === 'Paid' || defaultApp.status === 'Completed') {
+          customStepIndex = 4;
+        } else if (defaultApp.step === 2) {
+          customStepIndex = 1;
+        } else if (defaultApp.step === 1) {
+          customStepIndex = 0;
+        }
+
         setSearchResult({
-          vehicle: defaultApp.carName || 'Toyota Aqua',
-          monthly: defaultApp.weeklyPrice ? `£${defaultApp.weeklyPrice * 4}` : '£250',
-          deposit: defaultApp.depositAmount ? `£${defaultApp.depositAmount}` : '£1000',
-          status: defaultApp.status || 'Under Review',
-          stepIndex: matchedIdx,
+          id: defaultApp.id,
+          vehicle: defaultApp.carName,
+          status: defaultApp.status,
+          licenseStatus: licenseStatus,
+          dateApplied: defaultApp.dateApplied,
+          stepIndex: customStepIndex,
         });
-        setActiveStep(matchedIdx);
+        setActiveStep(customStepIndex);
       }
     }
   }, [user, driverData]);
 
   // Handle manual tracking lookup
-  const handleTrackSubmit = (e) => {
+  const handleTrackSubmit = async (e) => {
     e.preventDefault();
     if (!appNumber.trim()) {
-      setSearchError('Please fill in your Application Number.');
+      setSearchError('Please enter a valid Application ID.');
       return;
     }
-    if (!emailAddress.trim()) {
-      setSearchError('Please fill in your associated Email Address.');
+    if (!emailAddress.trim() || !emailAddress.includes('@')) {
+      setSearchError('Please enter a valid email address.');
       return;
     }
 
@@ -116,29 +138,47 @@ export function TrackRide() {
     setIsSearching(true);
     setSearchResult(null);
 
-    // Dynamic loading delay to mimic advanced search log
-    setTimeout(() => {
-      const normalizedID = appNumber.trim().toUpperCase();
-      const match = simulatedApps[normalizedID] || simulatedApps['RTB-8291']; // Fallback
+    try {
+      const data = await api.applications.track(appNumber.trim(), emailAddress.trim());
       
+      let customStepIndex = 2; // Under review by default
+      if (data.status === 'Approved') {
+        customStepIndex = 3;
+      } else if (data.status === 'Awaiting Payment') {
+        customStepIndex = 3;
+      } else if (data.step >= 4 || data.status === 'Paid' || data.status === 'Completed') {
+        customStepIndex = 4;
+      } else if (data.step === 2) {
+        customStepIndex = 1;
+      } else if (data.step === 1) {
+        customStepIndex = 0;
+      }
+
       setSearchResult({
-        id: normalizedID,
-        vehicle: match.vehicle,
-        monthly: match.monthly,
-        deposit: match.deposit,
-        status: match.status,
-        stepIndex: match.stepIndex,
+        id: data.id,
+        vehicle: data.carName,
+        status: data.status,
+        licenseStatus: data.licenseStatus,
+        dateApplied: data.dateApplied,
+        stepIndex: customStepIndex,
       });
 
-      setActiveStep(match.stepIndex);
+      setActiveStep(customStepIndex);
       setIsSearching(false);
-      
+
       // Auto scroll to connection journey
-      const elem = document.getElementById('tracking-timeline-section');
-      if (elem) {
-        elem.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 850);
+      setTimeout(() => {
+        const elem = document.getElementById('tracking-timeline-section');
+        if (elem) {
+          elem.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+
+    } catch (err) {
+      console.error('[Track Submit Error]:', err);
+      setSearchError(mapFriendlyFeedback(err));
+      setIsSearching(false);
+    }
   };
 
   // Timeline Step Configurations (Exactly the 7 steps requested)
@@ -264,17 +304,45 @@ export function TrackRide() {
               </div>
             )}
             {searchResult && (
-              <div className="mt-4 p-4 bg-[#7CC242]/10 text-[#1F3F7A] rounded-2xl border border-[#7CC242]/20 animate-fade-in flex flex-col sm:flex-row sm:items-center sm:justify-between text-left gap-2">
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-[#7CC242] px-2.5 py-0.5 rounded-md">
-                    {searchResult.id || 'SUCCESS'}
-                  </span>
-                  <span className="font-extrabold text-xs ml-2 text-[#1F3F7A]">
-                    Vehicle: {searchResult.vehicle} — Status: {searchResult.status}
+              <div className="mt-6 p-6 bg-white border border-gray-200 shadow-md rounded-2xl animate-fade-in text-left space-y-4" id="track-results-overlay">
+                <div className="flex justify-between items-center border-b border-gray-100 pb-3 flex-wrap gap-2">
+                  <div>
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">Application Reference</span>
+                    <h3 className="text-lg font-black text-[#1F3F7A] font-mono leading-none mt-1">{searchResult.id || 'N/A'}</h3>
+                  </div>
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-100">
+                    <Check className="w-3.5 h-3.5 mr-1" /> Dynamic DB Match
                   </span>
                 </div>
-                <div className="text-xs text-slate-500 font-bold">
-                  Weekly Contribution Level Loaded
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Approved car make and model */}
+                  <div className="bg-slate-50 border border-slate-100 p-4 rounded-xl space-y-1">
+                    <span className="block text-[10px] uppercase font-bold tracking-wider text-slate-400">Vehicle Make & Model</span>
+                    <strong className="block text-sm text-slate-800 leading-snug">{searchResult.vehicle || 'Matched Fleet Asset'}</strong>
+                  </div>
+
+                  {/* Current application status */}
+                  <div className="bg-slate-50 border border-slate-100 p-4 rounded-xl space-y-1">
+                    <span className="block text-[10px] uppercase font-bold tracking-wider text-slate-400">Application Status</span>
+                    <div className="flex items-center gap-1.5 mt-1 font-extrabold text-sm text-[#1F3F7A] uppercase">
+                      <span className={`w-2 h-2 rounded-full ${
+                        searchResult.status === 'Approved' ? 'bg-[#7CC242]' : searchResult.status === 'Rejected' ? 'bg-rose-500' : 'bg-amber-500'
+                      }`}></span>
+                      {searchResult.status || 'Pending'}
+                    </div>
+                  </div>
+
+                  {/* License validation status */}
+                  <div className="bg-slate-50 border border-slate-100 p-4 rounded-xl space-y-1">
+                    <span className="block text-[10px] uppercase font-bold tracking-wider text-slate-400">License Verification</span>
+                    <strong className="block text-sm text-emerald-600 font-bold uppercase">{searchResult.licenseStatus || 'Pending'}</strong>
+                  </div>
+
+                  {/* Submission date */}
+                  <div className="bg-slate-50 border border-slate-100 p-4 rounded-xl space-y-1">
+                    <span className="block text-[10px] uppercase font-bold tracking-wider text-slate-400">Submission Date</span>
+                    <strong className="block text-sm text-slate-700 font-mono">{searchResult.dateApplied || 'N/A'}</strong>
+                  </div>
                 </div>
               </div>
             )}

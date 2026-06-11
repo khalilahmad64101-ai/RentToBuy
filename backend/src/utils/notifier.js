@@ -278,6 +278,9 @@ export async function sendApplicationApproved({ to, userName, applicationId, car
   const html = getHTMLTemplate(subject, `
     <h2>Application APPROVED!</h2>
     <p>Dear ${userName},</p>
+    <p style="font-weight: bold; font-size: 16px; color: #10b981;">Your application has been approved.</p>
+    <p style="font-weight: bold; font-size: 16px; color: #0f172a;">Application ID: ${applicationId}</p>
+    <br/>
     <p>Excellent news! We are delighted to inform you that your Rent-to-Buy lease vehicle application <b>${applicationId}</b> has cleared underwriting successfully and is now <b>APPROVED</b>!</p>
     <p>Your vehicle reservation is locked into our Heathrow dispatch lot. Please complete the following step to activate your motor insurance policies and release your driver card &amp; keys:</p>
     <div class="details-box">
@@ -306,6 +309,36 @@ export async function sendApplicationApproved({ to, userName, applicationId, car
 }
 
 /**
+ * 2b. Application Awaiting Payment notification
+ */
+export async function sendApplicationAwaitingPayment({ to, userName, applicationId, carName, weeklyRate }) {
+  const subject = `RENT2BUY APPROVED: Awaiting Payment [ID: ${applicationId}]`;
+  const html = getHTMLTemplate(subject, `
+    <h2>Application APPROVED & Awaiting Payment!</h2>
+    <p>Dear ${userName},</p>
+    <p style="font-weight: bold; font-size: 16px; color: #d97706;">Your application is approved and awaiting payment.</p>
+    <p style="font-weight: bold; font-size: 16px; color: #0f172a;">Application ID: ${applicationId}</p>
+    <br/>
+    <p>Excellent news! Your Rent-to-Buy lease vehicle application <b>${applicationId}</b> has been successfully approved by underwriting and is now <b>Awaiting Payment</b>.</p>
+    <p>Your vehicle allocation is temporarily reserved. To release the vehicle and schedule collection, please complete your £250.00 refundable lease security deposit.</p>
+    <div class="details-box">
+      <table>
+        <tr><td class="label">Lease Ticket ID:</td><td class="value">${applicationId}</td></tr>
+        <tr><td class="label">Vehicle Allocation:</td><td class="value">${carName || 'Custom Vehicle Spec'}</td></tr>
+        <tr><td class="label">Weekly Contribution:</td><td class="value">£${weeklyRate || '50.00'} / week</td></tr>
+        <tr><td class="label">Deposit Amount:</td><td class="value">£250.00 (Refundable)</td></tr>
+        <tr><td class="label">State:</td><td class="value" style="color:#d97706; font-weight:800;">Awaiting Payment</td></tr>
+      </table>
+    </div>
+    <p style="text-align: center;">
+      <a href="${process.env.APP_URL || 'https://r2buy.com'}/login" class="btn">Go to Portal &amp; Pay Deposit</a>
+    </p>
+  `);
+
+  return sendEmailDirect({ to, subject, html });
+}
+
+/**
  * 3. Application Rejected notification
  */
 export async function sendApplicationRejected({ to, userName, applicationId, reason }) {
@@ -313,6 +346,9 @@ export async function sendApplicationRejected({ to, userName, applicationId, rea
   const html = getHTMLTemplate(subject, `
     <h2>Application Review Decision</h2>
     <p>Dear ${userName},</p>
+    <p style="font-weight: bold; font-size: 16px; color: #ef4444;">Your application has been rejected.</p>
+    <p style="font-weight: bold; font-size: 16px; color: #0f172a;">Application ID: ${applicationId}</p>
+    <br/>
     <p>Thank you for submitting your Rent-to-Buy lease underwriting folder to Rent2Buy. Our specialists have audited your driver verification credentials folders carefully.</p>
     <p>We regret to inform you that we cannot approve your application and vehicle subscription booking at this time.</p>
     <div class="details-box" style="border-left-color: #ef4444; background-color: #fef2f2;">

@@ -10,27 +10,12 @@ import * as carController from '../controllers/carController.js';
 import * as applyController from '../controllers/applyController.js';
 import * as adminController from '../controllers/adminController.js';
 
-// Setup and ensure uploads folder exists in dynamic temp root to avoid EROFS (Read-only filesystem) inside Serverless environments
-const uploadDir = path.join(os.tmpdir(), 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Multer storage engine configuration
-const fileStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname) || '.jpg';
-    cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
-  }
-});
+// Configure Multer storage to use memory storage (buffers) for seamless performance in ephemeral environments like Railway
+const storage = multer.memoryStorage();
 
 const upload = multer({
-  storage: fileStorage,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit (optimized for larger files but safe from memory overflow)
 });
 
 const docsUpload = upload.fields([
@@ -94,6 +79,7 @@ router.delete('/cars/:id', carController.deleteCar);
 // 4. LEASE UNDERWRITING APPLICATIONS
 // ==========================================
 router.post('/applications', applyController.createApplication);
+router.get('/applications/track', applyController.trackApplication);
 router.put('/applications/:id/step', applyController.updateApplicationStep);
 router.put('/applications/:id/documents', applyController.updateApplicationDocuments);
 
@@ -106,6 +92,7 @@ router.post('/inquiries', applyController.submitInquiry);
 // ==========================================
 // 6. DOCUMENT / FILE UPLOADS GATEWAYS MOCKS
 // ==========================================
+router.post('/upload', upload.single('image'), applyController.generalUpload);
 router.post('/upload/avatar', upload.single('avatar'), applyController.uploadAvatar);
 router.post('/upload/car-image', upload.single('carImage'), applyController.uploadCarImage);
 router.post('/upload/documents', docsUpload, applyController.uploadDocumentsMock);

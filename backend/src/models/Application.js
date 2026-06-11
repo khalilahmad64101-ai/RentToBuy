@@ -34,7 +34,7 @@ const applicationSchema = new mongoose.Schema({
 
 applicationSchema.pre('save', function (next) {
   if (!this.id) {
-    this.id = 'APP-' + Math.floor(1000 + Math.random() * 9000);
+    this.id = 'R2B-2026-' + Math.floor(100000 + Math.random() * 900000);
   }
   if (!this.dateApplied) {
     this.dateApplied = new Date().toISOString().split('T')[0];

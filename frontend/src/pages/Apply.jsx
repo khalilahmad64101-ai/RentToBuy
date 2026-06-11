@@ -4,6 +4,7 @@ import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/Button';
 import { Loader } from '../components/ui/Loader';
+import { mapFriendlyFeedback } from '../utils/feedbackHelper.js';
 import { 
   ShieldCheck, 
   UploadCloud, 
@@ -71,6 +72,7 @@ export function Apply() {
   const [uploadError, setUploadError] = useState(null);
   const [appError, setAppError] = useState(null);
   const [appliedSuccess, setAppliedSuccess] = useState(false);
+  const [submittedAppId, setSubmittedAppId] = useState('');
 
   const [activeCameraStream, setActiveCameraStream] = useState(null);
   const [cameraActiveType, setCameraActiveType] = useState(null);
@@ -330,7 +332,7 @@ export function Apply() {
       console.error("[CLIENT-APPLY-DEBUG] Caught error inside handleUploadDocs:", err);
       clearInterval(progressTicker);
       setUploadProgress(0);
-      setUploadError(err.message || 'File upload failed');
+      setUploadError(mapFriendlyFeedback(err));
       throw err;
     }
   };
@@ -338,6 +340,7 @@ export function Apply() {
   const handleApplySubmit = async (e) => {
     e.preventDefault();
     setAppError(null);
+    setUploadError(null);
 
     if (!selectedCarId) {
       setAppError('Please select an active stock fleet vehicle choice.');
@@ -375,7 +378,10 @@ export function Apply() {
       };
 
       // 3. Dispatch application
-      await api.applications.create(payload);
+      const createdApp = (await api.applications.create(payload)) || {};
+      if (createdApp.id) {
+        setSubmittedAppId(createdApp.id);
+      }
 
       // 4. Force state sync and routing
       if (syncDriverData) {
@@ -394,11 +400,11 @@ export function Apply() {
       // Redirect user to Dashboard after slight interactive delay so they can read the success state clearly!
       setTimeout(() => {
         navigate('/dashboard?applied=success');
-      }, 2000);
+      }, 8000);
 
     } catch (err) {
       console.error("[Apply Submit Error]:", err);
-      setAppError(err.message || 'Application database routing error occurred.');
+      setAppError(mapFriendlyFeedback(err));
       setSubmitting(false);
       setUploadProgress(0);
     } finally {
@@ -424,12 +430,18 @@ export function Apply() {
           <h1 className="font-sans font-semibold text-2xl text-gray-900 tracking-tight">
             Application Submitted!
           </h1>
-          <p className="text-sm text-gray-500 leading-relaxed">
-            Your Rent-to-Buy application and underwriting documents have been submitted successfully.
+          <p className="text-sm text-gray-700 leading-relaxed font-bold">
+            Your application has been submitted successfully.
           </p>
+          {submittedAppId && (
+            <div className="bg-slate-50 border border-slate-200 mt-4 rounded-xl p-4 space-y-1">
+              <span className="text-[11px] text-gray-400 uppercase tracking-wider block font-bold font-sans">Your Application ID</span>
+              <strong className="text-xl font-black text-[#1F3F7A] block font-mono tracking-wide">{submittedAppId}</strong>
+            </div>
+          )}
         </div>
         <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100 text-emerald-800 text-xs font-semibold">
-          Application submitted successfully. Redirecting you to your workspace...
+          Your application has been submitted successfully and is currently under review.
         </div>
         <div className="pt-4">
           <Button

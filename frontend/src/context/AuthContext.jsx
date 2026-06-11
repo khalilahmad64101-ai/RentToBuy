@@ -12,6 +12,7 @@ export function AuthProvider({ children }) {
     applications: [],
     agreements: [],
     payments: [],
+    notifications: [],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,6 +31,7 @@ export function AuthProvider({ children }) {
         applications: data.applications || [],
         agreements: data.agreements || [],
         payments: data.payments || [],
+        notifications: data.notifications || [],
       });
       if (data.user) {
         setUser(data.user);
@@ -102,6 +104,7 @@ export function AuthProvider({ children }) {
         applications: [],
         agreements: [],
         payments: [],
+        notifications: [],
       });
       localStorage.removeItem('rent2buy_user');
     }

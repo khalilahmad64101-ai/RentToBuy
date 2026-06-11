@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button';
 import { Loader } from '../components/ui/Loader';
 import { useSEO } from '../hooks/useSEO';
 import { useNavigate, Link } from 'react-router-dom';
+import { mapFriendlyFeedback } from '../utils/feedbackHelper.js';
 
 // Import modular layouts
 import AdminSidebar from '../components/AdminSidebar';
@@ -39,7 +40,7 @@ import {
 
 const getImageUrl = (url) => {
   if (!url) return '';
-  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
   return url.startsWith('/') ? url : `/${url}`;
 };
 
@@ -111,8 +112,8 @@ export function Admin() {
   const [insurancePolicyUrl, setInsurancePolicyUrl] = useState('');
 
   // Primary data synchronized initializer
-  const fetchAllData = async () => {
-    setIsSyncing(true);
+  const fetchAllData = async (silent = false) => {
+    if (!silent) setIsSyncing(true);
     try {
       const resp = await api.admin.getAllRecords();
       if (resp) {
@@ -124,19 +125,32 @@ export function Admin() {
           emails: resp.emails || [],
           inquiries: resp.inquiries || []
         });
-        setAlertBanner({ type: 'success', text: 'Database synchronized and accounts verified.' });
+        if (!silent) {
+          setAlertBanner({ type: 'success', text: 'Database synchronized and accounts verified.' });
+        }
       }
     } catch (err) {
       console.error("[ALL-RECORDS-FETCH-ERROR]:", err);
-      setAlertBanner({ type: 'error', text: 'Credentials validation failure. Could not download portfolio archives.' });
+      if (!silent) {
+        setAlertBanner({ type: 'error', text: 'Credentials validation failure. Could not download portfolio archives.' });
+      }
     } finally {
-      setIsSyncing(false);
-      setIsLoading(false);
+      if (!silent) {
+        setIsSyncing(false);
+        setIsLoading(false);
+      }
     }
   };
 
   useEffect(() => {
     fetchAllData();
+
+    const intervalId = setInterval(() => {
+      console.log('[Admin] Performing real-time background sync checks...');
+      fetchAllData(true);
+    }, 8000); // Background sync every 8 seconds
+
+    return () => clearInterval(intervalId);
   }, []);
 
   const clearAlertWithTimeout = () => {
@@ -187,7 +201,7 @@ export function Admin() {
       setSelectedCar(null);
       fetchAllData();
     } catch (err) {
-      setAlertBanner({ type: 'error', text: err.message || 'Operation failed.' });
+      setAlertBanner({ type: 'error', text: 'Unable to save vehicle information.' });
     } finally {
       setActionLoading(false);
     }
@@ -197,32 +211,48 @@ export function Admin() {
   const handleUnderwritingAction = async (appId, decision, notes, checklistsObj) => {
     setActionLoading(true);
     try {
-      await api.admin.updateApplicationStatus(appId, {
-        status: decision,
-        step: decision === 'Approved' ? 4 : 2, // 4 for cleared/paid driver, 2 for pending review decisions
-        underwritingNotes: notes,
-        validationChecklists: checklistsObj
-      });
-
-      // Dispatch automated notification body for audit confirmation
-      const app = systemRecords.applications.find(a => a.id === appId);
-      if (app) {
-        await api.admin.sendEmail({
-          userId: app.userId,
-          userEmail: app.userEmail,
-          subject: `Underwriting Decision: Vehicle licensing application status - ${decision.toUpperCase()}`,
-          content: decision === 'Approved' 
-            ? `Congratulations! Your underwriting check has been cleared. The status is now APPROVED. Log in to reserve your Heathrow vehicle collection date. Notes: ${notes}`
-            : `Dear Driver, your Rent-to-Buy dossier has been updated with review requirements. Present Status: REJECTED. Underwriter Notes: ${notes}`
+      try {
+        await api.admin.updateApplicationStatus(appId, {
+          status: decision,
+          step: decision === 'Approved' ? 4 : 2, // 4 for cleared/paid driver, 2 for pending review decisions
+          underwritingNotes: notes,
+          validationChecklists: checklistsObj
         });
+      } catch (appErr) {
+        console.error("Application status update fail:", appErr);
+        setAlertBanner({ type: 'error', text: 'Unable to update application status.' });
+        return;
       }
 
-      setAlertBanner({ type: 'success', text: `Underwriting file #${appId} updated to ${decision.toUpperCase()}.` });
+      // Dispatch automated notification body for audit confirmation
+      try {
+        const app = systemRecords.applications.find(a => a.id === appId);
+        if (app) {
+          await api.admin.sendEmail({
+            userId: app.userId,
+            userEmail: app.userEmail,
+            subject: `Underwriting Decision: Vehicle licensing application status - ${decision.toUpperCase()}`,
+            content: decision === 'Approved' 
+              ? `Congratulations! Your underwriting check has been cleared. The status is now APPROVED. Log in to reserve your Heathrow vehicle collection date. Notes: ${notes}`
+              : `Dear Driver, your Rent-to-Buy dossier has been updated with review requirements. Present Status: REJECTED. Underwriter Notes: ${notes}`
+          });
+        }
+      } catch (emailErr) {
+        console.error("Email send fail:", emailErr);
+        setAlertBanner({ type: 'error', text: 'Unable to send notification at this time.' });
+        // continue as application is saved
+      }
+
+      const successText = decision === 'Approved' 
+        ? "Your application has been approved." 
+        : "Your application has been rejected.";
+
+      setAlertBanner({ type: 'success', text: successText });
       setInspectedAppForFullView(null);
       setInspectedAppForDocs(null);
       fetchAllData();
     } catch (err) {
-      setAlertBanner({ type: 'error', text: err.message || 'Failed to file credentials decisions.' });
+      setAlertBanner({ type: 'error', text: mapFriendlyFeedback(err) });
     } finally {
       setActionLoading(false);
     }
@@ -238,7 +268,7 @@ export function Admin() {
       });
       fetchAllData();
     } catch (err) {
-      setAlertBanner({ type: 'error', text: err.message || 'Driver update failed.' });
+      setAlertBanner({ type: 'error', text: mapFriendlyFeedback(err) });
     }
   };
 
@@ -249,7 +279,7 @@ export function Admin() {
         setAlertBanner({ type: 'success', text: 'Driver credentials and file registries deleted.' });
         fetchAllData();
       } catch (err) {
-        setAlertBanner({ type: 'error', text: err.message || 'Driver deletion failed.' });
+        setAlertBanner({ type: 'error', text: mapFriendlyFeedback(err) });
       }
     }
   };
@@ -262,7 +292,7 @@ export function Admin() {
         setAlertBanner({ type: 'success', text: 'Deposits receipts verified. License account credited.' });
         fetchAllData();
       } catch (err) {
-        setAlertBanner({ type: 'error', text: err.message || 'Verification error' });
+        setAlertBanner({ type: 'error', text: mapFriendlyFeedback(err) });
       }
     }
   };
@@ -285,7 +315,7 @@ export function Admin() {
       setEmailTo('');
       fetchAllData();
     } catch (err) {
-      setAlertBanner({ type: 'error', text: err.message || 'Email courier failed.' });
+      setAlertBanner({ type: 'error', text: 'Unable to send notification at this time.' });
     } finally {
       setActionLoading(false);
     }

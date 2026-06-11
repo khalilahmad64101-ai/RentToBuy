@@ -5,6 +5,7 @@ import { User } from '../models/User.js';
 import { Application } from '../models/Application.js';
 import { Agreement } from '../models/Aggreement.js';
 import { Payment } from '../models/Payment.js';
+import { Email } from '../models/Email.js';
 
 // ADMIN_EMAIL Configurable Parameter - Requirement 17, 18, 19, 20
 const getAdminEmail = () => {
@@ -298,6 +299,7 @@ export const getUserData = async (req, res) => {
 
     const driverAgreements = await Agreement.find({ userEmail: activeEmail }).sort({ createdAt: -1 });
     const driverPayments = await Payment.find({ userEmail: activeEmail }).sort({ createdAt: -1 });
+    const driverNotifications = await Email.find({ userEmail: activeEmail }).sort({ createdAt: -1 });
 
     res.json({
       user: {
@@ -308,6 +310,7 @@ export const getUserData = async (req, res) => {
       applications: driverApps,
       agreements: driverAgreements,
       payments: driverPayments,
+      notifications: driverNotifications,
     });
   } catch (err) {
     console.error("getUserData error:", err);

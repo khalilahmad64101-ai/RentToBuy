@@ -1,5 +1,5 @@
 // Base URL pointing to the backend (empty string or VITE_API_URL)
-const BASE_URL ="https://renttobuy-production.up.railway.app";
+const BASE_URL = import.meta.env.VITE_API_URL || '';
 
 // Global cache for CSRF Token
 let csrfTokenCache = null;
@@ -113,6 +113,7 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(payload),
     }),
+    track: (id, email) => apiRequest(`/applications/track?id=${encodeURIComponent(id)}&email=${encodeURIComponent(email)}`),
     updateStep: (id, step) => apiRequest(`/applications/${id}/step`, {
       method: 'PUT',
       body: JSON.stringify({ step }),
@@ -227,17 +228,19 @@ export const api = {
       if (!res.ok) throw new Error('Car image upload fail.');
       return res.json();
     },
-    documents: async (licenseFrontFile, licenseBackFile, addressProofFile) => {
+    documents: async (licenseFrontFile, licenseBackFile, addressProofFile, floorPlanFile) => {
       console.log("[CLIENT-API-DEBUG] Uploading documents...", {
         licenseFrontFile: licenseFrontFile ? licenseFrontFile.name : null,
         licenseBackFile: licenseBackFile ? licenseBackFile.name : null,
-        addressProofFile: addressProofFile ? addressProofFile.name : null
+        addressProofFile: addressProofFile ? addressProofFile.name : null,
+        floorPlanFile: floorPlanFile ? floorPlanFile.name : null
       });
 
       const fd = new FormData();
       if (licenseFrontFile) fd.append('licenseFront', licenseFrontFile);
       if (licenseBackFile) fd.append('licenseBack', licenseBackFile);
       if (addressProofFile) fd.append('proofOfAddress', addressProofFile);
+      if (floorPlanFile) fd.append('floorPlan', floorPlanFile);
 
       if (!csrfTokenCache) {
         console.log("[CLIENT-API-DEBUG] CSRF token cache is empty, fetching new one first...");
@@ -262,7 +265,14 @@ export const api = {
       if (!res.ok) {
         const errorText = await res.text();
         console.error("[CLIENT-API-DEBUG] Upload failed with text:", errorText);
-        throw new Error(`Underwriting lease document uploads fail: ${errorText || res.statusText}`);
+        let errorMsg = errorText;
+        try {
+          const parsed = JSON.parse(errorText);
+          if (parsed && parsed.error) {
+            errorMsg = parsed.error;
+          }
+        } catch (_) {}
+        throw new Error(`Underwriting lease document uploads fail: ${errorMsg || res.statusText}`);
       }
 
       const data = await res.json();

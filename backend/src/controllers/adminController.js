@@ -8,6 +8,7 @@ import { Inquiry } from '../models/Inquiry.js';
 import { 
   sendApplicationApproved, 
   sendApplicationRejected, 
+  sendApplicationAwaitingPayment,
   sendBookingConfirmation, 
   sendAdminNewBookingAlert,
   scheduleReminders 
@@ -222,6 +223,33 @@ export const adminUpdateApplicationStatus = async (req, res) => {
         });
       } catch (emailErr) {
         console.error('[NOTIFIER WARNING] Failed to send rejection email:', emailErr);
+      }
+    }
+
+    if (status === "Awaiting Payment") {
+      const emailQuery = app.userEmail.toLowerCase().trim();
+      const awaitEmail = new Email({
+        userEmail: emailQuery,
+        subject: "HEATHROW INBOX: Application Approved - Awaiting Payment",
+        content: `Dear Applicant, your driving credentials validation and Soft Credit review are complete. Your underwriting application status is APPROVED and currently AWAITING PAYMENT.\n\nDeposit requirement is activated. Please pay your refundable lease deposit of £250 in the driver portal to initiate EV key logistics delivery schedules.`,
+        attachmentUrl: null
+      });
+      await awaitEmail.save();
+
+      try {
+        const parts = app.carName ? app.carName.split(" - ") : [];
+        await sendApplicationAwaitingPayment({
+          to: emailQuery,
+          userName: app.fullName || "Lease Driver",
+          applicationId: app.id,
+          carName: app.carName || parts[0],
+          weeklyRate: 45
+        });
+
+        // Schedule the payment reminders (after application status is set to Awaiting Payment)
+        await scheduleReminders(emailQuery, app.id);
+      } catch (emailErr) {
+        console.error('[NOTIFIER WARNING] Failed to send awaiting payment email:', emailErr);
       }
     }
 

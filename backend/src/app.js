@@ -45,7 +45,11 @@ export async function createApp() {
 
   // General request logging middleware for debugging API and Vite routes
   app.use((req, res, next) => {
-    console.log(`[Request-Logger] ${req.method} ${req.url}`);
+    // Only log dynamic api requests and uploads to avoid cluttering and false-positives with static asset files
+    const isStaticAsset = req.url.includes('.') || req.url.startsWith('/src') || req.url.startsWith('/@vite') || req.url.startsWith('/node_modules');
+    if (!isStaticAsset) {
+      console.log(`[Request-Logger] ${req.method} ${req.url}`);
+    }
     next();
   });
 

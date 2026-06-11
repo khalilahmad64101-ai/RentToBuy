@@ -1,3 +1,5 @@
+import fs from 'fs';
+import { uploadToCloudinary } from '../config/cloudinary.js';
 import { User } from '../models/User.js';
 import { Car } from '../models/Car.js';
 import { Application } from '../models/Application.js';
@@ -81,7 +83,8 @@ export const createApplication = async (req, res) => {
         to: finalEmail,
         userName: currentFullName,
         applicationId: newApp.id,
-        submissionDate: formattedDate
+        submissionDate: formattedDate,
+        carName: newApp.carName
       });
       await sendAdminNewApplicationAlert({
         adminEmail: process.env.ADMIN_EMAIL,
@@ -278,66 +281,59 @@ export const submitInquiry = async (req, res) => {
   }
 };
 
-export const uploadAvatar = (req, res) => {
+export const uploadAvatar = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No avatar file uploaded." });
     }
-    const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
-    const host = req.headers['x-forwarded-host'] || req.get('host') || 'localhost:3000';
-    const baseUrl = `${protocol}://${host}`;
-    res.json({ url: `${baseUrl}/uploads/${req.file.filename}` });
+    const result = await uploadToCloudinary(req.file, 'avatars');
+    res.json({ url: result.url });
   } catch (error) {
     console.error("Avatar upload error:", error);
     res.status(500).json({ error: "Failed to upload avatar." });
   }
 };
 
-export const uploadCarImage = (req, res) => {
+export const uploadCarImage = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No carImage file uploaded." });
     }
-    const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
-    const host = req.headers['x-forwarded-host'] || req.get('host') || 'localhost:3000';
-    const baseUrl = `${protocol}://${host}`;
-    res.json({ url: `${baseUrl}/uploads/${req.file.filename}` });
+    const result = await uploadToCloudinary(req.file, 'cars');
+    res.json({ url: result.url });
   } catch (error) {
     console.error("Car image upload error:", error);
     res.status(500).json({ error: "Failed to upload car image." });
   }
 };
 
-export const uploadDocumentsMock = (req, res) => {
+export const uploadDocumentsMock = async (req, res) => {
   try {
-    console.log("[UPLOAD-DEBUG] Called uploadDocumentsMock. Files of request:", req.files);
+    console.log("[UPLOAD-CLOUDINARY] Called uploadDocumentsMock with dynamic memory storage buffers.");
+    
     const files = req.files || {};
     const licenseFrontFile = files.licenseFront ? files.licenseFront[0] : null;
     const licenseBackFile = files.licenseBack ? files.licenseBack[0] : null;
     const proofOfAddressFile = files.proofOfAddress ? files.proofOfAddress[0] : null;
     const floorPlanFile = files.floorPlan ? files.floorPlan[0] : null;
 
-    // Calculate the absolute base URL dynamically based on current requests headers
-    const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
-    const host = req.headers['x-forwarded-host'] || req.get('host') || 'localhost:3000';
-    const baseUrl = `${protocol}://${host}`;
+    const fileToCloudinary = async (file, label) => {
+      if (!file) {
+        console.log(`[UPLOAD-CLOUDINARY] Optional file [${label}] not provided.`);
+        return "";
+      }
+      console.log(`[UPLOAD-CLOUDINARY] Streaming memory buffer for [${label}]: size=${file.size}, originalName=${file.originalname}`);
+      const result = await uploadToCloudinary(file, 'documents');
+      return result.url;
+    };
 
-    const licenseFrontUrl = licenseFrontFile 
-      ? `${baseUrl}/uploads/${licenseFrontFile.filename}` 
-      : "";
-      
-    const licenseBackUrl = licenseBackFile 
-      ? `${baseUrl}/uploads/${licenseBackFile.filename}` 
-      : "";
-      
-    const proofOfAddressUrl = proofOfAddressFile 
-      ? `${baseUrl}/uploads/${proofOfAddressFile.filename}` 
-      : "";
+    const [licenseFrontUrl, licenseBackUrl, proofOfAddressUrl, floorPlanUrl] = await Promise.all([
+      fileToCloudinary(licenseFrontFile, "License Front"),
+      fileToCloudinary(licenseBackFile, "License Back"),
+      fileToCloudinary(proofOfAddressFile, "Proof of Address (Selfie)"),
+      fileToCloudinary(floorPlanFile, "Floor Plan")
+    ]);
 
-    const floorPlanUrl = floorPlanFile 
-      ? `${baseUrl}/uploads/${floorPlanFile.filename}` 
-      : "";
-      
     const responsePayload = {
       licenseFront: licenseFrontUrl,
       licenseBack: licenseBackUrl,
@@ -345,10 +341,68 @@ export const uploadDocumentsMock = (req, res) => {
       floorPlan: floorPlanUrl
     };
 
-    console.log("[UPLOAD-DEBUG] Sending response payload:", responsePayload);
     res.json(responsePayload);
   } catch (error) {
-    console.error("[UPLOAD-DEBUG] Error in uploadDocumentsMock real storage:", error);
-    res.status(500).json({ error: "Failed to upload underwriting files perfectly." });
+    console.error("[UPLOAD-CLOUDINARY ERROR] Error in uploadDocumentsMock:", error);
+    res.status(500).json({ error: error.message || "Failed to upload documents." });
+  }
+};
+
+export const generalUpload = async (req, res) => {
+  try {
+    const file = req.file || (req.files && req.files[0]);
+    if (!file) {
+      return res.status(400).json({ success: false, error: "No image file uploaded." });
+    }
+    const result = await uploadToCloudinary(file, 'general');
+    res.json({
+      success: true,
+      imageUrl: result.url
+    });
+  } catch (error) {
+    console.error("General upload error:", error);
+    res.status(500).json({ success: false, error: error.message || "Failed to upload image." });
+  }
+};
+
+export const trackApplication = async (req, res) => {
+  try {
+    const { id, email } = req.query;
+    if (!id || !email) {
+      return res.status(400).json({ error: "Please enter both Application ID and Email Address." });
+    }
+
+    const app = await Application.findOne({ 
+      id: id.trim().toUpperCase(), 
+      userEmail: email.trim().toLowerCase() 
+    });
+
+    if (!app) {
+      return res.status(404).json({ error: "No matching application found for this ID and Email address." });
+    }
+
+    // Determine license validation status
+    let licenseStatus = "Pending Verification";
+    if (app.step >= 3 || app.status === "Approved" || app.status === "Awaiting Payment") {
+      licenseStatus = "Approved / Validated";
+    } else if (app.step === 2) {
+      licenseStatus = "In Progress / Scanning";
+    } else if (app.status === "Action Required") {
+      licenseStatus = "Action Required / Re-upload Needed";
+    } else if (app.status === "Rejected") {
+      licenseStatus = "Declined";
+    }
+
+    res.json({
+      id: app.id,
+      carName: app.carName,
+      status: app.status,
+      step: app.step,
+      dateApplied: app.dateApplied,
+      licenseStatus: licenseStatus
+    });
+  } catch (err) {
+    console.error("[applyController] trackApplication error:", err);
+    res.status(500).json({ error: "Internal server error performing application search." });
   }
 };

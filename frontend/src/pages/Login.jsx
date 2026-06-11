@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/Button';
-import { Mail, Lock, Car, Sparkles, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, Car, Sparkles, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { api } from '../services/api';
 import { useSEO } from '../hooks/useSEO';
+import { mapFriendlyFeedback } from '../utils/feedbackHelper.js';
 
 export function Login() {
   useSEO({
@@ -23,6 +24,7 @@ export function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   // Real Google Sign-In Integration hook
   useEffect(() => {
@@ -46,10 +48,14 @@ export function Login() {
               try {
                 setLoading(true);
                 setErrorMsg('');
+                setSuccessMsg('');
                 await googleLogin(response.credential);
-                navigate(redirectUrl);
+                setSuccessMsg("Login successful.");
+                setTimeout(() => {
+                  navigate(redirectUrl);
+                }, 1000);
               } catch (err) {
-                setErrorMsg(err?.message || "Google login failed");
+                setErrorMsg(mapFriendlyFeedback(err));
               } finally {
                 setLoading(false);
               }
@@ -82,13 +88,23 @@ export function Login() {
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
+    setSuccessMsg('');
+
+    if (!email || !email.includes('@')) {
+      setErrorMsg("Please enter a valid email address.");
+      return;
+    }
+
     setLoading(true);
 
     try {
       await login({ email, password });
-      navigate(redirectUrl);
+      setSuccessMsg("Login successful.");
+      setTimeout(() => {
+        navigate(redirectUrl);
+      }, 1000);
     } catch (err) {
-      setErrorMsg(err.message || 'Credentials authentication failed. Please retry.');
+      setErrorMsg(mapFriendlyFeedback(err));
     } finally {
       setLoading(false);
     }
@@ -99,12 +115,16 @@ export function Login() {
     setEmail(selectedEmail);
     setPassword(selectedPassword);
     setErrorMsg('');
+    setSuccessMsg('');
     setLoading(true);
     try {
       await login({ email: selectedEmail, password: selectedPassword });
-      navigate(redirectUrl);
+      setSuccessMsg("Login successful.");
+      setTimeout(() => {
+        navigate(redirectUrl);
+      }, 1000);
     } catch (err) {
-      setErrorMsg(err.message || 'Pre-load profiles validation failed.');
+      setErrorMsg(mapFriendlyFeedback(err));
     } finally {
       setLoading(false);
     }
@@ -132,6 +152,13 @@ export function Login() {
         {errorMsg && (
           <div className="bg-red-50 text-red-700 text-xs p-3.5 rounded-xl border border-red-100 font-medium">
             {errorMsg}
+          </div>
+        )}
+
+        {successMsg && (
+          <div className="bg-emerald-50 text-emerald-800 text-xs p-3.5 rounded-xl border border-emerald-100 font-semibold flex items-center space-x-2">
+            <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+            <span>{successMsg}</span>
           </div>
         )}
 

@@ -19,7 +19,7 @@ import {
 // Simple helper to append proper full proxy path if image isn't external
 const getImageUrl = (url) => {
   if (!url) return '';
-  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
   return url.startsWith('/') ? url : `/${url}`;
 };
 
