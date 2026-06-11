@@ -31,6 +31,7 @@ import {
   Users,
   CheckCircle2,
   XCircle,
+  Shield,
   RefreshCw,
   Gauge,
   HelpCircle,
@@ -110,6 +111,29 @@ export function Admin() {
   
   const [insuranceTargetEmail, setInsuranceTargetEmail] = useState('');
   const [insurancePolicyUrl, setInsurancePolicyUrl] = useState('');
+
+  // SMTP Live Diagnostics States
+  const [smtpDiagnosticsResult, setSmtpDiagnosticsResult] = useState(null);
+  const [diagnosticsLoading, setDiagnosticsLoading] = useState(false);
+
+  const runSmtpDiagnosticsCheck = async () => {
+    setDiagnosticsLoading(true);
+    setSmtpDiagnosticsResult(null);
+    try {
+      const resp = await api.admin.diagnoseSMTP();
+      if (resp && resp.success) {
+        setSmtpDiagnosticsResult(resp.results);
+        setAlertBanner({ type: 'success', text: 'SMTP Connection Diagnostics completed.' });
+      } else {
+        setAlertBanner({ type: 'error', text: resp?.error || 'SMTP Connection Diagnostics failed.' });
+      }
+    } catch (err) {
+      console.error("[SMTP-DIAGNOSTICS-ERROR]:", err);
+      setAlertBanner({ type: 'error', text: 'SMTP channel diagnostics call failed.' });
+    } finally {
+      setDiagnosticsLoading(false);
+    }
+  };
 
   // Primary data synchronized initializer
   const fetchAllData = async (silent = false) => {

@@ -43,6 +43,15 @@ export async function createApp() {
   // Serve static document/photo uploads
   app.use('/uploads', express.static(path.join(os.tmpdir(), 'uploads')));
 
+  // Print startup logs
+  console.log("\n======================================================");
+  console.log("🛰️  Registered API routes:");
+  console.log(" - GET /api/cars");
+  console.log(" - GET /api/csrf-token");
+  console.log(" - GET /api/auth/*");
+  console.log(" - GET /api/admin/*");
+  console.log("======================================================\n");
+
   // General request logging middleware for debugging API and Vite routes
   app.use((req, res, next) => {
     // Only log dynamic api requests and uploads to avoid cluttering and false-positives with static asset files
@@ -86,6 +95,17 @@ export async function createApp() {
       : path.resolve(process.cwd(), '..', 'dist');
     // Serve production built frontend bundles
     app.use(express.static(distPath));
+
+    // Handle any unmatched API requests specifically with a JSON 404 instead of letting them fall through to index.html
+    app.all('/api/*', (req, res) => {
+      console.warn(`[API-FALLBACK-WARNING] Unmatched API path requested: ${req.method} ${req.url}`);
+      res.status(404).json({
+        success: false,
+        error: `API endpoint not found: ${req.method} ${req.url}`,
+        message: "This API route does not exist or has been configured incorrectly."
+      });
+    });
+
     app.get('*', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });

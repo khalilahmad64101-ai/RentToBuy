@@ -118,6 +118,7 @@ router.get('/admin/payments', checkAdminRole, adminController.adminGetPayments);
 router.post('/admin/payments/verify/:id', checkAdminRole, adminController.adminVerifyPayment);
 router.get('/admin/emails', checkAdminRole, adminController.adminGetEmails);
 router.post('/admin/emails/send', checkAdminRole, adminController.adminSendEmail);
+router.get('/admin/emails/diagnose-smtp', checkAdminRole, adminController.adminRunSMTPDiagnostics);
 router.post('/admin/emails/upload-insurance', checkAdminRole, adminController.adminUploadInsurance);
 router.get('/admin/inquiries', checkAdminRole, adminController.adminGetInquiries);
 router.put('/admin/users/role', checkAdminRole, adminController.adminUpdateUserRole);

@@ -172,6 +172,7 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(payload),
     }),
+    diagnoseSMTP: () => apiRequest('/admin/emails/diagnose-smtp'),
     getInquiries: () => apiRequest('/admin/inquiries'),
     submitInquiry: (payload) => apiRequest('/inquiries', {
       method: 'POST',

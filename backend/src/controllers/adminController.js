@@ -488,3 +488,23 @@ export const deletePayment = async (req, res) => {
     res.status(500).json({ error: "Failed to delete payment transaction coordinates from MongoDB." });
   }
 };
+
+export const adminRunSMTPDiagnostics = async (req, res) => {
+  try {
+    const { runSmtpDiagnostics } = await import("../utils/smtpDiagnostic.js");
+    const results = await runSmtpDiagnostics();
+    res.json({
+      success: true,
+      message: "SMTP diagnostics channel audit successfully processed.",
+      results
+    });
+  } catch (err) {
+    console.error('[adminController] adminRunSMTPDiagnostics fatal error:', err);
+    res.status(500).json({ 
+      success: false, 
+      error: "Diagnostics procedure failed with an unhandled exception.", 
+      details: err.message 
+    });
+  }
+};
+
