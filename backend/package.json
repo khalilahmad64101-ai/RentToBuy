@@ -7,7 +7,7 @@
     "start": "tsx server.js",
     "build": "esbuild server.js --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs"
   },
-  "dependencies": {
+  "dependencies": {cd
     "@getbrevo/brevo": "^5.0.4",
     "@google/genai": "^1.29.0",
     "bcrypt": "^5.1.1",
