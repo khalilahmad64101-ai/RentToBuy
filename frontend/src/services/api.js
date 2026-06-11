@@ -1,5 +1,6 @@
 // Base URL pointing to the backend (empty string or VITE_API_URL)
-const BASE_URL = import.meta.env.VITE_API_URL || '';
+const rawBaseUrl = import.meta.env.VITE_API_URL || '';
+const BASE_URL = rawBaseUrl.endsWith('/') ? rawBaseUrl.slice(0, -1) : rawBaseUrl;
 
 // Global cache for CSRF Token
 let csrfTokenCache = null;

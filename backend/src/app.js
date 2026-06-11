@@ -114,5 +114,15 @@ export async function createApp() {
     });
   }
 
+  // Global error handler to catch all unhandled server-side exceptions and enforce clean JSON output
+  app.use((err, req, res, next) => {
+    console.error('[UNHANDLED-FATAL-ERROR] Capturing global Express error hook:', err);
+    res.status(err.status || 500).json({
+      success: false,
+      error: err.message || 'Internal Server Error',
+      message: 'An unhandled exception occurred on the production API server. Please check application log feeds.'
+    });
+  });
+
   return app;
 }

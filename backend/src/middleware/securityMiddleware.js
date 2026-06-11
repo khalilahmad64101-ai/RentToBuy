@@ -13,7 +13,14 @@ const allowedOrigins = [
 export const corsMiddleware = cors({
   origin: (origin, callback) => {
     // Permit standard developer sandbox or same-origin requests
-    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.run.app') || origin.startsWith('http://localhost:')) {
+    if (
+      !origin || 
+      allowedOrigins.includes(origin) || 
+      origin.endsWith('.run.app') || 
+      origin.endsWith('.railway.app') || 
+      origin.endsWith('.vercel.app') ||
+      origin.startsWith('http://localhost:')
+    ) {
       callback(null, true);
     } else {
       callback(null, true); // Permissive in preview sandboxes to prevent blockage
