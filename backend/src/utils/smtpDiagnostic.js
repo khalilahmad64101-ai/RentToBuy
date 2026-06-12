@@ -1,6 +1,7 @@
 import "../config/loadEnv.js";
 import dns from "dns";
 import net from "net";
+import { Resend } from "resend";
 
 // Helper to sanitize env variables
 const sanitizeEnv = (val) => {
@@ -9,9 +10,9 @@ const sanitizeEnv = (val) => {
 };
 
 export async function runSmtpDiagnostics() {
-  const host = "api.brevo.com";
+  const host = "api.resend.com";
   const port = 443;
-  const apiKey = sanitizeEnv(process.env.BREVO_API_KEY);
+  const apiKey = sanitizeEnv(process.env.RESEND_API_KEY);
 
   const results = {
     envLoad: { status: "UNKNOWN", message: "" },
@@ -21,7 +22,7 @@ export async function runSmtpDiagnostics() {
   };
 
   console.log("\n======================================================================");
-  console.log("🔍 [BREVO REST API DIAGNOSTICS SUITE] STARTING FULL CHANNEL AUDIT");
+  console.log("🔍 [RESEND REST API DIAGNOSTICS SUITE] STARTING FULL CHANNEL AUDIT");
   console.log("======================================================================");
   console.log(`Timestamp: ${new Date().toISOString()}`);
   console.log(`Host Configured: "${host}"`);
@@ -34,19 +35,19 @@ export async function runSmtpDiagnostics() {
   if (!apiKey) {
     results.envLoad = {
       status: "WARNING",
-      message: "Brevo API Key (BREVO_API_KEY) is not defined. Email dispatch is running in Simulation Mode."
+      message: "Resend API Key (RESEND_API_KEY) is not defined. Email dispatch is running in Simulation Mode."
     };
-    console.log("⚠️  Environment load warning: BREVO_API_KEY is missing.");
+    console.log("⚠️  Environment load warning: RESEND_API_KEY is missing.");
   } else {
     results.envLoad = {
       status: "SUCCESS",
-      message: "BREVO_API_KEY environment variable loaded successfully."
+      message: "RESEND_API_KEY environment variable loaded successfully."
     };
     console.log("✅ Credentials loaded safely.");
   }
 
   // --- STEP 2: DNS CHECK ---
-  console.log("\n👉 STEP 2: Resolving Brevo API Host via DNS...");
+  console.log("\n👉 STEP 2: Resolving Resend API Host via DNS...");
   try {
     const addresses = await new Promise((resolve, reject) => {
       dns.resolve4(host, (err, addresses) => {
@@ -69,7 +70,7 @@ export async function runSmtpDiagnostics() {
       ips: addresses,
       message: `Resolved ${host} to IP(s): ${addresses.join(", ")}`
     };
-    console.log(`✅ DNS Lookup passed. Brevo API Host resolved successfully: ${addresses.join(", ")}`);
+    console.log(`✅ DNS Lookup passed. Resend API Host resolved successfully: ${addresses.join(", ")}`);
   } catch (dnsErr) {
     results.dnsLookup = {
       status: "FAILED",
@@ -104,7 +105,7 @@ export async function runSmtpDiagnostics() {
         clearTimeout(timer);
         results.tcpConnect = {
           status: "SUCCESS",
-          message: `TCP socket successfully established with ${targetIp}:${port}. HTTPS traffic to Brevo API is reachable.`
+          message: `TCP socket successfully established with ${targetIp}:${port}. HTTPS traffic to Resend API is reachable.`
         };
         console.log(`✅ TCP Handshake success! Target socket ${targetIp}:${port} is reachable.`);
         socket.end();
@@ -130,58 +131,52 @@ export async function runSmtpDiagnostics() {
     console.log("⏭️  TCP Handshake step skipped.");
   }
 
-  // --- STEP 4: BREVO REST API KEY AUTH VALIDITY CHECK ---
+  // --- STEP 4: RESEND REST API KEY AUTH VALIDITY CHECK ---
   console.log("\n👉 STEP 4: Authenticating REST API Session Handshake...");
   if (apiKey && results.dnsLookup.status === "SUCCESS") {
     const debugLogs = [];
     try {
-      debugLogs.push(`[INFO] Sending GET https://api.brevo.com/v3/account request...`);
-      const response = await fetch("https://api.brevo.com/v3/account", {
-        method: "GET",
-        headers: {
-          "Accept": "application/json",
-          "api-key": apiKey
-        }
-      });
-
-      debugLogs.push(`[INFO] Response Status Code: ${response.status}`);
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      debugLogs.push(`[INFO] Initializing Resend API client with provided key...`);
+      const resend = new Resend(apiKey);
+      
+      debugLogs.push(`[INFO] Dispatching domains.list() fetch validation to Resend endpoint...`);
+      const response = await resend.domains.list();
+      
+      if (response.error) {
+        throw new Error(response.error.message || JSON.stringify(response.error));
       }
 
-      const accountInfo = await response.json();
-      debugLogs.push(`[INFO] Account retrieved successfully.`);
-      debugLogs.push(`[INFO] Email: ${accountInfo.email || "N/A"}`);
-      debugLogs.push(`[INFO] Company Name: ${accountInfo.companyName || "N/A"}`);
+      debugLogs.push(`[INFO] Domains lists retrieved successfully.`);
+      const domainsCount = response.data?.data?.length || 0;
+      debugLogs.push(`[INFO] Verified domains counts under account: ${domainsCount}`);
 
       results.nodemailerVerify = {
         status: "SUCCESS",
-        message: `Brevo REST API handshake succeeded! Validated master account under company: ${accountInfo.companyName}`,
+        message: `Resend REST API handshake succeeded! Validated API key and retrieved ${domainsCount} domain(s).`,
         consoleLogs: debugLogs
       };
-      console.log("✅ Brevo REST API authenticated successfully!");
+      console.log("✅ Resend REST API authenticated successfully!");
     } catch (verifyErr) {
       debugLogs.push(`[ERROR] Verification threw: ${verifyErr.message}`);
       results.nodemailerVerify = {
         status: "FAILED",
-        message: `Brevo REST API key check failed: ${verifyErr.message}`,
+        message: `Resend REST API key check failed: ${verifyErr.message}`,
         details: { code: verifyErr.code },
         consoleLogs: debugLogs
       };
-      console.log(`❌ Brevo REST API verification failed! Error: ${verifyErr.message}`);
+      console.log(`❌ Resend REST API verification failed! Error: ${verifyErr.message}`);
     }
   } else {
     results.nodemailerVerify = {
       status: "SKIPPED",
-      message: "Skipped due to lack of BREVO_API_KEY or upstream DNS failure."
+      message: "Skipped due to lack of RESEND_API_KEY or upstream DNS failure."
     };
-    console.log("⏭️  Brevo REST API diagnostic skipped.");
+    console.log("⏭️  Resend REST API diagnostic skipped.");
   }
 
   // --- PRETTIFY TRANSCRIPTS REPORT ---
   console.log("\n======================================================================");
-  console.log("📊 [BREVO REST API DIAGNOSTIC TRANSCRIPT AUDIT MATRIX]");
+  console.log("📊 [RESEND REST API DIAGNOSTIC TRANSCRIPT AUDIT MATRIX]");
   console.log("======================================================================");
   console.log(`1. Environment Variable Inject:    [ ${results.envLoad.status} ] - ${results.envLoad.message}`);
   console.log(`2. DNS Hostname Resolution:        [ ${results.dnsLookup.status} ] - ${results.dnsLookup.message}`);
@@ -191,5 +186,3 @@ export async function runSmtpDiagnostics() {
 
   return results;
 }
-
-

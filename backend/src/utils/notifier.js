@@ -1,3 +1,4 @@
+import { Resend } from "resend";
 import { Email } from "../models/Email.js";
 import { Agreement } from "../models/Aggreement.js";
 import { Payment } from "../models/Payment.js";
@@ -10,46 +11,49 @@ const sanitizeEnv = (val) => {
   return String(val).trim().replace(/^['"]|['"]$/g, "").trim();
 };
 
+let resendInstance = null;
+function getResend() {
+  if (!resendInstance) {
+    const apiKey = sanitizeEnv(process.env.RESEND_API_KEY);
+    if (apiKey) {
+      resendInstance = new Resend(apiKey);
+    }
+  }
+  return resendInstance;
+}
+
 /**
- * Service Connection Verification on startup - now adapted to check Brevo REST API connectivity.
+ * Service Connection Verification on startup - now adapted to check Resend API connectivity.
  */
 export async function verifySMTPOnStartup() {
-  const apiKey = sanitizeEnv(process.env.BREVO_API_KEY);
+  const apiKey = sanitizeEnv(process.env.RESEND_API_KEY);
 
   console.log(`\n======================================================`);
-  console.log(`📡 [BREVO REST API STARTUP VERIFICATION] Init check...`);
+  console.log(`📡 [RESEND API STARTUP VERIFICATION] Init check...`);
   console.log(`   API Key: ${apiKey ? apiKey.substring(0, 8) + "..." : "MISSING"}`);
   console.log(`======================================================`);
 
   if (!apiKey) {
-    console.warn("⚠️ [BREVO API STARTUP WARNING] No `BREVO_API_KEY` configured. Moving into Simulation mode.");
+    console.warn("⚠️ [RESEND API STARTUP WARNING] No `RESEND_API_KEY` configured. Moving into Simulation mode.");
     console.log(`======================================================\n`);
     return false;
   }
 
   try {
-    console.log("[BREVO API STARTUP] Testing API key validity against Brevo v3 Account details...");
-    const response = await fetch("https://api.brevo.com/v3/account", {
-      method: "GET",
-      headers: {
-        "Accept": "application/json",
-        "api-key": apiKey
-      }
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+    console.log("[RESEND API STARTUP] Testing Resend API connectivity...");
+    const resend = getResend();
+    if (!resend) {
+      throw new Error("Resend failed to initialize.");
     }
-
-    const accountInfo = await response.json();
-    console.log(`✅ [BREVO API STARTUP SUCCESS] Brevo API Key verified successfully!`);
-    console.log(`   Account Email: ${accountInfo.email}`);
-    console.log(`   Company Name: ${accountInfo.companyName}`);
+    const response = await resend.domains.list();
+    if (response.error) {
+      throw new Error(response.error.message || JSON.stringify(response.error));
+    }
+    console.log(`✅ [RESEND API STARTUP SUCCESS] Resend API Key verified successfully!`);
     console.log(`======================================================\n`);
     return true;
   } catch (err) {
-    console.error("❌ [BREVO API STARTUP FAILURE] Verification test failed:");
+    console.error("❌ [RESEND API STARTUP FAILURE] Verification test failed:");
     console.error(`   Message: ${err.message}`);
     console.log(`======================================================\n`);
     return false;
@@ -57,72 +61,56 @@ export async function verifySMTPOnStartup() {
 }
 
 /**
- * Reusable function to send transactional emails via Brevo email REST API as required by core instructions.
+ * Reusable function to send transactional emails via Resend transactional email API.
  * Retries up to maxRetries times in case of transient HTTP or socket failures.
  */
 export async function sendEmail(to, subject, html, maxRetries = 3, initialDelay = 1000) {
-  const apiKey = sanitizeEnv(process.env.BREVO_API_KEY);
-  const senderEmail = sanitizeEnv(process.env.BREVO_SENDER_EMAIL) || "noreply@rent2buy.com";
+  const apiKey = sanitizeEnv(process.env.RESEND_API_KEY);
   const userEmail = to.toLowerCase().trim();
 
   if (!apiKey) {
-    console.warn(`[BREVO API WATCH] BREVO_API_KEY is not defined. Email send skipped (Simulation Mode).`);
-    console.log(`[BREVO SIMULATION] Mail printed for ${userEmail}:\nSubject: ${subject}\n`);
+    console.warn(`[RESEND API WATCH] RESEND_API_KEY is not defined. Email send skipped (Simulation Mode).`);
+    console.log(`[RESEND SIMULATION] Mail printed for ${userEmail}:\nSubject: ${subject}\n`);
     return { message: "Simulation mode active (NO API KEY)", simulated: true };
   }
 
-  const payload = {
-    sender: {
-      name: "Rent2Buy Support",
-      email: senderEmail
-    },
-    to: [
-      {
-        email: userEmail
-      }
-    ],
-    subject,
-    htmlContent: html,
-    textContent: html.replace(/<[^>]*>/g, '').trim()
-  };
+  const resend = getResend();
+  if (!resend) {
+    throw new Error("Resend failed to initialize due to missing key or initialization error.");
+  }
 
   let attempt = 0;
   while (attempt < maxRetries) {
     attempt++;
     try {
-      console.log(`[BREVO API] Attempt ${attempt} of ${maxRetries} to send email...`);
-      const response = await fetch("https://api.brevo.com/v3/smtp/email", {
-        method: "POST",
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-          "api-key": apiKey
-        },
-        body: JSON.stringify(payload)
+      console.log(`[RESEND API] Attempt ${attempt} of ${maxRetries} to send email...`);
+      const { data, error } = await resend.emails.send({
+        from: "RentToBuy <onboarding@resend.dev>",
+        to: userEmail,
+        subject,
+        html,
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP error! status: ${response.status}, payload: ${errorText}`);
+      if (error) {
+        throw new Error(error.message || JSON.stringify(error));
       }
 
-      const data = await response.json();
-      console.log(`[BREVO API] Email successfully delivered to ${userEmail}. MessageID: ${data.messageId}`);
+      console.log(`[RESEND API] Email successfully delivered to ${userEmail}. MessageID: ${data?.id}`);
       return data; // Return success immediately
     } catch (err) {
-      console.error(`[BREVO API ATTEMPT ${attempt} FAILED] Error:`, err.message || err);
+      console.error(`[RESEND API ATTEMPT ${attempt} FAILED] Error:`, err.message || err);
       if (attempt >= maxRetries) {
         throw err; // Re-throw the error on the final attempt
       }
       const waitTime = initialDelay * attempt;
-      console.log(`[BREVO API] Waiting ${waitTime}ms before retrying next attempt...`);
+      console.log(`[RESEND API] Waiting ${waitTime}ms before retrying next attempt...`);
       await new Promise((resolve) => setTimeout(resolve, waitTime));
     }
   }
 }
 
 /**
- * Base wrapper to keep existing business notification logic fully compatible while integrating Brevo REST API.
+ * Base wrapper to keep existing business notification logic fully compatible while integrating Resend API.
  */
 export async function sendEmailDirect({ to, subject, html, text, allowDuplicates = false }) {
   const userEmail = to.toLowerCase().trim();
@@ -132,11 +120,11 @@ export async function sendEmailDirect({ to, subject, html, text, allowDuplicates
     try {
       const alreadySent = await Email.findOne({ userEmail, subject });
       if (alreadySent) {
-        console.log(`[BREVO API DUPLICATE DETECTED] Email with subject "${subject}" already delivered to ${userEmail}. Suppressing send to prevent spam duplicates.`);
+        console.log(`[RESEND API DUPLICATE DETECTED] Email with subject "${subject}" already delivered to ${userEmail}. Suppressing send to prevent spam duplicates.`);
         return { message: "Duplicate suppressed", suppressed: true };
       }
     } catch (err) {
-      console.error("[BREVO API DUPLICATE CHECK WARNING] Failed to search for duplicate logs, continuing:", err);
+      console.error("[RESEND API DUPLICATE CHECK WARNING] Failed to search for duplicate logs, continuing:", err);
     }
   }
 
