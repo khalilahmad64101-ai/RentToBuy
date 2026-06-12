@@ -1,4 +1,3 @@
-import nodemailer from "nodemailer";
 import { Email } from "../models/Email.js";
 import { Agreement } from "../models/Aggreement.js";
 import { Payment } from "../models/Payment.js";
@@ -11,114 +10,121 @@ const sanitizeEnv = (val) => {
   return String(val).trim().replace(/^['"]|['"]$/g, "").trim();
 };
 
-// Lazy initialize transport to capture env vars properly with production-ready timeouts
-let transporter = null;
-
-function getTransporter() {
-  if (!transporter) {
-    const user = sanitizeEnv(process.env.BREVO_SMTP_USER || process.env.EMAIL_USER);
-    const pass = sanitizeEnv(process.env.BREVO_SMTP_PASSWORD || process.env.EMAIL_PASS);
-    const host = sanitizeEnv(process.env.BREVO_SMTP_HOST || 'smtp-relay.brevo.com');
-    const port = Number(sanitizeEnv(process.env.BREVO_SMTP_PORT)) || 587;
-
-    if (user && pass) {
-      console.log(`[SMTP] Initializing Brevo SMTP relay connection (${host}:${port}) with user ${user}`);
-      transporter = nodemailer.createTransport({
-        host,
-        port,
-        secure: port === 465,
-        auth: {
-          user,
-          pass,
-        },
-        connectionTimeout: 30000, // 30 seconds connection timeout
-        greetingTimeout: 30000,   // 30 seconds greeting timeout
-        socketTimeout: 30000,     // 30 seconds socket timeout
-      });
-    } else {
-      console.warn("[SMTP WATCH] Brevo SMTP credentials not found or empty. Mails will be simulated and logged in DB.");
-    }
-  }
-  return transporter;
-}
-
 /**
- * Service Connection Verification on startup
+ * Service Connection Verification on startup - now adapted to check Brevo REST API connectivity.
  */
 export async function verifySMTPOnStartup() {
-  const user = sanitizeEnv(process.env.BREVO_SMTP_USER || process.env.EMAIL_USER);
-  const pass = sanitizeEnv(process.env.BREVO_SMTP_PASSWORD || process.env.EMAIL_PASS);
-  const host = sanitizeEnv(process.env.BREVO_SMTP_HOST || 'smtp-relay.brevo.com');
-  const port = Number(sanitizeEnv(process.env.BREVO_SMTP_PORT)) || 587;
+  const apiKey = sanitizeEnv(process.env.BREVO_API_KEY);
 
   console.log(`\n======================================================`);
-  console.log(`📡 [SMTP STARTUP VERIFICATION] Init check...`);
-  console.log(`   Host: ${host}`);
-  console.log(`   Port: ${port}`);
-  console.log(`   Secure: ${port === 465}`);
-  console.log(`   Auth User: ${user || "Not configured"}`);
+  console.log(`📡 [BREVO REST API STARTUP VERIFICATION] Init check...`);
+  console.log(`   API Key: ${apiKey ? apiKey.substring(0, 8) + "..." : "MISSING"}`);
   console.log(`======================================================`);
 
-  if (!user || !pass) {
-    console.warn("⚠️ [SMTP STARTUP WARNING] No SMTP auth credentials configured. Moving into Simulation mode.");
-    console.log(`======================================================\n`);
-    return false;
-  }
-
-  const client = getTransporter();
-  if (!client) {
-    console.warn("⚠️ [SMTP STARTUP WARNING] Transporter failed to initialize. Simulation fallback active.");
+  if (!apiKey) {
+    console.warn("⚠️ [BREVO API STARTUP WARNING] No `BREVO_API_KEY` configured. Moving into Simulation mode.");
     console.log(`======================================================\n`);
     return false;
   }
 
   try {
-    console.log("[SMTP STARTUP] Testing connection verify with standard server limits...");
-    await client.verify();
-    console.log("✅ [SMTP STARTUP SUCCESS] Nodemailer transporter verified successfully! Channels operational.");
+    console.log("[BREVO API STARTUP] Testing API key validity against Brevo v3 Account details...");
+    const response = await fetch("https://api.brevo.com/v3/account", {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "api-key": apiKey
+      }
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+    }
+
+    const accountInfo = await response.json();
+    console.log(`✅ [BREVO API STARTUP SUCCESS] Brevo API Key verified successfully!`);
+    console.log(`   Account Email: ${accountInfo.email}`);
+    console.log(`   Company Name: ${accountInfo.companyName}`);
     console.log(`======================================================\n`);
     return true;
   } catch (err) {
-    console.error("❌ [SMTP STARTUP FAILURE] Nodemailer verify test threw an exception:");
-    console.error(`   Error code: ${err.code}`);
+    console.error("❌ [BREVO API STARTUP FAILURE] Verification test failed:");
     console.error(`   Message: ${err.message}`);
-    console.error(`   Details:`, err);
     console.log(`======================================================\n`);
     return false;
   }
 }
 
 /**
- * Highly robust sendMail with custom linear backoff retry mechanism (max 3 attempts)
+ * Reusable function to send transactional emails via Brevo email REST API as required by core instructions.
+ * Retries up to maxRetries times in case of transient HTTP or socket failures.
  */
-async function sendMailWithRetry(client, mailOptions, maxRetries = 3, initialDelay = 1000) {
+export async function sendEmail(to, subject, html, maxRetries = 3, initialDelay = 1000) {
+  const apiKey = sanitizeEnv(process.env.BREVO_API_KEY);
+  const senderEmail = sanitizeEnv(process.env.BREVO_SENDER_EMAIL) || "noreply@rent2buy.com";
+  const userEmail = to.toLowerCase().trim();
+
+  if (!apiKey) {
+    console.warn(`[BREVO API WATCH] BREVO_API_KEY is not defined. Email send skipped (Simulation Mode).`);
+    console.log(`[BREVO SIMULATION] Mail printed for ${userEmail}:\nSubject: ${subject}\n`);
+    return { message: "Simulation mode active (NO API KEY)", simulated: true };
+  }
+
+  const payload = {
+    sender: {
+      name: "Rent2Buy Support",
+      email: senderEmail
+    },
+    to: [
+      {
+        email: userEmail
+      }
+    ],
+    subject,
+    htmlContent: html,
+    textContent: html.replace(/<[^>]*>/g, '').trim()
+  };
+
   let attempt = 0;
   while (attempt < maxRetries) {
     attempt++;
     try {
-      console.log(`[SMTP] Attempt ${attempt} of ${maxRetries} to send email...`);
-      const info = await client.sendMail(mailOptions);
-      if (!info) {
-        throw new Error("sendMail returned invalid response or empty payload");
+      console.log(`[BREVO API] Attempt ${attempt} of ${maxRetries} to send email...`);
+      const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "api-key": apiKey
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, payload: ${errorText}`);
       }
-      return info; // Return success immediately
+
+      const data = await response.json();
+      console.log(`[BREVO API] Email successfully delivered to ${userEmail}. MessageID: ${data.messageId}`);
+      return data; // Return success immediately
     } catch (err) {
-      console.error(`[SMTP ATTEMPT ${attempt} FAILED] Error:`, err.message || err);
+      console.error(`[BREVO API ATTEMPT ${attempt} FAILED] Error:`, err.message || err);
       if (attempt >= maxRetries) {
         throw err; // Re-throw the error on the final attempt
       }
       const waitTime = initialDelay * attempt;
-      console.log(`[SMTP] Waiting ${waitTime}ms before retrying next attempt...`);
+      console.log(`[BREVO API] Waiting ${waitTime}ms before retrying next attempt...`);
       await new Promise((resolve) => setTimeout(resolve, waitTime));
     }
   }
 }
 
 /**
- * Sends a generic HTML/text email using Brevo SMTP and keeps database logs in Email collection.
+ * Base wrapper to keep existing business notification logic fully compatible while integrating Brevo REST API.
  */
 export async function sendEmailDirect({ to, subject, html, text, allowDuplicates = false }) {
-  const sender = sanitizeEnv(process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_USER) || "noreply@rent2buy.com";
   const userEmail = to.toLowerCase().trim();
 
   // Prevent duplicate email sending for static notifications (non-payment, non-admin)
@@ -126,11 +132,11 @@ export async function sendEmailDirect({ to, subject, html, text, allowDuplicates
     try {
       const alreadySent = await Email.findOne({ userEmail, subject });
       if (alreadySent) {
-        console.log(`[SMTP DUPLICATE DETECTED] Email with subject "${subject}" already delivered to ${userEmail}. Suppressing send to prevent spam duplicates.`);
+        console.log(`[BREVO API DUPLICATE DETECTED] Email with subject "${subject}" already delivered to ${userEmail}. Suppressing send to prevent spam duplicates.`);
         return { message: "Duplicate suppressed", suppressed: true };
       }
     } catch (err) {
-      console.error("[SMTP DUPLICATE CHECK WARNING] Failed to search for duplicate logs, continuing:", err);
+      console.error("[BREVO API DUPLICATE CHECK WARNING] Failed to search for duplicate logs, continuing:", err);
     }
   }
 
@@ -149,27 +155,7 @@ export async function sendEmailDirect({ to, subject, html, text, allowDuplicates
     console.error("[DB ERROR] Failed to save copy of email to MongoDB log collection:", err);
   }
 
-  const client = getTransporter();
-  if (client) {
-    try {
-      // Use retry mechanism with custom high-standard logging
-      const info = await sendMailWithRetry(client, {
-        from: `"Rent2Buy Support" <${sender}>`,
-        to: userEmail,
-        subject,
-        html,
-        text: text || logContent,
-      });
-      console.log(`[SMTP] Email successfully delivered to ${userEmail}. MessageID: ${info.messageId}`);
-      return info;
-    } catch (err) {
-      console.error(`[SMTP ERROR] All delivery attempts failed. Failed to send email to ${userEmail}:`, err);
-      throw err; // Re-throw so caller acts correctly
-    }
-  } else {
-    console.log(`[SMTP SIMULATION] Mail printed for ${userEmail}:\nSubject: ${subject}\nBody preview: ${logContent.substring(0, 150)}...`);
-    return { message: "Simulation success", simulated: true };
-  }
+  return sendEmail(userEmail, subject, html);
 }
 
 /**
