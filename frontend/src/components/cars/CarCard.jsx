@@ -161,12 +161,12 @@ export function CarCard({ car }) {
         <div className="grid grid-cols-2 gap-2 mt-auto pt-2">
           <Link to={`/cars/${id}`} className="block">
             <Button variant="secondary" size="sm" className="w-full text-[11px] font-bold py-2.5">
-              View Details
+              Details
             </Button>
           </Link>
           <Link to={`/apply?carId=${id}`} className="block">
             <Button variant="primary" size="sm" className="w-full text-[11px] font-bold py-2.5">
-              Start Application
+              Apply
             </Button>
           </Link>
         </div>
