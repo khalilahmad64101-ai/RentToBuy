@@ -1,4 +1,4 @@
-import fs from 'fs';
+ import fs from 'fs';
 import { uploadToCloudinary } from '../config/cloudinary.js';
 import { User } from '../models/User.js';
 import { Car } from '../models/Car.js';
@@ -75,18 +75,25 @@ export const createApplication = async (req, res) => {
     });
 
     await newApp.save();
+    console.log('[SUBMISSION-FLOW] Application saved: Application data saved to MongoDB successfully:', newApp?.id);
+
+    res.status(201).json(newApp);
+    console.log('[SUBMISSION-FLOW] Response sent: Return success response to the frontend immediately.');
 
     // Trigger Email Notifications (User Submission confirmation & Admin Alert)
-    try {
+    setImmediate(() => {
+      console.log('[SUBMISSION-FLOW] Email started: Initiating background email notification dispatch.');
       const formattedDate = newApp.submissionDateTime ? new Date(newApp.submissionDateTime).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
-      await sendApplicationSubmitted({
+      
+      const p1 = sendApplicationSubmitted({
         to: finalEmail,
         userName: currentFullName,
         applicationId: newApp.id,
         submissionDate: formattedDate,
         carName: newApp.carName
       });
-      await sendAdminNewApplicationAlert({
+
+      const p2 = sendAdminNewApplicationAlert({
         adminEmail: process.env.ADMIN_EMAIL,
         userName: currentFullName,
         userEmail: finalEmail,
@@ -94,11 +101,15 @@ export const createApplication = async (req, res) => {
         applicationId: newApp.id,
         submissionDate: formattedDate
       });
-    } catch (emailErr) {
-      console.error('[NOTIFIER WARNING] Failed to send application submission emails:', emailErr);
-    }
 
-    res.status(201).json(newApp);
+      Promise.all([p1, p2])
+        .then(() => {
+          console.log('[SUBMISSION-FLOW] Email success: All application submission emails sent successfully.');
+        })
+        .catch((emailErr) => {
+          console.error('[SUBMISSION-FLOW] Email failed: One or more application submission emails failed:', emailErr);
+        });
+    });
   } catch (err) {
     console.error('[applyController] createApplication error:', err);
     res.status(500).json({ error: "Failed to persist new rent-to-own application record in MongoDB." });
@@ -191,40 +202,50 @@ export const submitPayment = async (req, res) => {
       await agreement.save();
     }
 
+    res.status(201).json(newTxn);
+
     // Trigger Email Notifications (User Receipt, Admin Alert, Stop Reminders)
-    try {
-      const matchingUser = await User.findOne({ email: activeEmail });
-      const fullName = matchingUser ? matchingUser.fullName : "Lease Driver";
-      const paymentDateVal = new Date().toISOString().split('T')[0];
+    setImmediate(() => {
+      User.findOne({ email: activeEmail })
+        .then((matchingUser) => {
+          const fullName = matchingUser ? matchingUser.fullName : "Lease Driver";
+          const paymentDateVal = new Date().toISOString().split('T')[0];
 
-      await sendPaymentConfirmation({
-        to: activeEmail,
-        userName: fullName,
-        amount: Number(amount),
-        carName: carName || "Fleet Asset Dues",
-        paymentDate: paymentDateVal,
-        method: method || "Debit Card",
-        txnId: newTxn.id
-      });
+          const p1 = sendPaymentConfirmation({
+            to: activeEmail,
+            userName: fullName,
+            amount: Number(amount),
+            carName: carName || "Fleet Asset Dues",
+            paymentDate: paymentDateVal,
+            method: method || "Debit Card",
+            txnId: newTxn.id
+          });
 
-      await sendAdminNewPaymentAlert({
-        adminEmail: process.env.ADMIN_EMAIL,
-        userName: fullName,
-        userEmail: activeEmail,
-        paymentAmount: Number(amount),
-        vehicleDetails: carName || "Fleet Asset Dues",
-        paymentDate: paymentDateVal,
-        method: method || "Debit Card",
-        txnId: newTxn.id
-      });
+          const p2 = sendAdminNewPaymentAlert({
+            adminEmail: process.env.ADMIN_EMAIL,
+            userName: fullName,
+            userEmail: activeEmail,
+            paymentAmount: Number(amount),
+            vehicleDetails: carName || "Fleet Asset Dues",
+            paymentDate: paymentDateVal,
+            method: method || "Debit Card",
+            txnId: newTxn.id
+          });
+
+          return Promise.all([p1, p2]);
+        })
+        .then(() => {
+          console.log('[PAYMENT-FLOW] Email success: Payment confirmation emails dispatched successfully.');
+        })
+        .catch((emailErr) => {
+          console.error('[PAYMENT-FLOW] Email failed: Failed to dispatch payment confirmation emails:', emailErr);
+        });
 
       // Stop any future reminders for this user
-      await cancelReminders(activeEmail);
-    } catch (emailErr) {
-      console.error('[NOTIFIER WARNING] Failed to send payment confirmation emails:', emailErr);
-    }
-
-    res.status(201).json(newTxn);
+      cancelReminders(activeEmail).catch((reminderErr) => {
+        console.error('[PAYMENT-FLOW] Cancel reminders failed:', reminderErr);
+      });
+    });
   } catch (err) {
     console.error('[applyController] submitPayment error:', err);
     res.status(500).json({ error: "Failed to log weekly payment transaction onto MongoDB secure arrays." });
@@ -247,8 +268,10 @@ export const submitInquiry = async (req, res) => {
 
     await newInq.save();
 
-    // Trigger Contact Inquiry Email Alert to Admin
-    try {
+    res.status(201).json({ message: "Dispatch successful!", inquiry: newInq });
+
+    // Trigger Contact Inquiry Email Alert to Admin in background
+    setImmediate(() => {
       let phoneVal = "";
       let subjectVal = "Contact Inquiry";
       let bodyText = msg;
@@ -261,7 +284,7 @@ export const submitInquiry = async (req, res) => {
       if (phoneMatch) phoneVal = phoneMatch[1].trim();
       if (messageMatch) bodyText = messageMatch[1].trim();
 
-      await sendAdminContactFormNotification({
+      sendAdminContactFormNotification({
         adminEmail: process.env.ADMIN_EMAIL,
         name,
         email: email.toLowerCase().trim(),
@@ -269,12 +292,14 @@ export const submitInquiry = async (req, res) => {
         subject: subjectVal,
         msg: bodyText,
         submissionDate: new Date().toISOString().split('T')[0]
+      })
+      .then(() => {
+        console.log('[INQUIRY-FLOW] Email success: Contact form submission alert delivered.');
+      })
+      .catch((emailErr) => {
+        console.error('[INQUIRY-FLOW] Email failed: Failed to deliver contact form submission alert:', emailErr);
       });
-    } catch (emailErr) {
-      console.error('[NOTIFIER WARNING] Failed to send admin contact alert email:', emailErr);
-    }
-
-    res.status(201).json({ message: "Dispatch successful!", inquiry: newInq });
+    });
   } catch (err) {
     console.error('[applyController] submitInquiry error:', err);
     res.status(500).json({ error: "Failed to lodge client enquiry into MongoDB." });

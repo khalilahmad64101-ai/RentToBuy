@@ -165,9 +165,9 @@ export const adminUpdateApplicationStatus = async (req, res) => {
       });
       await autoEmail.save();
 
-      // Trigger actual user emails & schedule reminders
-      try {
-        await sendApplicationApproved({
+      // Trigger actual user emails & schedule reminders in background
+      setImmediate(() => {
+        const p1 = sendApplicationApproved({
           to: emailQuery,
           userName: app.fullName || "Lease Driver",
           applicationId: app.id,
@@ -176,7 +176,7 @@ export const adminUpdateApplicationStatus = async (req, res) => {
         });
 
         // Booking confirmation email (on booking creation)
-        await sendBookingConfirmation({
+        const p2 = sendBookingConfirmation({
           to: emailQuery,
           userName: app.fullName || "Lease Driver",
           bookingId: targetAgr.id,
@@ -186,7 +186,7 @@ export const adminUpdateApplicationStatus = async (req, res) => {
         });
 
         // Admin Notification: New Booking Created
-        await sendAdminNewBookingAlert({
+        const p3 = sendAdminNewBookingAlert({
           adminEmail: process.env.ADMIN_EMAIL,
           userName: app.fullName || "Lease Driver",
           userEmail: emailQuery,
@@ -196,11 +196,19 @@ export const adminUpdateApplicationStatus = async (req, res) => {
           bookingDate: new Date().toISOString().split('T')[0]
         });
 
+        Promise.all([p1, p2, p3])
+          .then(() => {
+            console.log('[ADMIN-STATUS-FLOW] Email success: Approved & booking notifications delivered.');
+          })
+          .catch((emailErr) => {
+            console.error('[ADMIN-STATUS-FLOW] Email failed: Failed to deliver approved/booking notifications:', emailErr);
+          });
+
         // Schedule the payment reminders (after application approved)
-        await scheduleReminders(emailQuery, app.id);
-      } catch (emailErr) {
-        console.error('[NOTIFIER WARNING] Failed to send approval & booking confirmation emails:', emailErr);
-      }
+        scheduleReminders(emailQuery, app.id).catch((err) => {
+          console.error('[ADMIN-STATUS-FLOW] Schedule reminders failed:', err);
+        });
+      });
     }
 
     if (status === "Rejected") {
@@ -213,17 +221,21 @@ export const adminUpdateApplicationStatus = async (req, res) => {
       });
       await rejectEmail.save();
 
-      // Trigger actual rejection email
-      try {
-        await sendApplicationRejected({
+      // Trigger actual rejection email in background
+      setImmediate(() => {
+        sendApplicationRejected({
           to: emailQuery,
           userName: app.fullName || "Lease Driver",
           applicationId: app.id,
           reason: notes || app.notes
+        })
+        .then(() => {
+          console.log('[ADMIN-STATUS-FLOW] Email success: Rejection notification delivered.');
+        })
+        .catch((emailErr) => {
+          console.error('[ADMIN-STATUS-FLOW] Email failed: Failed to deliver rejection notification:', emailErr);
         });
-      } catch (emailErr) {
-        console.error('[NOTIFIER WARNING] Failed to send rejection email:', emailErr);
-      }
+      });
     }
 
     if (status === "Awaiting Payment") {
@@ -236,21 +248,28 @@ export const adminUpdateApplicationStatus = async (req, res) => {
       });
       await awaitEmail.save();
 
-      try {
+      // Trigger awaiting payment email in background
+      setImmediate(() => {
         const parts = app.carName ? app.carName.split(" - ") : [];
-        await sendApplicationAwaitingPayment({
+        sendApplicationAwaitingPayment({
           to: emailQuery,
           userName: app.fullName || "Lease Driver",
           applicationId: app.id,
           carName: app.carName || parts[0],
           weeklyRate: 45
+        })
+        .then(() => {
+          console.log('[ADMIN-STATUS-FLOW] Email success: Awaiting payment notification delivered.');
+        })
+        .catch((emailErr) => {
+          console.error('[ADMIN-STATUS-FLOW] Email failed: Failed to deliver awaiting payment notification:', emailErr);
         });
 
         // Schedule the payment reminders (after application status is set to Awaiting Payment)
-        await scheduleReminders(emailQuery, app.id);
-      } catch (emailErr) {
-        console.error('[NOTIFIER WARNING] Failed to send awaiting payment email:', emailErr);
-      }
+        scheduleReminders(emailQuery, app.id).catch((err) => {
+          console.error('[ADMIN-STATUS-FLOW] Schedule reminders failed:', err);
+        });
+      });
     }
 
     await app.save();
