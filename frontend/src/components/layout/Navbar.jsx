@@ -5,13 +5,15 @@ import { api } from '../../services/api';
 import { Button } from '../ui/Button';
 import { Car, User, LogOut, Menu, X, Shield, Layers, HelpCircle, Mail, HelpCircle as FaqIcon, MessageCircle, CreditCard, ChevronDown, Home, MapPin } from 'lucide-react';
 
+// Helper Front-Facing Car Icon styled to match the requested logo perfectly
+
 export function Navbar() {
   const { user, logout, syncDriverData } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  
+
   // Payment Modal States
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [payAmount, setPayAmount] = useState('100');
@@ -52,7 +54,7 @@ export function Navbar() {
 
       // Call the simulated API payments endpoint
       await api.payments.create(payload);
-      
+
       setPayMessage({
         type: 'success',
         text: `Success! Your rent contribution of £${payAmount} has been logged safely. Thank you!`
@@ -87,90 +89,103 @@ export function Navbar() {
   ];
 
   return (
-    <nav className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm" id="exact-navbar-container">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
-          
-          {/* Logo Brand matching image 100% same to same */}
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center group focus:outline-none" id="branding-link">
-              {/* Dark blue circle with bright green car icon inside */}
-              <div className="w-10 h-10 rounded-full bg-brand-secondary flex items-center justify-center mr-2 shadow-sm transition-transform group-hover:scale-105">
-                <Car className="h-5 w-5 text-brand-primary" strokeWidth={2.5} />
-              </div>
-              
-              {/* Text elements: R2 (dark blue), BuyCar (bright green), rent to buy badge */}
-              <div className="flex items-center">
-                <span className="font-extrabold text-brand-secondary text-base min-[360px]:text-[22px] tracking-tight">
-                  R2
-                </span>
-                <span className="font-extrabold text-brand-primary text-base min-[360px]:text-[22px] tracking-tight ml-0.5">
-                  BuyCar
-                </span>
-                
-                {/* Bright green rounded badge with white text */}
-                <span className="ml-1 min-[360px]:ml-2 px-1.5 py-0.5 min-[360px]:px-2.5 min-[360px]:py-1 text-[8px] min-[360px]:text-[10px] font-black bg-brand-primary text-white tracking-widest rounded-md uppercase align-middle whitespace-nowrap shadow-xs">
-                  RENT-TO-BUY
-                </span>
+    <nav className="sticky top-0 z-50 overflow-visible" id="exact-navbar-container">
+      {/* 1. DESKTOP EXQUISITE LOGO HEADER (Matching the requested layout exactly) */}
+      <div className="hidden lg:block relative z-50 w-full bg-white select-none" id="desktop-image-matched-header">
+
+        {/* Top White Strip for Client Actions (Kept only as a clean white background height for circular logo layout) */}
+        <div className="bg-white h-11 w-full flex items-center justify-between px-12 border-b border-gray-100">
+          <div className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest">
+            
+          </div>
+        </div>
+
+        {/* Black Horizontal Band */}
+        <div className="bg-[#000000] h-[64px] w-full relative flex items-center justify-between px-6 xl:px-16 animate-fade-in">
+
+          {/* Left Navigation Links: Home, Explore Cars, How it works */}
+          <div className="flex-1 flex items-center justify-end space-x-10 pr-16 xl:pr-24">
+            <Link
+              to="/"
+              className={`font-sans font-extrabold text-[14px] xl:text-[15px] tracking-wide transition-colors ${isActive('/') ? 'text-[#7CC242]' : 'text-white hover:text-[#7CC242]'
+                }`}
+            >
+              Home
+            </Link>
+            <Link
+              to="/cars"
+              className={`font-sans font-extrabold text-[14px] xl:text-[15px] tracking-wide transition-colors ${isActive('/cars') ? 'text-[#7CC242]' : 'text-white hover:text-[#7CC242]'
+                }`}
+            >
+              Explore Cars
+            </Link>
+            <Link
+              to="/how-it-works"
+              className={`font-sans font-extrabold text-[14px] xl:text-[15px] tracking-wide transition-colors ${isActive('/how-it-works') ? 'text-[#7CC242]' : 'text-white hover:text-[#7CC242]'
+                }`}
+            >
+              How it works
+            </Link>
+          </div>
+
+          {/* Centered Circular Logo (Perfectly aligned on the Y-axis) */}
+          <div className="flex-none flex items-center justify-center z-50">
+            <Link to="/" className="block focus:outline-none group">
+              <div className="w-[143px] h-[140px] rounded-full overflow-hidden shadow-lg">
+                <img
+                  src="https://r2-buy-car.vercel.app/logo.jpeg"
+                  alt="R2 BuyCar Logo"
+                  className="w-full h-full object-cover scale-104"
+                />
               </div>
             </Link>
           </div>
 
-          {/* Center Navigation Links matching image 100% same to same */}
-          <div className="hidden lg:flex items-center justify-center space-x-8 h-full">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`h-full inline-flex items-center px-0.5 border-b-[3px] font-sans font-extrabold text-[13px] tracking-wide transition-all ${
-                  isActive(link.path)
-                    ? 'border-brand-primary text-brand-secondary'
-                    : 'border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-200'
+          {/* Right Navigation Links: Contact, Payments, and Profile */}
+          <div className="flex-1 flex items-center justify-start space-x-8 pl-16 xl:pl-24">
+            <Link
+              to="/contact"
+              className={`font-sans font-extrabold text-[14px] xl:text-[15px] tracking-wide transition-colors ${isActive('/contact') ? 'text-[#7CC242]' : 'text-white hover:text-[#7CC242]'
                 }`}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
+            >
+              Contact
+            </Link>
 
-          {/* Right Action Buttons matching image 100% same to same */}
-          <div className="hidden lg:flex items-center space-x-3.5">
-            {/* Outline Button: MAKE A PAYMENT */}
+            {/* PAYMENTS ACTION */}
             <button
               onClick={() => {
                 setPayMessage(null);
                 setPaymentModalOpen(true);
               }}
-              className="flex items-center gap-2 px-5 py-2 bg-white border border-brand-primary hover:bg-brand-primary/5 text-brand-secondary font-extrabold text-xs uppercase tracking-wider rounded-md transition-all duration-200 cursor-pointer shadow-xs whitespace-nowrap"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-transparent border border-[#7CC242] hover:bg-[#7CC242]/10 text-white font-extrabold text-[11px] xl:text-[12px] uppercase tracking-wider rounded-md transition-all duration-200 cursor-pointer shadow-xs whitespace-nowrap"
             >
               <span>PAYMENTS</span>
             </button>
 
-            {/* Filled Button: TAXI • PORTAL */}
+            {/* PROFILE ACTION */}
             {user ? (
               <div className="relative">
                 <button
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-brand-secondary hover:bg-brand-secondary-hover text-white font-extrabold text-xs uppercase tracking-wider rounded-md transition-all duration-200 cursor-pointer shadow-sm whitespace-nowrap"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#7CC242] hover:bg-[#6cb135] text-[#000000] font-extrabold text-[11px] xl:text-[12px] uppercase tracking-wider rounded-md transition-all duration-200 cursor-pointer shadow-sm whitespace-nowrap"
                 >
                   <span>👤</span>
                   <span>PROFILE</span>
                   <ChevronDown className={`w-3 h-3 ml-0.5 transition-transform ${userDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
-                
-                {/* User Dropdown Profile option details */}
+
                 {userDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-100 py-1.5 z-10 animate-fade-in">
+                  <div className="absolute right-0 mt-3 w-56 bg-white rounded-lg shadow-xl border border-gray-100 py-1.5 z-50 animate-fade-in text-slate-800">
                     <div className="px-4 py-2 border-b border-gray-50">
                       <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Driver Account</p>
-                      <p className="font-bold text-sm text-brand-secondary truncate mt-0.5">{user.fullName || user.email}</p>
-                      <p className="text-[10px] text-brand-primary font-bold mt-0.5">{user.role?.toUpperCase()} ACCESS</p>
+                      <p className="font-bold text-sm text-[#1F3F7A] truncate mt-0.5">{user.fullName || user.email}</p>
+                      <p className="text-[10px] text-[#7CC242] font-bold mt-0.5">{user.role?.toUpperCase()} ACCESS</p>
                     </div>
-                    
+
                     <Link
                       to="/dashboard"
                       onClick={() => setUserDropdownOpen(false)}
-                      className="flex items-center px-4 py-2 text-sm text-brand-secondary font-bold hover:bg-slate-50 transition-colors"
+                      className="flex items-center px-4 py-2 text-sm text-[#1F3F7A] font-bold hover:bg-slate-50 transition-colors"
                     >
                       <Layers className="w-4 h-4 mr-2 text-slate-400" />
                       My Portal Dashboard
@@ -180,14 +195,12 @@ export function Navbar() {
                       <Link
                         to="/admin"
                         onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center px-4 py-2 text-sm text-amber-600 font-bold hover:bg-amber-50/50 transition-colors"
+                        className="flex items-center px-4 py-2 text-sm text-yellow-600 font-bold hover:bg-yellow-50/50 transition-colors"
                       >
                         <Shield className="w-4 h-4 mr-2" />
                         Admin Panel
                       </Link>
                     )}
-
-                    
 
                     <button
                       onClick={handleLogout}
@@ -202,7 +215,7 @@ export function Navbar() {
             ) : (
               <Link to="/login">
                 <button
-                  className="flex items-center gap-2 px-5 py-2.5 bg-brand-secondary hover:bg-brand-secondary-hover text-white font-extrabold text-xs uppercase tracking-wider rounded-md transition-all duration-200 cursor-pointer shadow-sm whitespace-nowrap"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#7CC242] hover:bg-[#6cb135] text-[#000000] font-extrabold text-[11px] xl:text-[12px] uppercase tracking-wider rounded-md transition-all duration-200 cursor-pointer shadow-sm whitespace-nowrap"
                 >
                   <span>👤</span>
                   <span>PROFILE</span>
@@ -211,42 +224,48 @@ export function Navbar() {
             )}
           </div>
 
-          {/* Mobile Profile Trigger (Replacing Hamburger for sleek modern app feel) */}
-          <div className="flex items-center lg:hidden">
-            {user ? (
-              <Link
-                to="/dashboard"
-                className="w-10 h-10 rounded-full bg-brand-secondary text-white font-black text-xs border-2 border-brand-primary flex items-center justify-center hover:bg-brand-secondary-hover transition-all shadow-sm"
-                title="My Driver Dashboard"
-              >
-                {user.fullName ? user.fullName.substring(0, 2).toUpperCase() : '👤'}
-              </Link>
-            ) : (
-              <Link
-                to="/login"
-                className="w-10 h-10 rounded-full bg-brand-secondary text-white hover:bg-brand-secondary-hover border-2 border-brand-primary flex items-center justify-center text-xs transition-all shadow-sm"
-                title="Sign In / Profile"
-              >
-                👤
-              </Link>
-            )}
-          </div>
+        </div>
+      </div>
 
+      {/* 2. MOBILE HEADER (Centered image logo, text brand removed, background black matching other devices) */}
+      <div className="lg:hidden bg-[#000000] border-b border-zinc-900 shadow-sm w-full py-1">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="relative flex justify-between items-center h-[50px]">
+
+            {/* Left standard spacer to preserve alignment flex balance */}
+            <div className="w-10"></div>
+
+            {/* Logo Brand: Centered, text removed, displaying the circular logo beautifully */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <Link to="/" className="flex items-center group focus:outline-none pointer-events-auto" id="branding-link">
+                <div className="w-[100px] h-[98px] mt-12 rounded-full overflow-hidden shadow-md border-2 border-slate-100 bg-white">
+                  <img
+                    src="https://r2-buy-car.vercel.app/logo.jpeg"
+                    alt="R2 BuyCar Logo"
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </Link>
+            </div>
+
+           
+
+          </div>
         </div>
       </div>
 
       {/* 4. PREMIUM NATIVE MOBILE BOTTOM APP BAR (Facebook Companion Style) */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 z-50 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] px-1 py-1 flex justify-around items-center h-16 select-none">
-        
+
         {/* Tab 1: HOME */}
-        <Link 
-          to="/" 
+        <Link
+          to="/"
           onClick={() => setMobileMenuOpen(false)}
-          className={`flex-1 flex flex-col items-center justify-center h-full transition-all relative ${
-            isActive('/') && !mobileMenuOpen && !paymentModalOpen
-              ? 'text-brand-primary' 
+          className={`flex-1 flex flex-col items-center justify-center h-full transition-all relative ${isActive('/') && !mobileMenuOpen && !paymentModalOpen
+              ? 'text-brand-primary'
               : 'text-slate-400 hover:text-slate-600'
-          }`}
+            }`}
         >
           <Home className="w-[21px] h-[21px]" strokeWidth={isActive('/') && !mobileMenuOpen && !paymentModalOpen ? 2.5 : 2} />
           <span className="text-[9px] font-black tracking-wide mt-1 uppercase">Home</span>
@@ -256,14 +275,13 @@ export function Navbar() {
         </Link>
 
         {/* Tab 2: CARS */}
-        <Link 
-          to="/cars" 
+        <Link
+          to="/cars"
           onClick={() => setMobileMenuOpen(false)}
-          className={`flex-1 flex flex-col items-center justify-center h-full transition-all relative ${
-            isActive('/cars') && !mobileMenuOpen && !paymentModalOpen
-              ? 'text-brand-primary' 
+          className={`flex-1 flex flex-col items-center justify-center h-full transition-all relative ${isActive('/cars') && !mobileMenuOpen && !paymentModalOpen
+              ? 'text-brand-primary'
               : 'text-slate-400 hover:text-slate-600'
-          }`}
+            }`}
         >
           <Car className="w-[21px] h-[21px]" strokeWidth={isActive('/cars') && !mobileMenuOpen && !paymentModalOpen ? 2.5 : 2} />
           <span className="text-[9px] font-black tracking-wide mt-1 uppercase">Cars</span>
@@ -273,14 +291,13 @@ export function Navbar() {
         </Link>
 
         {/* Tab 3: LIVE TRACK */}
-        <Link 
-          to="/track-ride" 
+        <Link
+          to="/track-ride"
           onClick={() => setMobileMenuOpen(false)}
-          className={`flex-1 flex flex-col items-center justify-center h-full transition-all relative ${
-            isActive('/track-ride') && !mobileMenuOpen && !paymentModalOpen
-              ? 'text-brand-primary' 
+          className={`flex-1 flex flex-col items-center justify-center h-full transition-all relative ${isActive('/track-ride') && !mobileMenuOpen && !paymentModalOpen
+              ? 'text-brand-primary'
               : 'text-slate-400 hover:text-slate-600'
-          }`}
+            }`}
         >
           <MapPin className="w-[21px] h-[21px]" strokeWidth={isActive('/track-ride') && !mobileMenuOpen && !paymentModalOpen ? 2.5 : 2} />
           <span className="text-[9px] font-black tracking-wide mt-1 uppercase">Track</span>
@@ -290,17 +307,16 @@ export function Navbar() {
         </Link>
 
         {/* Tab 4: PAYMENTS TRIGGER */}
-        <button 
+        <button
           onClick={() => {
             setMobileMenuOpen(false);
             setPayMessage(null);
             setPaymentModalOpen(true);
           }}
-          className={`flex-1 flex flex-col items-center justify-center h-full transition-all relative bg-transparent border-none outline-none cursor-pointer ${
-            paymentModalOpen 
-              ? 'text-brand-primary' 
+          className={`flex-1 flex flex-col items-center justify-center h-full transition-all relative bg-transparent border-none outline-none cursor-pointer ${paymentModalOpen
+              ? 'text-brand-primary'
               : 'text-slate-400 hover:text-slate-600'
-          }`}
+            }`}
         >
           <CreditCard className="w-[21px] h-[21px]" strokeWidth={paymentModalOpen ? 2.5 : 2} />
           <span className="text-[9px] font-black tracking-wide mt-1 uppercase">Pay</span>
@@ -309,21 +325,20 @@ export function Navbar() {
           )}
         </button>
 
-        {/* Tab 5: MENU SHORTCUTS TRIGGER */}
-        <button 
+        {/* Tab 5: ACCOUNT SHORTCUTS TRIGGER */}
+        <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className={`flex-1 flex flex-col items-center justify-center h-full transition-all relative bg-transparent border-none outline-none cursor-pointer ${
-            mobileMenuOpen 
-              ? 'text-brand-primary' 
+          className={`flex-1 flex flex-col items-center justify-center h-full transition-all relative bg-transparent border-none outline-none cursor-pointer ${mobileMenuOpen
+              ? 'text-brand-primary'
               : 'text-slate-400 hover:text-slate-600'
-          }`}
+            }`}
         >
           {mobileMenuOpen ? (
             <X className="w-[21px] h-[21px] text-red-500 animate-pulse" strokeWidth={2.5} />
           ) : (
-            <Menu className="w-[21px] h-[21px]" strokeWidth={2} />
+            <User className="w-[21px] h-[21px]" strokeWidth={2} />
           )}
-          <span className="text-[9px] font-black tracking-wide mt-1 uppercase">Menu</span>
+          <span className="text-[9px] font-black tracking-wide mt-1 uppercase">Account</span>
           {mobileMenuOpen && (
             <span className="absolute top-0 w-8 h-[3px] bg-brand-primary rounded-b-md"></span>
           )}
@@ -334,12 +349,12 @@ export function Navbar() {
       {/* Mobile Menu Drawer (Redesigned as Premium Facebook-shortcuts Grid Sheet) */}
       {mobileMenuOpen && (
         <div className="lg:hidden fixed bottom-16 left-0 right-0 z-40 bg-[#0c111d] text-white rounded-t-[2rem] shadow-[0_-12px_42px_rgba(0,0,0,0.35)] max-h-[80vh] overflow-y-auto border-t border-slate-800 pb-16 animate-fade-in font-sans">
-          
+
           {/* Header */}
           <div className="px-6 pt-6 pb-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/40">
             <div>
-              <h3 className="font-extrabold text-sm tracking-wider uppercase text-white">Menu Shortcuts</h3>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">R2BuyCar Premium Fleet Options</p>
+              <h3 className="font-extrabold text-sm tracking-wider uppercase text-white">Account</h3>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Manage your rent-to-buy profile</p>
             </div>
             <span className="px-2.5 py-1 text-[9px] font-black bg-brand-primary text-brand-secondary tracking-widest rounded-md uppercase whitespace-nowrap shadow-xs align-middle">
               VIP HUB
@@ -358,7 +373,7 @@ export function Navbar() {
                   <p className="text-[9.5px] text-brand-primary font-black tracking-widest uppercase mt-1">{user.role?.toUpperCase()} PORTAL ACCESS</p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={handleLogout}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-950/40 border border-red-900/30 text-red-400 text-[10px] font-black uppercase tracking-wider transition-all"
               >
@@ -370,16 +385,16 @@ export function Navbar() {
             <div className="px-6 py-5 bg-gradient-to-r from-slate-900 to-brand-secondary border-b border-slate-800">
               <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">Join our flexible program today</p>
               <div className="mt-3 flex gap-3">
-                <Link 
-                  to="/login" 
+                <Link
+                  to="/login"
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-brand-primary hover:bg-brand-primary-hover text-brand-secondary font-extrabold text-[11px] uppercase tracking-wider rounded-xl transition-all shadow-sm"
                 >
                   <span>👤</span>
                   <span>SIGN IN</span>
                 </Link>
-                <Link 
-                  to="/signup" 
+                <Link
+                  to="/signup"
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 text-white font-extrabold text-[11px] uppercase tracking-wider rounded-xl transition-all"
                 >
@@ -393,7 +408,7 @@ export function Navbar() {
           {/* Shortcut Cards Grid representing premium Facebook app layout */}
           <div className="p-6 space-y-5">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Shortcut Categories</p>
-            
+
             <div className="grid grid-cols-2 gap-3">
               {/* Option 1: Explore Cars */}
               <Link
@@ -506,7 +521,7 @@ export function Navbar() {
       {paymentModalOpen && (
         <div className="fixed inset-0 bg-[#111A2ED9] backdrop-blur-xs flex items-center justify-center z-[100] p-4 animate-fade-in">
           <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-gray-100 overflow-hidden transform transition-all animate-scale-up">
-            
+
             {/* Modal Header */}
             <div className="px-6 py-5 bg-[#111A2E] text-white flex justify-between items-center">
               <div className="flex items-center gap-2">
@@ -526,11 +541,10 @@ export function Navbar() {
 
             {/* Modal Form Body */}
             <form onSubmit={handlePaymentSubmit} className="p-6 space-y-4">
-              
+
               {payMessage && (
-                <div className={`p-4 rounded-xl flex items-start gap-2.5 text-sm font-bold ${
-                  payMessage.type === 'success' ? 'bg-emerald-50 text-emerald-800' : 'bg-rose-50 text-rose-800'
-                }`}>
+                <div className={`p-4 rounded-xl flex items-start gap-2.5 text-sm font-bold ${payMessage.type === 'success' ? 'bg-emerald-50 text-emerald-800' : 'bg-rose-50 text-rose-800'
+                  }`}>
                   <span className="text-base">{payMessage.type === 'success' ? '✅' : '❌'}</span>
                   <div className="flex-1">{payMessage.text}</div>
                 </div>
@@ -586,7 +600,7 @@ export function Navbar() {
               {/* Card Form Mock representation */}
               <div className="border border-slate-100 bg-slate-50/70 p-4.5 rounded-2xl relative overflow-hidden">
                 <div className="absolute right-4 top-4 text-xs font-extrabold uppercase tracking-widest text-slate-300">SECURE SHIELD</div>
-                
+
                 <div className="space-y-3">
                   <div>
                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Card Number (Simulated)</label>

@@ -15,7 +15,8 @@ let resendInstance = null;
 function getResend() {
   if (!resendInstance) {
     const apiKey = sanitizeEnv(process.env.RESEND_API_KEY);
-    if (apiKey) {
+    const isPlaceholder = !apiKey || apiKey === "re_your_resend_api_key_here" || apiKey.startsWith("re_your_");
+    if (apiKey && !isPlaceholder) {
       resendInstance = new Resend(apiKey);
     }
   }
@@ -27,14 +28,15 @@ function getResend() {
  */
 export async function verifySMTPOnStartup() {
   const apiKey = sanitizeEnv(process.env.RESEND_API_KEY);
+  const isPlaceholder = !apiKey || apiKey === "re_your_resend_api_key_here" || apiKey.startsWith("re_your_");
 
   console.log(`\n======================================================`);
   console.log(`📡 [RESEND API STARTUP VERIFICATION] Init check...`);
   console.log(`   API Key: ${apiKey ? apiKey.substring(0, 8) + "..." : "MISSING"}`);
   console.log(`======================================================`);
 
-  if (!apiKey) {
-    console.warn("⚠️ [RESEND API STARTUP WARNING] No `RESEND_API_KEY` configured. Moving into Simulation mode.");
+  if (isPlaceholder) {
+    console.warn("⚠️ [RESEND API STARTUP WARNING] No valid `RESEND_API_KEY` configured or placeholder detected. Moving into Simulation mode.");
     console.log(`======================================================\n`);
     return false;
   }
@@ -53,8 +55,9 @@ export async function verifySMTPOnStartup() {
     console.log(`======================================================\n`);
     return true;
   } catch (err) {
-    console.error("❌ [RESEND API STARTUP FAILURE] Verification test failed:");
-    console.error(`   Message: ${err.message}`);
+    console.warn("⚠️ [RESEND API STARTUP WARNING] Verification connectivity check failed:");
+    console.warn(`   Message: ${err.message}`);
+    console.warn("   Falling back gracefully to Simulation Mode for email dispatches.");
     console.log(`======================================================\n`);
     return false;
   }
@@ -66,10 +69,11 @@ export async function verifySMTPOnStartup() {
  */
 export async function sendEmail(to, subject, html, maxRetries = 3, initialDelay = 1000) {
   const apiKey = sanitizeEnv(process.env.RESEND_API_KEY);
+  const isPlaceholder = !apiKey || apiKey === "re_your_resend_api_key_here" || apiKey.startsWith("re_your_");
   const userEmail = to.toLowerCase().trim();
 
-  if (!apiKey) {
-    console.warn(`[RESEND API WATCH] RESEND_API_KEY is not defined. Email send skipped (Simulation Mode).`);
+  if (isPlaceholder) {
+    console.warn(`[RESEND API WATCH] RESEND_API_KEY is placeholder or not defined. Email send skipped (Simulation Mode).`);
     console.log(`[RESEND SIMULATION] Mail printed for ${userEmail}:\nSubject: ${subject}\n`);
     return { message: "Simulation mode active (NO API KEY)", simulated: true };
   }
