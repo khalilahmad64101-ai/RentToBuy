@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { Button } from '../components/ui/Button';
 import { mapFriendlyFeedback } from '../utils/feedbackHelper.js';
+import { motion } from 'motion/react';
 import { 
   CheckCircle2, 
   Circle, 
@@ -197,43 +198,61 @@ export function TrackRide() {
       
       {/* 1. HERO SECTION REDESIGN */}
       <section 
-        className="relative w-full h-[550px] bg-cover bg-center flex items-center px-4 sm:px-6 lg:px-8 overflow-hidden shadow-sm animate-fade-in"
+        className="relative w-full min-h-[500px] lg:h-[680px] flex items-center px-4 sm:px-6 lg:px-8 overflow-hidden border-b-4 border-gray-400 select-none text-left animate-fade-in"
         style={{
-          backgroundImage: `linear-gradient(90deg, rgba(8, 14, 28, 0.98) 0%, rgba(12, 22, 44, 0.85) 45%, rgba(15, 23, 42, 0.45) 100%), url('https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&q=80&w=1600')`
+          background: 'linear-gradient(to bottom, #B8DC82, #619921, #BFDF8C)'
         }}
         id="track-journey-hero"
       >
-        {/* Premium ambient grid lines */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff02_1px,transparent_1px),linear-gradient(to_bottom,#ffffff02_1px,transparent_1px)] bg-[size:32px_32px] opacity-20 pointer-events-none"></div>
+        {/* Subtle grid pattern overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:24px_24px] opacity-15 pointer-events-none z-0"></div>
 
-        <div className="w-full max-w-7xl mx-auto z-10 text-left">
-          <div className="max-w-2xl space-y-6">
-            <div className="inline-flex items-center gap-1.5 bg-white/10 text-[#7CC242] text-[11px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full border border-white/10 backdrop-blur-md">
-              <span className="w-2 h-2 rounded-full bg-[#7CC242] animate-pulse"></span>
+        {/* Clean 2-column flex layout optimized specifically for Track Ride */}
+        <div className="w-full max-w-7xl mx-auto px-4 relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+          
+          <div className="w-full lg:w-[50%] text-center lg:text-left space-y-6 z-10 animate-fade-in">
+            <div className="inline-flex items-center gap-1.5 bg-black/10 text-black text-[11px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full border border-black/10">
+              <span className="w-2 h-2 rounded-full bg-black animate-pulse"></span>
               Track Your Application
             </div>
             
-            <h1 className="font-sans font-black text-3xl sm:text-5xl text-white tracking-tight leading-tight uppercase">
+            <h1 className="font-sans font-[900] text-3xl sm:text-5xl lg:text-6xl text-black tracking-[-0.05em] leading-[0.95] uppercase">
               Monitor Your Vehicle <br />
-              <span className="text-[#7CC242]">Application Progress</span>
+              <span className="text-black">Application Progress</span>
             </h1>
             
-            <p className="text-slate-350 text-slate-350 text-sm sm:text-base leading-relaxed font-normal text-slate-200">
+            <p className="text-black/85 text-xs sm:text-sm md:text-base leading-relaxed max-w-xl font-bold">
               Stay updated with every stage of your Rent-To-Buy application, from submission to approval and vehicle collection.
             </p>
 
-            <div className="pt-2">
+            <div className="pt-2 flex justify-center lg:justify-start">
               <button 
                 onClick={() => {
                   const searchForm = document.getElementById('tracking-timeline-section');
                   if (searchForm) searchForm.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-[#7CC242] hover:bg-[#6bb033] text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-[#7CC242]/20 transition-all duration-200 active:scale-95 cursor-pointer font-sans"
+                className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-black text-white hover:bg-zinc-900 font-black text-xs uppercase tracking-wider rounded-xl transition-all duration-200 active:scale-95 cursor-pointer font-sans shadow-md"
               >
                 Track Now
               </button>
             </div>
           </div>
+
+          {/* Clean right column image layout customized specifically for Track Ride, in-bound and scaled nicely */}
+          <motion.div
+            initial={{ opacity: 0, x: 80, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            transition={{ type: "spring", stiffness: 50, damping: 15, delay: 0.15 }}
+            className="w-full lg:w-[50%] flex justify-center items-center select-none z-10 pointer-events-none mt-4 lg:mt-0"
+          >
+            <img
+              src="https://r2-buy-car.vercel.app/hero-car1.png"
+              alt="Track Ride Program Fleet"
+              referrerPolicy="no-referrer"
+              className="w-full max-h-[220px] sm:max-h-[280px] lg:max-h-[350px] object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.25)] pointer-events-auto transform transition-transform duration-500 xl:scale-120"
+            />
+          </motion.div>
+
         </div>
       </section>
 

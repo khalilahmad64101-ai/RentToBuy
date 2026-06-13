@@ -96,14 +96,14 @@ export function Navbar() {
         {/* Top White Strip for Client Actions (Kept only as a clean white background height for circular logo layout) */}
         <div className="bg-white h-11 w-full flex items-center justify-between px-12 border-b border-gray-100">
           <div className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest">
-            
+            LICENSED RENT-TO-BUY PROVIDER
           </div>
         </div>
 
         {/* Black Horizontal Band */}
         <div className="bg-[#000000] h-[64px] w-full relative flex items-center justify-between px-6 xl:px-16 animate-fade-in">
 
-          {/* Left Navigation Links: Home, Explore Cars, How it works */}
+          {/* Left Navigation Links: Home, Explore Cars, Track Ride */}
           <div className="flex-1 flex items-center justify-end space-x-10 pr-16 xl:pr-24">
             <Link
               to="/"
@@ -120,11 +120,11 @@ export function Navbar() {
               Explore Cars
             </Link>
             <Link
-              to="/how-it-works"
-              className={`font-sans font-extrabold text-[14px] xl:text-[15px] tracking-wide transition-colors ${isActive('/how-it-works') ? 'text-[#7CC242]' : 'text-white hover:text-[#7CC242]'
+              to="/track-ride"
+              className={`font-sans font-extrabold text-[14px] xl:text-[15px] tracking-wide transition-colors ${isActive('/track-ride') ? 'text-[#7CC242]' : 'text-white hover:text-[#7CC242]'
                 }`}
             >
-              How it works
+              Track Ride
             </Link>
           </div>
 
@@ -141,8 +141,15 @@ export function Navbar() {
             </Link>
           </div>
 
-          {/* Right Navigation Links: Contact, Payments, and Profile */}
+          {/* Right Navigation Links: How It Works, Contact, and Profile */}
           <div className="flex-1 flex items-center justify-start space-x-8 pl-16 xl:pl-24">
+            <Link
+              to="/how-it-works"
+              className={`font-sans font-extrabold text-[14px] xl:text-[15px] tracking-wide transition-colors ${isActive('/how-it-works') ? 'text-[#7CC242]' : 'text-white hover:text-[#7CC242]'
+                }`}
+            >
+              How it works
+            </Link>
             <Link
               to="/contact"
               className={`font-sans font-extrabold text-[14px] xl:text-[15px] tracking-wide transition-colors ${isActive('/contact') ? 'text-[#7CC242]' : 'text-white hover:text-[#7CC242]'
@@ -150,17 +157,6 @@ export function Navbar() {
             >
               Contact
             </Link>
-
-            {/* PAYMENTS ACTION */}
-            <button
-              onClick={() => {
-                setPayMessage(null);
-                setPaymentModalOpen(true);
-              }}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-transparent border border-[#7CC242] hover:bg-[#7CC242]/10 text-white font-extrabold text-[11px] xl:text-[12px] uppercase tracking-wider rounded-md transition-all duration-200 cursor-pointer shadow-xs whitespace-nowrap"
-            >
-              <span>PAYMENTS</span>
-            </button>
 
             {/* PROFILE ACTION */}
             {user ? (
@@ -306,26 +302,7 @@ export function Navbar() {
           )}
         </Link>
 
-        {/* Tab 4: PAYMENTS TRIGGER */}
-        <button
-          onClick={() => {
-            setMobileMenuOpen(false);
-            setPayMessage(null);
-            setPaymentModalOpen(true);
-          }}
-          className={`flex-1 flex flex-col items-center justify-center h-full transition-all relative bg-transparent border-none outline-none cursor-pointer ${paymentModalOpen
-              ? 'text-brand-primary'
-              : 'text-slate-400 hover:text-slate-600'
-            }`}
-        >
-          <CreditCard className="w-[21px] h-[21px]" strokeWidth={paymentModalOpen ? 2.5 : 2} />
-          <span className="text-[9px] font-black tracking-wide mt-1 uppercase">Pay</span>
-          {paymentModalOpen && (
-            <span className="absolute top-0 w-8 h-[3px] bg-brand-primary rounded-b-md"></span>
-          )}
-        </button>
-
-        {/* Tab 5: ACCOUNT SHORTCUTS TRIGGER */}
+        {/* Tab 4: ACCOUNT SHORTCUTS TRIGGER */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className={`flex-1 flex flex-col items-center justify-center h-full transition-all relative bg-transparent border-none outline-none cursor-pointer ${mobileMenuOpen

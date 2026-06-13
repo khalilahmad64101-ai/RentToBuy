@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'motion/react';
 
 export function HeroSection({ 
   scrollToTarget,
@@ -9,38 +10,35 @@ export function HeroSection({
 }) {
   return (
     <div 
-      className="relative w-full min-h-[500px] lg:h-[680px] bg-cover bg-center flex items-center pt-16 pb-32 md:pb-40 lg:pb-36 px-4 sm:px-6 lg:px-8 overflow-hidden shadow-2xl"
+      className="relative w-full min-h-[500px] lg:h-[680px] flex items-center pt-16 pb-32 md:pb-40 lg:pb-36 px-4 sm:px-6 lg:px-8 overflow-hidden border-b-4 border-gray-400 select-none text-left"
       style={{
-        backgroundImage: `linear-gradient(90deg, rgba(8, 14, 28, 0.96) 0%, rgba(12, 22, 44, 0.72) 45%, rgba(15, 23, 42, 0.25) 100%), url('https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&q=80&w=1600')`
+        background: 'linear-gradient(to bottom, #B8DC82, #619921, #BFDF8C)'
       }}
       id="explore-hero-banner"
     >
       {/* Subtle grid pattern overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:24px_24px] opacity-25 pointer-events-none z-0"></div>
-      
-      {/* Decorative graphic overlay */}
-      <div className="absolute top-0 right-0 w-[45%] h-full bg-gradient-to-l from-black/20 to-transparent pointer-events-none z-0"></div>
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:24px_24px] opacity-15 pointer-events-none z-0"></div>
 
-      {/* Two-Column Grid layout: Left-Text layout & Right-Car layout */}
-      <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+      {/* Clean 2-column flex layout optimized specifically for Explore Cars Hero */}
+      <div className="w-full max-w-7xl mx-auto px-4 relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
         
-        {/* Left text block: Title, subtitle & two buttons with logo colors (#7CC242, #1F3F7A) */}
-        <div className="lg:col-span-7 space-y-6 text-left">
-          <div className="inline-flex items-center gap-1.5 bg-white/10 text-white text-[11px] font-black uppercase tracking-widest px-3.5 py-1.5 rounded-md border border-white/20">
+        {/* Left text block: Title, subtitle & two buttons with high impact styling */}
+        <div className="w-full lg:w-[50%] text-center lg:text-left space-y-6 z-10 animate-fade-in">
+          <div className="inline-flex items-center gap-1.5 bg-black/10 text-black text-[11px] font-black uppercase tracking-widest px-3.5 py-1.5 rounded-md border border-black/10">
             ⭐ {badge}
           </div>
           
-          <h1 className="font-sans font-black text-4xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-none uppercase">
+          <h1 className="font-sans font-[900] text-3xl sm:text-5xl lg:text-6xl text-black leading-[0.95] tracking-[-0.05em] uppercase">
             Let's find <br />
-            <span className="text-[#7CC242]">{title}</span>
+            <span className="text-black">{title}</span>
           </h1>
           
-          <p className="text-gray-300 text-sm sm:text-base md:text-lg leading-relaxed max-w-xl font-normal">
+          <p className="text-black/85 text-xs sm:text-sm md:text-base leading-relaxed max-w-xl font-bold">
             {subtitle}
           </p>
           
           {/* Button controllers */}
-          <div className="flex flex-wrap gap-4 pt-2">
+          <div className="flex flex-wrap gap-4 pt-2 justify-center lg:justify-start">
             <button
               onClick={() => {
                 if (scrollToTarget) {
@@ -50,25 +48,33 @@ export function HeroSection({
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }
               }}
-              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-white text-[#1F3F7A] hover:bg-gray-100 font-black text-xs uppercase tracking-wider rounded-xl transition-all duration-200 active:scale-95 cursor-pointer font-sans shadow-md"
+              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-black text-white hover:bg-zinc-900 font-black text-xs uppercase tracking-wider rounded-xl transition-all duration-200 active:scale-95 cursor-pointer font-sans shadow-md"
             >
               View Available Cars
             </button>
             <Link
               to="/apply"
-              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-[#7CC242] hover:bg-[#6bb033] text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-[#7CC242]/20 transition-all duration-200 active:scale-95 cursor-pointer font-sans animate-pulse"
+              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-[#1F3F7A] text-white hover:bg-[#152e5c] font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition-all duration-200 active:scale-95 cursor-pointer font-sans"
             >
               Start Application
             </Link>
           </div>
         </div>
 
-        {/* Right Image element: stylish premium SUV */}
-        <div className="lg:col-span-5 relative flex items-center justify-center select-none mt-8 lg:mt-0">
-          <div className="w-full max-w-[450px] lg:max-w-full flex items-center justify-center relative">
-          
-          </div>
-        </div>
+        {/* Clean right column image layout customized specifically for Explore Cars, in-bound and scaled nicely */}
+        <motion.div
+          initial={{ opacity: 0, x: 80, scale: 0.95 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
+          transition={{ type: "spring", stiffness: 50, damping: 15, delay: 0.15 }}
+          className="w-full lg:w-[50%] flex justify-center items-center select-none z-10 pointer-events-none mt-4 lg:mt-0"
+        >
+          <img
+            src="https://r2-buy-car.vercel.app/hero-car1.png"
+            alt="Explore Cars Hero Driver Fleet"
+            referrerPolicy="no-referrer"
+            className="w-full max-h-[220px] sm:max-h-[280px] lg:max-h-[350px] xl:scale-120 object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.25)] pointer-events-auto transform transition-transform duration-500 "
+          />
+        </motion.div>
 
       </div>
 
