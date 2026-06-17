@@ -243,130 +243,170 @@ export function Home() {
       </div>
 
       {/* 3. Customer Journey Section */}
-      <section className="bg-white border-y border-gray-100 py-16 w-full animate-fade-in" id="customer-journey-section">
+      <section className="bg-white border-y border-gray-100 py-10 sm:py-16 w-full animate-fade-in" id="customer-journey-section">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-          <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-16">
             <h2 className="font-sans font-black text-2xl sm:text-3xl text-[#1F3F7A] tracking-tight uppercase">
               Your Journey to Vehicle Ownership
             </h2>
-            <div className="h-1.5 w-24 bg-[#7CC242] mx-auto my-4 rounded-full"></div>
+            <div className="h-1.5 w-24 bg-[#7CC242] mx-auto my-2.5 sm:my-4 rounded-full"></div>
             <p className="text-xs sm:text-sm text-slate-500 font-bold uppercase tracking-wider text-slate-400">
               Follow these simple steps to find your vehicle and complete your application.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 relative">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-8 relative">
 
             {/* Step 1 */}
-            <div className="relative p-6 bg-slate-50 border border-slate-100 rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
-              <div className="absolute top-4 right-4 text-[10px] font-mono font-black text-slate-300 group-hover:text-[#7CC242]/40 transition-colors">
-                STEP 01
+            <div className="relative p-3 sm:p-6 bg-slate-50 border border-slate-100 rounded-2xl sm:rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
+              <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 font-mono font-black transition-colors">
+                <span className="block sm:hidden text-[#7CC242] text-[13px] font-[900]">01</span>
+                <span className="hidden sm:block text-[10px] text-slate-300 group-hover:text-[#7CC242]/40">STEP 01</span>
               </div>
-              <div className="w-12 h-12 bg-[#7CC242]/10 rounded-2xl flex items-center justify-center text-[#7CC242] mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
-                <Sliders className="w-6 h-6" />
+              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-[#7CC242]/10 rounded-xl sm:rounded-2xl flex items-center justify-center text-[#7CC242] mb-3 sm:mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
+                <Sliders className="w-4 h-4 sm:w-6 sm:h-6" />
               </div>
-              <h3 className="font-extrabold text-sm uppercase text-[#1F3F7A] mb-2 tracking-tight">Set Your Budget</h3>
-              <p className="text-xs text-slate-400 leading-relaxed max-w-[220px]">
-                Use the affordability meter to choose your weekly budget.
+              <h3 className="font-extrabold text-[#1F3F7A] mb-1 sm:mb-2 tracking-tight uppercase text-xs sm:text-sm leading-tight">
+                <span className="block sm:hidden">Budget</span>
+                <span className="hidden sm:block">Set Your Budget</span>
+              </h3>
+              <p className="text-slate-400 leading-relaxed max-w-[220px] text-[10px] sm:text-xs">
+                <span className="block sm:hidden">Set your weekly limit.</span>
+                <span className="hidden sm:block">Use the affordability meter to choose your weekly budget.</span>
               </p>
             </div>
 
             {/* Step 2 */}
-            <div className="relative p-6 bg-slate-50 border border-slate-100 rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
-              <div className="absolute top-4 right-4 text-[10px] font-mono font-black text-slate-300 group-hover:text-[#7CC242]/40 transition-colors">
-                STEP 02
+            <div className="relative p-3 sm:p-6 bg-slate-50 border border-slate-100 rounded-2xl sm:rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
+              <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 font-mono font-black transition-colors">
+                <span className="block sm:hidden text-[#7CC242] text-[13px] font-[900]">02</span>
+                <span className="hidden sm:block text-[10px] text-slate-300 group-hover:text-[#7CC242]/40">STEP 02</span>
               </div>
-              <div className="w-12 h-12 bg-[#1F3F7A]/10 rounded-2xl flex items-center justify-center text-[#1F3F7A] mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
-                <Car className="w-6 h-6" />
+              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-[#1F3F7A]/10 rounded-xl sm:rounded-2xl flex items-center justify-center text-[#1F3F7A] mb-3 sm:mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
+                <Car className="w-4 h-4 sm:w-6 sm:h-6" />
               </div>
-              <h3 className="font-extrabold text-sm uppercase text-[#1F3F7A] mb-2 tracking-tight">Browse Matching Vehicles</h3>
-              <p className="text-xs text-slate-400 leading-relaxed max-w-[220px]">
-                View vehicles that match your selected budget.
+              <h3 className="font-extrabold text-[#1F3F7A] mb-1 sm:mb-2 tracking-tight uppercase text-xs sm:text-sm leading-tight">
+                <span className="block sm:hidden">Browse Cars</span>
+                <span className="hidden sm:block">Browse Matching Vehicles</span>
+              </h3>
+              <p className="text-slate-400 leading-relaxed max-w-[220px] text-[10px] sm:text-xs">
+                <span className="block sm:hidden">View matching vehicles.</span>
+                <span className="hidden sm:block">View vehicles that match your selected budget.</span>
               </p>
             </div>
 
             {/* Step 3 */}
-            <div className="relative p-6 bg-slate-50 border border-slate-100 rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
-              <div className="absolute top-4 right-4 text-[10px] font-mono font-black text-slate-300 group-hover:text-[#7CC242]/40 transition-colors">
-                STEP 03
+            <div className="relative p-3 sm:p-6 bg-slate-50 border border-slate-100 rounded-2xl sm:rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
+              <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 font-mono font-black transition-colors">
+                <span className="block sm:hidden text-[#7CC242] text-[13px] font-[900]">03</span>
+                <span className="hidden sm:block text-[10px] text-slate-300 group-hover:text-[#7CC242]/40">STEP 03</span>
               </div>
-              <div className="w-12 h-12 bg-[#7CC242]/10 rounded-2xl flex items-center justify-center text-[#7CC242] mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
-                <CheckSquare className="w-6 h-6" />
+              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-[#7CC242]/10 rounded-xl sm:rounded-2xl flex items-center justify-center text-[#7CC242] mb-3 sm:mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
+                <CheckSquare className="w-4 h-4 sm:w-6 sm:h-6" />
               </div>
-              <h3 className="font-extrabold text-sm uppercase text-[#1F3F7A] mb-2 tracking-tight">Choose Your Vehicle</h3>
-              <p className="text-xs text-slate-400 leading-relaxed max-w-[220px]">
-                Select the car that best suits your needs.
+              <h3 className="font-extrabold text-[#1F3F7A] mb-1 sm:mb-2 tracking-tight uppercase text-xs sm:text-sm leading-tight">
+                <span className="block sm:hidden">Choose Vehicle</span>
+                <span className="hidden sm:block">Choose Your Vehicle</span>
+              </h3>
+              <p className="text-slate-400 leading-relaxed max-w-[220px] text-[10px] sm:text-xs">
+                <span className="block sm:hidden">Select your perfect ride.</span>
+                <span className="hidden sm:block">Select the car that best suits your needs.</span>
               </p>
             </div>
 
             {/* Step 4 */}
-            <div className="relative p-6 bg-slate-50 border border-slate-100 rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
-              <div className="absolute top-4 right-4 text-[10px] font-mono font-black text-slate-300 group-hover:text-[#7CC242]/40 transition-colors">
-                STEP 04
+            <div className="relative p-3 sm:p-6 bg-slate-50 border border-slate-100 rounded-2xl sm:rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
+              <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 font-mono font-black transition-colors">
+                <span className="block sm:hidden text-[#7CC242] text-[13px] font-[900]">04</span>
+                <span className="hidden sm:block text-[10px] text-slate-300 group-hover:text-[#7CC242]/40">STEP 04</span>
               </div>
-              <div className="w-12 h-12 bg-[#1F3F7A]/10 rounded-2xl flex items-center justify-center text-[#1F3F7A] mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
-                <FileText className="w-6 h-6" />
+              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-[#1F3F7A]/10 rounded-xl sm:rounded-2xl flex items-center justify-center text-[#1F3F7A] mb-3 sm:mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
+                <FileText className="w-4 h-4 sm:w-6 sm:h-6" />
               </div>
-              <h3 className="font-extrabold text-sm uppercase text-[#1F3F7A] mb-2 tracking-tight">Start Your Application</h3>
-              <p className="text-xs text-slate-400 leading-relaxed max-w-[220px]">
-                Complete the online application form.
+              <h3 className="font-extrabold text-[#1F3F7A] mb-1 sm:mb-2 tracking-tight uppercase text-xs sm:text-sm leading-tight">
+                <span className="block sm:hidden">Apply Online</span>
+                <span className="hidden sm:block">Start Your Application</span>
+              </h3>
+              <p className="text-slate-400 leading-relaxed max-w-[220px] text-[10px] sm:text-xs">
+                <span className="block sm:hidden">Submit application form.</span>
+                <span className="hidden sm:block">Complete the online application form.</span>
               </p>
             </div>
 
             {/* Step 5 */}
-            <div className="relative p-6 bg-slate-50 border border-slate-100 rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
-              <div className="absolute top-4 right-4 text-[10px] font-mono font-black text-slate-300 group-hover:text-[#7CC242]/40 transition-colors">
-                STEP 05
+            <div className="relative p-3 sm:p-6 bg-slate-50 border border-slate-100 rounded-2xl sm:rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
+              <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 font-mono font-black transition-colors">
+                <span className="block sm:hidden text-[#7CC242] text-[13px] font-[900]">05</span>
+                <span className="hidden sm:block text-[10px] text-slate-300 group-hover:text-[#7CC242]/40">STEP 05</span>
               </div>
-              <div className="w-12 h-12 bg-[#7CC242]/10 rounded-2xl flex items-center justify-center text-[#7CC242] mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
-                <Upload className="w-6 h-6" />
+              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-[#7CC242]/10 rounded-xl sm:rounded-2xl flex items-center justify-center text-[#7CC242] mb-3 sm:mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
+                <Upload className="w-4 h-4 sm:w-6 sm:h-6" />
               </div>
-              <h3 className="font-extrabold text-sm uppercase text-[#1F3F7A] mb-2 tracking-tight">Upload Required Documents</h3>
-              <p className="text-xs text-slate-400 leading-relaxed max-w-[220px]">
-                Submit your driving licence, selfie, and required verification documents.
+              <h3 className="font-extrabold text-[#1F3F7A] mb-1 sm:mb-2 tracking-tight uppercase text-xs sm:text-sm leading-tight">
+                <span className="block sm:hidden">Upload Docs</span>
+                <span className="hidden sm:block">Upload Required Documents</span>
+              </h3>
+              <p className="text-slate-400 leading-relaxed max-w-[220px] text-[10px] sm:text-xs">
+                <span className="block sm:hidden">Verify licence & identity.</span>
+                <span className="hidden sm:block">Submit your driving licence, selfie, and required verification documents.</span>
               </p>
             </div>
 
             {/* Step 6 */}
-            <div className="relative p-6 bg-slate-50 border border-slate-100 rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
-              <div className="absolute top-4 right-4 text-[10px] font-mono font-black text-slate-300 group-hover:text-[#7CC242]/40 transition-colors">
-                STEP 06
+            <div className="relative p-3 sm:p-6 bg-slate-50 border border-slate-100 rounded-2xl sm:rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
+              <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 font-mono font-black transition-colors">
+                <span className="block sm:hidden text-[#7CC242] text-[13px] font-[900]">06</span>
+                <span className="hidden sm:block text-[10px] text-slate-300 group-hover:text-[#7CC242]/40">STEP 06</span>
               </div>
-              <div className="w-12 h-12 bg-[#1F3F7A]/10 rounded-2xl flex items-center justify-center text-[#1F3F7A] mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
-                <Clock className="w-6 h-6" />
+              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-[#1F3F7A]/10 rounded-xl sm:rounded-2xl flex items-center justify-center text-[#1F3F7A] mb-3 sm:mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
+                <Clock className="w-4 h-4 sm:w-6 sm:h-6" />
               </div>
-              <h3 className="font-extrabold text-sm uppercase text-[#1F3F7A] mb-2 tracking-tight">Application Review</h3>
-              <p className="text-xs text-slate-400 leading-relaxed max-w-[220px]">
-                Our team reviews and verifies your application.
+              <h3 className="font-extrabold text-[#1F3F7A] mb-1 sm:mb-2 tracking-tight uppercase text-xs sm:text-sm leading-tight">
+                <span className="block sm:hidden">Review</span>
+                <span className="hidden sm:block">Application Review</span>
+              </h3>
+              <p className="text-slate-400 leading-relaxed max-w-[220px] text-[10px] sm:text-xs">
+                <span className="block sm:hidden">Fast underwriting check.</span>
+                <span className="hidden sm:block">Our team reviews and verifies your application.</span>
               </p>
             </div>
 
             {/* Step 7 */}
-            <div className="relative p-6 bg-slate-50 border border-slate-100 rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
-              <div className="absolute top-4 right-4 text-[10px] font-mono font-black text-slate-300 group-hover:text-[#7CC242]/40 transition-colors">
-                STEP 07
+            <div className="relative p-3 sm:p-6 bg-slate-50 border border-slate-100 rounded-2xl sm:rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
+              <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 font-mono font-black transition-colors">
+                <span className="block sm:hidden text-[#7CC242] text-[13px] font-[900]">07</span>
+                <span className="hidden sm:block text-[10px] text-slate-300 group-hover:text-[#7CC242]/40">STEP 07</span>
               </div>
-              <div className="w-12 h-12 bg-[#7CC242]/10 rounded-2xl flex items-center justify-center text-[#7CC242] mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
-                <CreditCard className="w-6 h-6" />
+              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-[#7CC242]/10 rounded-xl sm:rounded-2xl flex items-center justify-center text-[#7CC242] mb-3 sm:mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
+                <CreditCard className="w-4 h-4 sm:w-6 sm:h-6" />
               </div>
-              <h3 className="font-extrabold text-sm uppercase text-[#1F3F7A] mb-2 tracking-tight">Approval & Payment</h3>
-              <p className="text-xs text-slate-400 leading-relaxed max-w-[220px]">
-                Once approved, complete the required payment.
+              <h3 className="font-extrabold text-[#1F3F7A] mb-1 sm:mb-2 tracking-tight uppercase text-xs sm:text-sm leading-tight">
+                <span className="block sm:hidden">Payment</span>
+                <span className="hidden sm:block">Approval & Payment</span>
+              </h3>
+              <p className="text-slate-400 leading-relaxed max-w-[220px] text-[10px] sm:text-xs">
+                <span className="block sm:hidden">Pay security deposit.</span>
+                <span className="hidden sm:block">Once approved, complete the required payment.</span>
               </p>
             </div>
 
             {/* Step 8 */}
-            <div className="relative p-6 bg-slate-50 border border-slate-100 rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
-              <div className="absolute top-4 right-4 text-[10px] font-mono font-black text-slate-300 group-hover:text-[#7CC242]/40 transition-colors">
-                STEP 08
+            <div className="relative p-3 sm:p-6 bg-slate-50 border border-slate-100 rounded-2xl sm:rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
+              <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 font-mono font-black transition-colors">
+                <span className="block sm:hidden text-[#7CC242] text-[13px] font-[900]">08</span>
+                <span className="hidden sm:block text-[10px] text-slate-300 group-hover:text-[#7CC242]/40">STEP 08</span>
               </div>
-              <div className="w-12 h-12 bg-[#1F3F7A]/10 rounded-2xl flex items-center justify-center text-[#1F3F7A] mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
-                <Key className="w-6 h-6" />
+              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-[#1F3F7A]/10 rounded-xl sm:rounded-2xl flex items-center justify-center text-[#1F3F7A] mb-3 sm:mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
+                <Key className="w-4 h-4 sm:w-6 sm:h-6" />
               </div>
-              <h3 className="font-extrabold text-sm uppercase text-[#1F3F7A] mb-2 tracking-tight">Collect & Drive</h3>
-              <p className="text-xs text-slate-400 leading-relaxed max-w-[220px]">
-                Receive your vehicle and start your journey.
+              <h3 className="font-extrabold text-[#1F3F7A] mb-1 sm:mb-2 tracking-tight uppercase text-xs sm:text-sm leading-tight">
+                <span className="block sm:hidden">Collect & Drive</span>
+                <span className="hidden sm:block">Collect & Drive</span>
+              </h3>
+              <p className="text-slate-400 leading-relaxed max-w-[220px] text-[10px] sm:text-xs">
+                <span className="block sm:hidden">Get keys and hit the road.</span>
+                <span className="hidden sm:block">Receive your vehicle and start your journey.</span>
               </p>
             </div>
 
