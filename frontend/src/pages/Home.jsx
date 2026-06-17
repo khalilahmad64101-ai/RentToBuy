@@ -55,11 +55,11 @@ export function Home() {
   };
 
   return (
-    <div className="space-y-6 md:space-y-12 pb-16 bg-gray-50/30 w-full" id="home-page-view">
+    <div className="space-y-2 md:space-y-12 pb-16 bg-gray-50/30 w-full" id="home-page-view">
 
       {/* 1. Large Integrated Full Screen Hero + Affordability Meter Section */}
       <section
-        className="w-full relative overflow-hidden pt-6 md:pt-16 pb-6 md:pb-20 border-b-4 border-gray-400 select-none text-left"
+        className="w-full relative overflow-hidden pt-16 md:pt-16 pb-4 md:pb-20 border-b-4 border-gray-400 select-none text-left"
         style={{
           background: 'linear-gradient(to bottom, #B8DC82, #619921, #BFDF8C)'
         }}
@@ -76,7 +76,7 @@ export function Home() {
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 1, ease: "easeOut" }}
-              className="font-sans font-[900] text-[2.25rem] sm:text-[3.5rem] md:text-[6rem] xl:text-[6.5rem] text-black leading-[0.95] tracking-[-0.05em] "
+              className="font-sans font-[900] text-[2.5rem] sm:text-[3.5rem] md:text-[6rem] xl:text-[6.5rem] text-black leading-[0.95] tracking-[-0.05em] "
             >
               Let's find <br /> your car!
             </motion.h1>
@@ -93,7 +93,7 @@ export function Home() {
               src="https://r2-buy-car.vercel.app/hero-car1.png"
               alt="Hero Car"
               referrerPolicy="no-referrer"
-              className="w-full max-h-[110px] sm:max-h-[250px] lg:max-h-none scale-100 lg:scale-140 object-contain xl:mt-[-70px] xl:ml-[-110px] drop-shadow-[0_25px_30px_rgba(0,0,0,0.35)] transform transition-transform duration-300 pointer-events-auto"
+              className="w-full max-h-[225px] sm:max-h-[290px] lg:max-h-none scale-100 lg:scale-140 object-contain xl:mt-[-70px] xl:ml-[-110px] drop-shadow-[0_25px_30px_rgba(0,0,0,0.35)] transform transition-transform duration-300 pointer-events-auto"
             />
           </motion.div>
 
@@ -103,15 +103,15 @@ export function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.4, ease: "easeOut" }}
             id="budget-card"
-            className="relative z-20 mt-3 md:mt-16 lg:mt-96 xl:mt-[25rem] w-full xl:w-[90%] mx-auto bg-white rounded-2xl md:rounded-3xl p-4 sm:p-6 md:p-12 xl:p-14 shadow-[0_15px_40px_rgba(0,0,0,0.08)] border border-gray-100/40"
+            className="relative z-20 mt-3 md:mt-16 lg:mt-96 xl:mt-[25rem] w-full xl:w-[90%] mx-auto bg-white rounded-2xl md:rounded-3xl p-3.5 sm:p-6 md:p-12 xl:p-14 shadow-[0_15px_40px_rgba(0,0,0,0.08)] border border-gray-100/40"
           >
-            <h2 className="text-center md:text-left font-sans font-extrabold text-[1.25rem] sm:text-[1.75rem] md:text-[2.25rem] text-[#374151] tracking-tight leading-tight mb-4 md:mb-10 uppercase flex flex-col md:flex-row md:justify-between items-center gap-2">
+            <h2 className="text-center md:text-left font-sans font-extrabold text-[1.25rem] sm:text-[1.75rem] md:text-[2.25rem] text-[#374151] tracking-tight leading-tight mb-3 md:mb-10 uppercase flex flex-col md:flex-row md:justify-between items-center gap-2">
               <span>Select your weekly budget</span>
               <span className="text-[#1F3F7A] font-black text-lg md:text-2xl bg-[#7CC242]/15 px-3.5 py-1 rounded-xl">£{selectedBudget}{isMaxBudget ? '+' : ''}/wk</span>
             </h2>
 
             {/* Interactive Custom Range Slider */}
-            <div className="relative mt-4 md:mt-8 mb-4 md:mb-6 max-w-5xl mx-auto px-2 md:px-4">
+            <div className="relative mt-2.5 md:mt-8 mb-2.5 md:mb-6 max-w-5xl mx-auto px-2 md:px-4">
               <input
                 type="range"
                 min="0"
@@ -157,7 +157,7 @@ export function Home() {
               </div>
 
               {/* Mobile Ticks/Steps: Dedicated responsive mobile layout showing ALL values for extreme convenience */}
-              <div className="grid grid-cols-4 lg:hidden w-full mt-4 select-none font-sans gap-1.5 md:gap-2">
+              <div className="grid grid-cols-4 lg:hidden w-full mt-2.5 select-none font-sans gap-1.5 md:gap-2">
                 {BUDGET_STEPS.map((step, idx) => {
                   const isCurrent = budgetIndex === idx;
                   return (
@@ -186,29 +186,10 @@ export function Home() {
             </button>
           </motion.div>
 
-          {/* Bullet Points (Hidden on mobile to draw car grid directly below budget card) */}
-          <div className="hidden md:flex mt-16 xl:mt-24 w-full max-w-[64rem] xl:w-[75%] mx-auto justify-center text-left select-none">
-            <div className="grid grid-cols-1 md:grid-cols-2 md:gap-x-16 md:gap-y-2 px-6 w-full">
-              {[
-                "No deposit",
-                "Multiple price points",
-                "No credit checks",
-                "Option to upgrade",
-                "Vehicles have Tax + MOT",
-                "Quick and simple"
-              ].map((text, idx) => (
-                <div key={idx} className="flex items-center gap-3 font-sans font-[800] text-[#374151] text-lg md:text-[1.5rem]">
-                  <div className="w-[6px] h-[6px] bg-[#374151] rounded-full shrink-0"></div>
-                  <span>{text}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
         </div>
 
       </section>
-
+      
       {/* 2. MATCHING FLEET RESULTS */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-10 space-y-4 md:space-y-6" id="perfect-matches-grid">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-2 border-b border-gray-100 pb-3 md:pb-4">

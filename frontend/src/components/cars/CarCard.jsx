@@ -112,81 +112,81 @@ export function CarCard({ car }) {
       </div>
 
       {/* Details Box */}
-      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-4">
+      <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between space-y-2.5 sm:space-y-4">
         <div>
           {/* Price Header */}
           <div className="space-y-0.5">
-            <span className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest leading-none">
+            <span className="block text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-widest leading-none">
               FROM
             </span>
-            <div className="flex items-baseline mt-1">
-              <span className="text-3xl font-[900] text-slate-900 leading-none">
+            <div className="flex items-baseline mt-1 sm:mt-1.5">
+              <span className="text-2xl sm:text-3xl font-[900] text-slate-900 leading-none">
                 £{displayWeeklyPrice}
               </span>
-              <span className="text-xs sm:text-sm font-semibold text-slate-400 leading-none ml-1.5">
+              <span className="text-[11px] sm:text-sm font-semibold text-slate-400 leading-none ml-1 sm:ml-1.5">
                 per week
               </span>
             </div>
           </div>
 
           {/* Thin divider line */}
-          <div className="border-b border-gray-100/80 my-4"></div>
+          <div className="border-b border-gray-100 my-2 sm:my-3.5"></div>
 
           {/* Name & Model Year */}
-          <div className="mb-4">
-            <h3 className="font-sans font-extrabold text-base sm:text-lg text-[#7CC242] tracking-tight leading-tight uppercase">
+          <div className="space-y-0.5 sm:space-y-1 text-left">
+            <h3 className="font-sans font-extrabold text-sm sm:text-lg text-[#7CC242] tracking-tight leading-tight uppercase group-hover:text-[#6aae34] transition-colors truncate">
               {name}
             </h3>
-            <p className="text-sm text-slate-950 font-extrabold mt-1">
+            <p className="text-xs sm:text-sm text-slate-900 font-extrabold">
               Model {model}
             </p>
           </div>
 
           {/* 2x2 Feature Box Grid: subtle borders, rounded corners, icon on left, text on right */}
-          <div className="grid grid-cols-2 gap-x-4 gap-y-3.5 mt-4 shrink-0">
+          <div className="grid grid-cols-2 gap-1.5 sm:gap-2 mt-2.5 sm:mt-4 shrink-0">
             {/* Feature 1: Fuel Type */}
-            <div className="flex items-center space-x-2.5">
-              <div className="w-10 h-10 rounded-xl border border-slate-200/80 flex items-center justify-center text-slate-500 shrink-0 bg-white shadow-2xs">
-                <Fuel className="w-5 h-5 stroke-[1.25]" />
+            <div className="flex items-center space-x-1.5 sm:space-x-2.5 p-1.5 sm:p-2 bg-white rounded-xl border border-slate-200/80 h-9 sm:h-11 w-full justify-start min-w-0">
+              <div className="text-slate-500 shrink-0">
+                <Fuel className="w-4 h-4 sm:w-5 sm:h-5 stroke-[1.25]" />
               </div>
-              <span className="text-xs sm:text-sm font-semibold text-slate-600 truncate">{displayFuel}</span>
+              <span className="text-[10px] sm:text-sm font-semibold text-slate-600 truncate">{displayFuel}</span>
             </div>
 
             {/* Feature 2: Transmission */}
-            <div className="flex items-center space-x-2.5">
-              <div className="w-10 h-10 rounded-xl border border-slate-200/80 flex items-center justify-center text-slate-500 shrink-0 bg-white shadow-2xs">
-                <Settings className="w-5 h-5 stroke-[1.25]" />
+            <div className="flex items-center space-x-1.5 sm:space-x-2.5 p-1.5 sm:p-2 bg-white rounded-xl border border-slate-200/80 h-9 sm:h-11 w-full justify-start min-w-0">
+              <div className="text-slate-500 shrink-0">
+                <Settings className="w-4 h-4 sm:w-5 sm:h-5 stroke-[1.25]" />
               </div>
-              <span className="text-xs sm:text-sm font-semibold text-slate-600 truncate">{displayTrans}</span>
+              <span className="text-[10px] sm:text-sm font-semibold text-slate-600 truncate">{displayTrans}</span>
             </div>
 
             {/* Feature 3: Seats / Doors */}
-            <div className="flex items-center space-x-2.5">
-              <div className="w-10 h-10 rounded-xl border border-slate-200/80 flex items-center justify-center text-slate-500 shrink-0 bg-white shadow-2xs">
-                <Users className="w-5 h-5 stroke-[1.25]" />
+            <div className="flex items-center space-x-1.5 sm:space-x-2.5 p-1.5 sm:p-2 bg-white rounded-xl border border-slate-200/80 h-9 sm:h-11 w-full justify-start min-w-0">
+              <div className="text-slate-500 shrink-0">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5 stroke-[1.25]" />
               </div>
-              <span className="text-xs sm:text-sm font-semibold text-slate-600 truncate">5 seats</span>
+              <span className="text-[10px] sm:text-sm font-semibold text-slate-600 truncate">5 seats</span>
             </div>
 
             {/* Feature 4: Body Type */}
-            <div className="flex items-center space-x-2.5">
-              <div className="w-10 h-10 rounded-xl border border-slate-200/80 flex items-center justify-center text-slate-500 shrink-0 bg-white shadow-2xs">
-                <Car className="w-5 h-5 stroke-[1.25]" />
+            <div className="flex items-center space-x-1.5 sm:space-x-2.5 p-1.5 sm:p-2 bg-white rounded-xl border border-[#cbd5e1] md:border-slate-200/80 h-9 sm:h-11 w-full justify-start min-w-0">
+              <div className="text-slate-500 shrink-0">
+                <Car className="w-4 h-4 sm:w-5 sm:h-5 stroke-[1.25]" />
               </div>
-              <span className="text-xs sm:text-sm font-semibold text-slate-600 truncate">{displayCategory}</span>
+              <span className="text-[10px] sm:text-sm font-semibold text-slate-600 truncate">{displayCategory}</span>
             </div>
           </div>
         </div>
 
         {/* Action buttons: Equal-width, with Apply visually stronger */}
-        <div className="grid grid-cols-2 gap-3 mt-auto pt-1 font-sans">
+        <div className="grid grid-cols-2 gap-2 mt-2 sm:mt-auto pt-1 font-sans">
           <Link to={`/cars/${id}`} className="block w-full">
-            <button className="w-full h-11 text-xs font-[900] uppercase tracking-wider bg-white hover:bg-[#7CC242]/5 text-[#7CC242] border-2 border-[#7CC242] rounded-xl transition-all duration-150 cursor-pointer text-center flex items-center justify-center active:scale-98">
+            <button className="w-full h-9 sm:h-11 text-[10px] sm:text-xs font-[900] uppercase tracking-wider bg-white hover:bg-[#7CC242]/5 text-[#7CC242] border-2 border-[#7CC242] rounded-xl transition-all duration-150 cursor-pointer text-center flex items-center justify-center active:scale-98">
               Details
             </button>
           </Link>
           <Link to={`/apply?carId=${id}`} className="block w-full">
-            <button className="w-full h-11 text-xs font-[900] uppercase tracking-wider bg-[#7CC242] hover:bg-[#6db334] text-white border-2 border-[#7CC242] hover:border-[#6db334] rounded-xl shadow-[0_4px_12px_rgba(124,194,66,0.15)] transition-all duration-150 cursor-pointer text-center flex items-center justify-center active:scale-95">
+            <button className="w-full h-9 sm:h-11 text-[10px] sm:text-xs font-[900] uppercase tracking-wider bg-[#7CC242] hover:bg-[#6db334] text-white border-2 border-[#7CC242] hover:border-[#6db334] rounded-xl shadow-sm transition-all duration-150 cursor-pointer text-center flex items-center justify-center active:scale-95">
               Apply
             </button>
           </Link>
