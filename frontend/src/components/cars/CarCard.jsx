@@ -2,20 +2,19 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Fuel, 
-  Orbit, 
-  ShieldCheck, 
-  CheckCircle, 
-  Wind, 
-  Bluetooth, 
-  Eye, 
-  Cpu, 
-  Sparkles, 
-  Navigation, 
-  Key, 
-  Shield,
-  Heart
+  Settings, 
+  Car, 
+  Users,
+  Heart,
+  Wind,
+  Bluetooth,
+  Eye,
+  Cpu,
+  Sparkles,
+  Navigation,
+  Key,
+  Shield
 } from 'lucide-react';
-import { Button } from '../ui/Button';
 
 export function getFeatureIcon(featureName) {
   const name = String(featureName || '').toLowerCase();
@@ -48,15 +47,12 @@ export function getFeatureIcon(featureName) {
 
 export function CarCard({ car }) {
   if (!car) return null;
-  const { id, name, model, price, weeklyRate, image, fuel, transmission, economy, features, specs } = car;
+  const { id, name, model, price, weeklyRate, image, fuel, transmission, category } = car;
   
   const displayWeeklyPrice = weeklyRate || price || 50;
-  // Calculate monthly payment as Weekly * 4.33 (standard weeks in major global month models)
-  const displayMonthlyPrice = Math.round(displayWeeklyPrice * 4.33);
-  const displayEconomy = economy || '55 mpg';
-  const displayFeatures = features || specs || [];
   const displayFuel = car.calcFuel || fuel || 'Petrol';
   const displayTrans = car.calcTrans || transmission || 'Auto';
+  const displayCategory = category || 'MPV';
 
   // Heart Favorite State
   const [isFavorited, setIsFavorited] = useState(() => {
@@ -81,20 +77,20 @@ export function CarCard({ car }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 flex flex-col h-full" id={`car-${id}`}>
+    <div className="bg-white rounded-[1.5rem] border border-slate-100 overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_36px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group" id={`car-${id}`}>
       {/* Vehicle image with dynamic overlay */}
-      <div className="relative aspect-video bg-gray-50 overflow-hidden shrink-0">
+      <div className="relative aspect-[16/10] bg-gray-50 overflow-hidden shrink-0">
         <img
           src={image}
           alt={`${name} ${model}`}
           referrerPolicy="no-referrer"
-          className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-cover transform group-hover:scale-102 transition-transform duration-500"
         />
         
         {/* Favorite Heart Trigger Button overlay */}
         <button
           onClick={toggleFavorite}
-          className="absolute top-3 right-3 p-2 rounded-full bg-white/90 hover:bg-white shadow-sm hover:shadow transition-all group z-10 cursor-pointer"
+          className="absolute top-3 right-3 p-2 rounded-full bg-white/95 hover:bg-white shadow-xs hover:shadow transition-all group z-10 cursor-pointer"
           title={isFavorited ? "Remove from Favorites" : "Add to Favorites"}
         >
           <Heart 
@@ -104,70 +100,95 @@ export function CarCard({ car }) {
           />
         </button>
 
-        <div className="absolute top-3 left-3 bg-brand-secondary text-white font-sans text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wide shadow-xs">
-          Ready to drive
-        </div>
-        <div className="absolute bottom-3 right-3 bg-slate-900/80 backdrop-blur-xs text-white text-[10px] uppercase font-black tracking-wide px-2 py-1 rounded flex items-center space-x-1">
-          <ShieldCheck className="w-3.5 h-3.5 text-brand-primary" />
-          <span>Cover & Licensing Included</span>
+        {/* Bottom image fade effect */}
+        <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
+
+        {/* Multi-image indicators */}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center space-x-1.5 z-10">
+          <span className="w-5 h-1 rounded-full bg-white transition-all duration-300"></span>
+          <span className="w-1 h-1 rounded-full bg-white/40 transition-all duration-300"></span>
+          <span className="w-1 h-1 rounded-full bg-white/40 transition-all duration-300"></span>
         </div>
       </div>
 
       {/* Details Box */}
-      <div className="p-5 flex-1 flex flex-col justify-between">
+      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-4">
         <div>
-          <div className="flex justify-between items-start gap-2 mb-2">
-            <div>
-              <h3 className="font-sans font-bold text-lg text-brand-secondary tracking-tight leading-tight">{name}</h3>
-              <p className="text-xs text-gray-400 font-medium mt-0.5">{model}</p>
-            </div>
-            
-            <div className="text-right shrink-0">
-              <div className="flex flex-col">
-                <span className="text-xl font-black font-sans text-brand-primary">£{displayWeeklyPrice}<span className="text-[10px] text-gray-400 font-medium uppercase tracking-normal">/wk</span></span>
-                <span className="text-[11px] text-brand-secondary font-extrabold mt-0.5">£{displayMonthlyPrice}<span className="text-[9px] text-slate-400 font-normal uppercase">/mo</span></span>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Stats Grid */}
-          <div className="grid grid-cols-3 gap-2 py-2.5 border-y border-gray-100 mb-4 text-[11px] text-slate-600 font-bold">
-            <div className="flex items-center space-x-1 justify-center">
-              <Fuel className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              <span className="truncate">{displayFuel}</span>
-            </div>
-            <div className="flex items-center space-x-1 justify-center border-x border-gray-100">
-              <Orbit className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              <span className="truncate">{displayTrans}</span>
-            </div>
-            <div className="flex items-center space-x-1 justify-center">
-              <CheckCircle className="w-3.5 h-3.5 text-brand-primary shrink-0" />
-              <span>{displayEconomy}</span>
+          {/* Price Header */}
+          <div className="space-y-0.5">
+            <span className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest leading-none">
+              FROM
+            </span>
+            <div className="flex items-baseline mt-1">
+              <span className="text-3xl font-[900] text-slate-900 leading-none">
+                £{displayWeeklyPrice}
+              </span>
+              <span className="text-xs sm:text-sm font-semibold text-slate-400 leading-none ml-1.5">
+                per week
+              </span>
             </div>
           </div>
 
-          {/* Key Features Bullet List */}
-          <div className="space-y-2 mb-5 shrink-0">
-            {displayFeatures.slice(0, 3).map((feat, index) => (
-              <div key={index} className="flex items-center space-x-2.5 text-xs text-slate-600 font-medium">
-                {getFeatureIcon(feat)}
-                <span className="truncate">{feat}</span>
+          {/* Thin divider line */}
+          <div className="border-b border-gray-100/80 my-4"></div>
+
+          {/* Name & Model Year */}
+          <div className="mb-4">
+            <h3 className="font-sans font-extrabold text-base sm:text-lg text-[#7CC242] tracking-tight leading-tight uppercase">
+              {name}
+            </h3>
+            <p className="text-sm text-slate-950 font-extrabold mt-1">
+              Model {model}
+            </p>
+          </div>
+
+          {/* 2x2 Feature Box Grid: subtle borders, rounded corners, icon on left, text on right */}
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3.5 mt-4 shrink-0">
+            {/* Feature 1: Fuel Type */}
+            <div className="flex items-center space-x-2.5">
+              <div className="w-10 h-10 rounded-xl border border-slate-200/80 flex items-center justify-center text-slate-500 shrink-0 bg-white shadow-2xs">
+                <Fuel className="w-5 h-5 stroke-[1.25]" />
               </div>
-            ))}
+              <span className="text-xs sm:text-sm font-semibold text-slate-600 truncate">{displayFuel}</span>
+            </div>
+
+            {/* Feature 2: Transmission */}
+            <div className="flex items-center space-x-2.5">
+              <div className="w-10 h-10 rounded-xl border border-slate-200/80 flex items-center justify-center text-slate-500 shrink-0 bg-white shadow-2xs">
+                <Settings className="w-5 h-5 stroke-[1.25]" />
+              </div>
+              <span className="text-xs sm:text-sm font-semibold text-slate-600 truncate">{displayTrans}</span>
+            </div>
+
+            {/* Feature 3: Seats / Doors */}
+            <div className="flex items-center space-x-2.5">
+              <div className="w-10 h-10 rounded-xl border border-slate-200/80 flex items-center justify-center text-slate-500 shrink-0 bg-white shadow-2xs">
+                <Users className="w-5 h-5 stroke-[1.25]" />
+              </div>
+              <span className="text-xs sm:text-sm font-semibold text-slate-600 truncate">5 seats</span>
+            </div>
+
+            {/* Feature 4: Body Type */}
+            <div className="flex items-center space-x-2.5">
+              <div className="w-10 h-10 rounded-xl border border-slate-200/80 flex items-center justify-center text-slate-500 shrink-0 bg-white shadow-2xs">
+                <Car className="w-5 h-5 stroke-[1.25]" />
+              </div>
+              <span className="text-xs sm:text-sm font-semibold text-slate-600 truncate">{displayCategory}</span>
+            </div>
           </div>
         </div>
 
-        {/* Action button triggers matching target requirements exactly */}
-        <div className="grid grid-cols-2 gap-2 mt-auto pt-2">
-          <Link to={`/cars/${id}`} className="block">
-            <Button variant="secondary" size="sm" className="w-full text-[11px] font-bold py-2.5">
+        {/* Action buttons: Equal-width, with Apply visually stronger */}
+        <div className="grid grid-cols-2 gap-3 mt-auto pt-1 font-sans">
+          <Link to={`/cars/${id}`} className="block w-full">
+            <button className="w-full h-11 text-xs font-[900] uppercase tracking-wider bg-white hover:bg-[#7CC242]/5 text-[#7CC242] border-2 border-[#7CC242] rounded-xl transition-all duration-150 cursor-pointer text-center flex items-center justify-center active:scale-98">
               Details
-            </Button>
+            </button>
           </Link>
-          <Link to={`/apply?carId=${id}`} className="block">
-            <Button variant="primary" size="sm" className="w-full text-[11px] font-bold py-2.5">
+          <Link to={`/apply?carId=${id}`} className="block w-full">
+            <button className="w-full h-11 text-xs font-[900] uppercase tracking-wider bg-[#7CC242] hover:bg-[#6db334] text-white border-2 border-[#7CC242] hover:border-[#6db334] rounded-xl shadow-[0_4px_12px_rgba(124,194,66,0.15)] transition-all duration-150 cursor-pointer text-center flex items-center justify-center active:scale-95">
               Apply
-            </Button>
+            </button>
           </Link>
         </div>
       </div>

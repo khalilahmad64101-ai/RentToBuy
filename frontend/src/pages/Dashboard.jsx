@@ -243,23 +243,26 @@ export function Dashboard() {
 
   // Status Badge Builder
   const renderStatusBadge = (status, step) => {
-    if (step === 4 || status === 'Approved') {
-      return (
-        <span className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase leading-none">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          Approved / Active
-        </span>
-      );
+    const STAGES = [
+      "Documents Uploaded",      // Step 1
+      "Application Submitted",   // Step 2
+      "Application Under Review",// Step 3
+      "Approved",                // Step 4
+      "Deposit Paid",            // Step 5
+      "Insurance Uploaded",      // Step 6
+      "Vehicle Ready",           // Step 7
+      "Collection Scheduled"     // Step 8
+    ];
+    
+    // Normalize status from step or fallback
+    let resolvedStatus = status;
+    if (step >= 1 && step <= 8) {
+      resolvedStatus = STAGES[step - 1];
+    } else if (status === 'Pending') {
+      resolvedStatus = 'Application Submitted';
     }
-    if (step === 3 || status === 'Action Required') {
-      return (
-        <span className="flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase leading-none">
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-          Action Required
-        </span>
-      );
-    }
-    if (status === 'Rejected') {
+
+    if (status === 'Rejected' || resolvedStatus === 'Rejected') {
       return (
         <span className="flex items-center gap-1.5 bg-red-50 text-red-700 border border-red-200 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase leading-none">
           <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
@@ -267,21 +270,37 @@ export function Dashboard() {
         </span>
       );
     }
+
+    let colorClasses = "bg-brand-primary/10 text-brand-secondary border border-brand-primary/20";
+    if (step >= 5) {
+      colorClasses = "bg-emerald-50 text-emerald-700 border border-emerald-200";
+    } else if (step === 4) {
+      colorClasses = "bg-teal-50 text-teal-700 border border-teal-200";
+    } else if (step === 3) {
+      colorClasses = "bg-indigo-50 text-indigo-700 border border-indigo-200";
+    }
+
     return (
-      <span className="flex items-center gap-1.5 bg-brand-primary/10 text-brand-secondary border border-brand-primary/20 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase leading-none">
-        <span className="w-1.5 h-1.5 rounded-full bg-brand-primary animate-pulse"></span>
-        Under Review
+      <span className={`flex items-center gap-1.5 ${colorClasses} text-[10px] font-bold px-2.5 py-1 rounded-full uppercase leading-none`}>
+        <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse"></span>
+        {resolvedStatus || "Submitted"}
       </span>
     );
   };
 
   // Timeline Step Builder
   const getStepDescription = (step, status) => {
-    if (step === 1) return 'Personal & Employer details validation';
-    if (step === 2) return 'Driving Licencing authentication & soft search ongoing';
-    if (step === 3) return 'Disclosures uploaded. Awaiting deposit downpayment clearing';
-    if (step === 4) return 'Eligibility Approved! Lease Active, insurance certificate ready';
-    return status;
+    const descriptions = {
+      1: 'Personal & Employer documents successfully compiled & uploaded.',
+      2: 'Rent-to-Buy lease request has been submitted to current underwriting queue.',
+      3: 'Comprehensive DVLA compliance checks & Soft Credit verify ongoing.',
+      4: 'Application approved! Digital lease contract package compiled.',
+      5: 'Refundable booking deposit verified. Direct vehicle logistics booked.',
+      6: 'Automated fleet motor insurance cover policy activated & logged.',
+      7: 'Vehicle mechanical inspections completed. Car prepped & cleaned.',
+      8: 'Delivery handover scheduled! Keys ready for collection.'
+    };
+    return descriptions[step] || status || 'Lease underwriting checks in progress.';
   };
 
   // Navigation config
@@ -472,6 +491,108 @@ export function Dashboard() {
         {/* TAB 1: DASHBOARD OVERVIEW HOME */}
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
+
+            {/* Real-time rent-to-buy application timeline tracking banner */}
+            {applications.length > 0 && (
+              <div className="bg-white border border-gray-150 rounded-2xl p-6 shadow-xs space-y-6 animate-fade-in" id="dashboard-timeline-tracker-container">
+                <div className="flex justify-between items-center flex-wrap gap-3">
+                  <div className="space-y-1">
+                    <span className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-650 text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse"></span>
+                      Active Lease Application Progress
+                    </span>
+                    <h3 className="font-sans font-black text-base text-gray-900 uppercase">
+                      My Program Status Tracker ({applications[0].carName})
+                    </h3>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Application Reference</span>
+                    <strong className="text-sm font-mono text-[#1F3F7A] font-black">{applications[0].id}</strong>
+                  </div>
+                </div>
+
+                {/* The 8 Professional progress timeline tracker stages */}
+                <div className="relative pt-3 pb-2 select-none">
+                  {/* Progress Connector Line */}
+                  <div className="absolute top-[31px] left-4 right-4 h-1 bg-slate-100 hidden sm:block z-0">
+                    <div 
+                      className="h-full bg-gradient-to-r from-[#7CC242] to-indigo-600 transition-all duration-500"
+                      style={{ width: `${Math.min(100, Math.max(0, ((applications[0].step - 1) / 7) * 100))}%` }}
+                    ></div>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 relative z-10">
+                    {[
+                      { step: 1, label: 'Documents Uploaded', short: 'Docs' },
+                      { step: 2, label: 'Application Submitted', short: 'Submitted' },
+                      { step: 3, label: 'Application Under Review', short: 'Reviewing' },
+                      { step: 4, label: 'Approved', short: 'Approved' },
+                      { step: 5, label: 'Deposit Paid', short: 'Deposit' },
+                      { step: 6, label: 'Insurance Uploaded', short: 'Insurance' },
+                      { step: 7, label: 'Vehicle Ready', short: 'Prepared' },
+                      { step: 8, label: 'Collection Scheduled', short: 'Collected' }
+                    ].map((st) => {
+                      const isPassed = st.step < applications[0].step;
+                      const isCurrent = st.step === applications[0].step;
+                      const isUpcoming = st.step > applications[0].step;
+
+                      return (
+                        <div key={st.step} className="flex flex-col items-center">
+                          {/* Circle indicator */}
+                          <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 font-extrabold text-xs ${
+                            isCurrent 
+                              ? 'bg-[#7CC242] text-white shadow-md shadow-[#7CC242]/20 ring-4 ring-[#7CC242]/10 scale-105 font-black' 
+                              : isPassed 
+                              ? 'bg-indigo-600 text-white' 
+                              : 'bg-slate-50 text-slate-400 border border-slate-100'
+                          }`}>
+                            {isPassed ? '✓' : st.step}
+                          </div>
+
+                          <div className="mt-2 text-center text-[10px] font-black uppercase tracking-tight">
+                            <span className={
+                              isCurrent ? 'text-[#7CC242]' : isPassed ? 'text-indigo-600' : 'text-slate-400'
+                            }>
+                              {st.short}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="p-4 bg-slate-50/70 rounded-xl border border-slate-100 text-xs text-slate-600 flex justify-between items-center flex-wrap gap-3">
+                  <div className="space-y-0.5">
+                    <strong className="text-slate-900 block font-bold">Current Stage Status:</strong>
+                    <p className="text-[11.5px] text-slate-500">
+                      {getStepDescription(applications[0].step, applications[0].status)}
+                    </p>
+                  </div>
+
+                  {/* Immediate Actions depending on application step */}
+                  <div className="shrink-0 flex items-center gap-2">
+                    {applications[0].step === 4 && (
+                      <button
+                        onClick={() => setActiveTab('payments')}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[10.5px] uppercase tracking-wider px-4 py-2.5 rounded-xl cursor-pointer shadow-md transition-all active:scale-95 flex items-center gap-1 animate-pulse"
+                      >
+                        💳 Pay Deposit Now
+                      </button>
+                    )}
+
+                    {applications[0].step === 5 && (
+                      <button
+                        onClick={() => setActiveTab('insurance')}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-[10.5px] uppercase tracking-wider px-4 py-2.5 rounded-xl cursor-pointer shadow-md transition-all active:scale-95 flex items-center gap-1"
+                      >
+                        🛡️ Upload Insurance Document
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
             
             {/* Stats Cards Section */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -673,24 +794,28 @@ export function Dashboard() {
                         {renderStatusBadge(selectedApp.status, selectedApp.step)}
                       </div>
 
-                      <div className="grid grid-cols-4 gap-2 text-center pt-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 text-center pt-2">
                         {[
-                          { step: 1, label: 'Validation', desc: 'Personal details checks' },
-                          { step: 2, label: 'Licencing', desc: 'DVLA credential scan' },
-                          { step: 3, label: 'Deposit', desc: 'Secure fee clearance' },
-                          { step: 4, label: 'Accredited', desc: 'Agreement issued' }
+                          { step: 1, label: 'Uploaded', desc: 'Documents compiled' },
+                          { step: 2, label: 'Submitted', desc: 'Folder received' },
+                          { step: 3, label: 'Reviewing', desc: 'DVLA compliance search' },
+                          { step: 4, label: 'Approved', desc: 'Lease authorized' },
+                          { step: 5, label: 'Deposited', desc: 'Deposit cleared' },
+                          { step: 6, label: 'Insured', desc: 'Fleet policy added' },
+                          { step: 7, label: 'Prepared', desc: 'Vehicle prepped' },
+                          { step: 8, label: 'Schedule', desc: 'Keys ready' }
                         ].map((m) => {
                           const isDone = selectedApp.step >= m.step;
                           const isCurrent = selectedApp.step === m.step;
                           return (
-                            <div key={m.step} className="space-y-1">
+                            <div key={m.step} className="space-y-1 bg-white p-2 border border-slate-100 rounded-xl">
                               <div className={`
                                 h-1.5 rounded-full transition-all duration-300
-                                ${isDone ? 'bg-indigo-600' : 'bg-gray-200'}
+                                ${isDone ? (selectedApp.step >= 5 ? 'bg-emerald-500' : 'bg-indigo-600') : 'bg-gray-200'}
                                 ${isCurrent ? 'ring-2 ring-indigo-300 animate-pulse' : ''}
                               `}></div>
-                              <span className={`block text-[10px] font-bold ${isDone ? 'text-indigo-650' : 'text-gray-400'}`}>{m.label}</span>
-                              <span className="block text-[8px] text-gray-400 leading-tight hidden sm:block">{m.desc}</span>
+                              <span className={`block text-[10px] font-bold ${isDone ? (selectedApp.step >= 5 ? 'text-emerald-700' : 'text-indigo-650') : 'text-gray-400'}`}>{m.label}</span>
+                              <span className="block text-[8.5px] text-gray-400 leading-tight hidden md:block">{m.desc}</span>
                             </div>
                           );
                         })}
@@ -855,22 +980,22 @@ export function Dashboard() {
                               <td className="py-3.5 px-4">
                                 <div className="space-y-1">
                                   {renderStatusBadge(app.status, app.step)}
-                                  <span className="block text-[10px] text-slate-500 font-bold font-mono">Stage {app.step}/4 completed</span>
+                                  <span className="block text-[10px] text-slate-500 font-bold font-mono">Stage {app.step}/8 completed</span>
                                 </div>
                               </td>
                               <td className="py-3.5 px-4">
                                 {(() => {
-                                  if (app.status === 'Approved' || app.step >= 4) {
+                                  if (app.step >= 5) {
                                     return (
                                       <span className="inline-flex items-center px-2 py-1 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800">
-                                        Paid
+                                        Deposit Paid
                                       </span>
                                     );
                                   }
-                                  if (app.step === 3 || app.status === 'Awaiting Payment' || app.status === 'Approved' || app.step === 3) {
+                                  if (app.step === 4) {
                                     return (
                                       <span className="inline-flex items-center px-2 py-1 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 animate-pulse">
-                                        Awaiting Payment
+                                        Awaiting Deposit
                                       </span>
                                     );
                                   }

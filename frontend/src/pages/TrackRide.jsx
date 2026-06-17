@@ -97,17 +97,9 @@ export function TrackRide() {
           licenseStatus = "Declined";
         }
 
-        let customStepIndex = 2; // Under review as default fallback
-        if (defaultApp.status === 'Approved') {
-          customStepIndex = 3;
-        } else if (defaultApp.status === 'Awaiting Payment') {
-          customStepIndex = 3;
-        } else if (defaultApp.step >= 4 || defaultApp.status === 'Paid' || defaultApp.status === 'Completed') {
-          customStepIndex = 4;
-        } else if (defaultApp.step === 2) {
-          customStepIndex = 1;
-        } else if (defaultApp.step === 1) {
-          customStepIndex = 0;
+        let customStepIndex = Number(defaultApp.step) - 1;
+        if (isNaN(customStepIndex) || customStepIndex < 0 || customStepIndex > 7) {
+          customStepIndex = defaultApp.status === 'Approved' ? 3 : 2;
         }
 
         setSearchResult({
@@ -122,6 +114,40 @@ export function TrackRide() {
       }
     }
   }, [user, driverData]);
+
+  // Real-time auto-updating tracking loop without page reload (realtime_guidelines compliant)
+  useEffect(() => {
+    if (!searchResult?.id || !emailAddress) return;
+    if (['RTB-7729', 'RTB-8291', 'RTB-1004'].includes(searchResult.id)) return;
+
+    const intervalId = setInterval(async () => {
+      try {
+        const data = await api.applications.track(searchResult.id.trim(), emailAddress.trim());
+        let customStepIndex = Number(data.step) - 1;
+        if (isNaN(customStepIndex) || customStepIndex < 0 || customStepIndex > 7) {
+          customStepIndex = data.status === 'Approved' ? 3 : 2;
+        }
+
+        setSearchResult(prev => {
+          if (!prev) return null;
+          if (prev.status === data.status && prev.stepIndex === customStepIndex) {
+            return prev;
+          }
+          return {
+            ...prev,
+            status: data.status,
+            licenseStatus: data.licenseStatus || prev.licenseStatus,
+            stepIndex: customStepIndex,
+          };
+        });
+        setActiveStep(customStepIndex);
+      } catch (err) {
+        console.warn('Real-time tracking poll fallback info: ', err.message);
+      }
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [searchResult?.id, emailAddress]);
 
   // Handle manual tracking lookup
   const handleTrackSubmit = async (e) => {
@@ -142,17 +168,9 @@ export function TrackRide() {
     try {
       const data = await api.applications.track(appNumber.trim(), emailAddress.trim());
       
-      let customStepIndex = 2; // Under review by default
-      if (data.status === 'Approved') {
-        customStepIndex = 3;
-      } else if (data.status === 'Awaiting Payment') {
-        customStepIndex = 3;
-      } else if (data.step >= 4 || data.status === 'Paid' || data.status === 'Completed') {
-        customStepIndex = 4;
-      } else if (data.step === 2) {
-        customStepIndex = 1;
-      } else if (data.step === 1) {
-        customStepIndex = 0;
+      let customStepIndex = Number(data.step) - 1;
+      if (isNaN(customStepIndex) || customStepIndex < 0 || customStepIndex > 7) {
+        customStepIndex = data.status === 'Approved' ? 3 : 2;
       }
 
       setSearchResult({
@@ -182,15 +200,16 @@ export function TrackRide() {
     }
   };
 
-  // Timeline Step Configurations (Exactly the 7 steps requested)
+  // Timeline Step Configurations (The 8 professional workflow stages)
   const timelineSteps = [
-    { label: 'Application Submitted', desc: 'Use Budget Meter results & complete application form.', icon: FileText },
-    { label: 'Documents Uploaded', desc: 'Securely submit license statement checklist.', icon: Upload },
-    { label: 'Application Under Review', desc: 'Underwriting team checks files for regulatory validation.', icon: Clock },
-    { label: 'Approved', desc: 'Application approved! Proceed to digital contract.', icon: CheckCircle2 },
-    { label: 'Payment Completed', desc: 'Contribution or secure deposit receipt verified.', icon: DollarSign },
-    { label: 'Vehicle Ready', desc: 'Fleet allocated & keys prepared for active dispatch.', icon: Car },
-    { label: 'Collection Scheduled', desc: 'Schedule London key handoff & drive away!', icon: Key }
+    { label: 'Documents Uploaded', desc: 'Securely compile & upload employer files & ID.', icon: Upload },
+    { label: 'Application Submitted', desc: 'Dossier successfully received for active underwriting queue.', icon: FileText },
+    { label: 'Application Under Review', desc: 'Compliance audit & Soft Credit checking ongoing.', icon: Clock },
+    { label: 'Approved', desc: 'Approval authorized! Lease logistics compiled.', icon: CheckCircle2 },
+    { label: 'Deposit Paid', desc: 'Refundable booking deposit downpayment cleared.', icon: DollarSign },
+    { label: 'Insurance Uploaded', desc: 'Automated motor cover certificate linked & logged.', icon: ShieldCheck },
+    { label: 'Vehicle Ready', desc: 'Vehicle inspections completed & fleet prepped.', icon: Car },
+    { label: 'Collection Scheduled', desc: 'Active handover scheduled and key delivery finalized.', icon: Key }
   ];
 
   return (
@@ -249,7 +268,7 @@ export function TrackRide() {
               src="https://r2-buy-car.vercel.app/hero-car1.png"
               alt="Track Ride Program Fleet"
               referrerPolicy="no-referrer"
-              className="w-full max-h-[220px] sm:max-h-[280px] lg:max-h-[350px] object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.25)] pointer-events-auto transform transition-transform duration-500 xl:scale-120"
+              className="w-full max-h-[220px] sm:max-h-[280px] lg:max-h-[350px] object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.25)] pointer-events-auto transform transition-transform duration-500 hover:scale-[1.03]"
             />
           </motion.div>
 

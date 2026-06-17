@@ -161,6 +161,19 @@ export function FullApplicationModal({ app, onClose, onAction, actionLoading }) 
     selfieMatches: app?.validationChecklists?.selfie || false
   });
 
+  const STAGES = [
+    { step: 1, label: "Documents Uploaded" },
+    { step: 2, label: "Application Submitted" },
+    { step: 3, label: "Application Under Review" },
+    { step: 4, label: "Approved" },
+    { step: 5, label: "Deposit Paid" },
+    { step: 6, label: "Insurance Uploaded" },
+    { step: 7, label: "Vehicle Ready" },
+    { step: 8, label: "Collection Scheduled" }
+  ];
+
+  const [selectedStage, setSelectedStage] = useState(app?.step || 2);
+
   if (!app) return null;
 
   return (
@@ -287,25 +300,41 @@ export function FullApplicationModal({ app, onClose, onAction, actionLoading }) 
         </div>
 
         {/* Actions panel */}
-        <div className="p-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest hidden sm:inline">Folder: #{app.id}</span>
+        <div className="p-5 border-t border-gray-100 bg-gray-50 flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col">
+              <span className="text-[9.5px] text-indigo-950/70 font-bold uppercase tracking-widest leading-none">Select Platform Stage</span>
+              <select
+                value={selectedStage}
+                onChange={(e) => setSelectedStage(Number(e.target.value))}
+                className="text-xs p-2 bg-white border border-gray-200 rounded-xl outline-none mt-1.5 font-bold text-[#1F3F7A] focus:border-[#1F3F7A]"
+              >
+                {STAGES.map((s) => (
+                  <option key={s.step} value={s.step}>
+                    Stage {s.step}: {s.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              onClick={() => {
+                const stageLabel = STAGES.find(s => s.step === selectedStage)?.label || 'Application Submitted';
+                onAction(app.id, stageLabel, notes, checks, selectedStage);
+              }}
+              disabled={actionLoading}
+              className="mt-4 px-5 py-2.5 bg-[#1F3F7A] hover:bg-indigo-900 text-white text-xs font-black uppercase tracking-wider rounded-xl transition disabled:opacity-50 shadow-sm cursor-pointer"
+            >
+              Update Application Stage
+            </button>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 md:mt-4">
             <button
-              onClick={() => onAction(app.id, 'Rejected', notes, checks)}
+              onClick={() => onAction(app.id, 'Rejected', notes, checks, app.step)}
               disabled={actionLoading}
-              className="px-5 py-2.5 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-650 text-xs font-black uppercase tracking-wider transition disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-650 text-xs font-black uppercase tracking-wider transition disabled:opacity-50 cursor-pointer"
             >
               Reject Folder
-            </button>
-            <button
-              onClick={() => onAction(app.id, 'Approved', notes, checks)}
-              disabled={actionLoading}
-              className="px-6 py-2.5 rounded-xl bg-[#7CC242] hover:bg-emerald-500 text-white text-xs font-black uppercase tracking-wider transition shadow disabled:opacity-50"
-            >
-              Approve Underwriting
             </button>
           </div>
         </div>

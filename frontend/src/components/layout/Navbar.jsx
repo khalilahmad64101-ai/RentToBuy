@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
 import { Button } from '../ui/Button';
-import { Car, User, LogOut, Menu, X, Shield, Layers, HelpCircle, Mail, HelpCircle as FaqIcon, MessageCircle, CreditCard, ChevronDown, Home, MapPin } from 'lucide-react';
+import { Car, User, LogOut, Menu, X, Shield,Bell, Layers, HelpCircle, Mail, HelpCircle as FaqIcon, MessageCircle, CreditCard, ChevronDown, Home, MapPin } from 'lucide-react';
 
 // Helper Front-Facing Car Icon styled to match the requested logo perfectly
 
@@ -13,6 +13,54 @@ export function Navbar() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+
+  // Real-time Database Notifications
+  const [dbNotifications, setDbNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [bellDropdownOpen, setBellDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    if (!user?.email) {
+      setDbNotifications([]);
+      setUnreadCount(0);
+      return;
+    }
+
+    const fetchNotifications = async () => {
+      try {
+        const list = await api.notifications.getByEmail(user.email);
+        setDbNotifications(list || []);
+        setUnreadCount((list || []).filter(n => !n.read).length);
+      } catch (err) {
+        console.warn("Failed to retrieve database notifications: ", err.message);
+      }
+    };
+
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 5000);
+    return () => clearInterval(interval);
+  }, [user?.email]);
+
+  const handleMarkRead = async (id) => {
+    try {
+      await api.notifications.markRead(id);
+      setDbNotifications(prev => prev.map(n => (n._id === id || n.id === id) ? { ...n, read: true } : n));
+      setUnreadCount(c => Math.max(0, c - 1));
+    } catch (err) {
+      console.error("Marking of notification reading failed: ", err);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    if (!user?.email) return;
+    try {
+      await api.notifications.markAllRead(user.email);
+      setDbNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      setUnreadCount(0);
+    } catch (err) {
+      console.error("Clearance of all database unread tags failed: ", err);
+    }
+  };
 
   // Payment Modal States
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -158,6 +206,70 @@ export function Navbar() {
               Contact
             </Link>
 
+            {/* REAL-TIME NOTIFICATIONS BELL */}
+            {user && (
+              <div className="relative">
+                <button
+                  onClick={() => setBellDropdownOpen(!bellDropdownOpen)}
+                  className="p-2 hover:bg-zinc-900 rounded-full text-white hover:text-[#7CC242] transition relative cursor-pointer"
+                >
+                  <Bell className="w-5 h-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-1 right-1 w-4 h-4 bg-[#7CC242] text-black text-[9px] font-black rounded-full flex items-center justify-center animate-pulse">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {bellDropdownOpen && (
+                  <div className="absolute right-0 mt-3 w-80 bg-white rounded-xl shadow-2xl border border-gray-150 py-2 z-50 animate-fade-in text-slate-800">
+                    <div className="px-4 py-2 border-b border-gray-100 flex justify-between items-center bg-slate-50/50 rounded-t-xl">
+                      <span className="font-extrabold text-[10px] text-slate-900 uppercase tracking-wider">Inbox Notifications</span>
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={handleMarkAllRead}
+                          className="text-[9.5px] font-extrabold text-indigo-600 hover:underline uppercase tracking-tight"
+                        >
+                          Mark all read
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="max-h-64 overflow-y-auto divide-y divide-gray-50">
+                      {dbNotifications.length === 0 ? (
+                        <div className="py-8 px-4 text-center text-xs text-slate-400 space-y-1">
+                          <p className="font-bold">🔔 All quiet here.</p>
+                          <p className="text-[10px]">No new updates processed.</p>
+                        </div>
+                      ) : (
+                        dbNotifications.map((note) => {
+                          const noteId = note._id || note.id;
+                          return (
+                            <div
+                              key={noteId}
+                              onClick={() => handleMarkRead(noteId)}
+                              className={`p-3.5 hover:bg-slate-50 transition cursor-pointer text-left flex gap-2.5 w-full ${!note.read ? 'bg-indigo-50/20 border-l-2 border-[#7CC242]' : ''}`}
+                            >
+                              <span className="text-xs mt-0.5">
+                                {note.type === 'success' ? '🟢' : '🔵'}
+                              </span>
+                              <div className="space-y-0.5 min-w-0 flex-1">
+                                <h4 className={`text-xs font-bold leading-normal text-slate-950 ${!note.read ? 'font-black' : ''}`}>{note.title}</h4>
+                                <p className="text-[10.5px] leading-snug text-slate-500 font-medium">{note.content}</p>
+                                <span className="block text-[8.5px] text-slate-400 font-mono mt-1">
+                                  {note.createdAt ? new Date(note.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* PROFILE ACTION */}
             {user ? (
               <div className="relative">
@@ -228,8 +340,69 @@ export function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="relative flex justify-between items-center h-[50px]">
 
-            {/* Left standard spacer to preserve alignment flex balance */}
-            <div className="w-10"></div>
+            {/* Left standard spacer to preserve alignment flex balance / Mobile Notification Bell */}
+            <div className="w-10 text-left">
+              {user && (
+                <div className="relative inline-block">
+                  <button
+                    onClick={() => setBellDropdownOpen(!bellDropdownOpen)}
+                    className="p-1 px-1.5 hover:bg-zinc-900 rounded-full text-white hover:text-[#7CC242] transition relative cursor-pointer"
+                  >
+                    <Bell className="w-4.5 h-4.5" />
+                    {unreadCount > 0 && (
+                      <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#7CC242] rounded-full flex items-center justify-center animate-pulse">
+                      </span>
+                    )}
+                  </button>
+
+                  {bellDropdownOpen && (
+                    <div className="absolute left-0 mt-3 w-[260px] sm:w-[280px] bg-white rounded-xl shadow-2xl border border-gray-150 py-2 z-[100] animate-fade-in text-slate-800">
+                      <div className="px-4 py-2 border-b border-gray-100 flex justify-between items-center bg-slate-50/50 rounded-t-xl">
+                        <span className="font-extrabold text-[10px] text-slate-900 uppercase tracking-wider">Inbox Notifications</span>
+                        {unreadCount > 0 && (
+                          <button
+                            onClick={handleMarkAllRead}
+                            className="text-[9px] font-extrabold text-indigo-600 hover:underline uppercase tracking-tight"
+                          >
+                            Mark all read
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="max-h-60 overflow-y-auto divide-y divide-gray-50">
+                        {dbNotifications.length === 0 ? (
+                          <div className="py-6 px-4 text-center text-xs text-slate-400">
+                            No notifications yet.
+                          </div>
+                        ) : (
+                          dbNotifications.map((note) => {
+                            const noteId = note._id || note.id;
+                            return (
+                              <div
+                                key={noteId}
+                                onClick={() => {
+                                  handleMarkRead(noteId);
+                                  setBellDropdownOpen(false);
+                                }}
+                                className={`p-3 hover:bg-slate-50 transition cursor-pointer text-left flex gap-2 ${!note.read ? 'bg-indigo-50/20 border-l-2 border-[#7CC242]' : ''}`}
+                              >
+                                <span className="text-[11px] mt-0.5">
+                                  {note.type === 'success' ? '🟢' : '🔵'}
+                                </span>
+                                <div className="text-[10.5px] leading-snug font-sans flex-1">
+                                  <span className="font-bold text-slate-900 block">{note.title}</span>
+                                  <span className="text-slate-500 block text-[10px] mt-0.5">{note.content}</span>
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Logo Brand: Centered, text removed, displaying the circular logo beautifully */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

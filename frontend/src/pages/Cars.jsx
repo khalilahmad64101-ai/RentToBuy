@@ -179,8 +179,9 @@ export function Cars() {
             </div>
 
             {/* Title styled with brand primary blue */}
-            <h2 className="font-sans font-black text-xl sm:text-2xl text-[#1F3F7A] tracking-tight text-center leading-tight mb-8 uppercase">
-              Select your weekly budget
+            <h2 className="font-sans font-black text-lg sm:text-2xl text-[#1F3F7A] tracking-tight text-center leading-tight mb-6 sm:mb-8 uppercase flex flex-col sm:flex-row sm:justify-between items-center gap-2 max-w-5xl mx-auto">
+              <span>Select your weekly budget</span>
+              <span className="text-[#1F3F7A] font-black text-lg sm:text-2xl bg-[#7CC242]/15 px-3.5 py-1 rounded-xl">£{BUDGET_STEPS[budgetIndex] || 100}{budgetIndex === BUDGET_STEPS.length - 1 ? '+' : ''}/wk</span>
             </h2>
 
             {/* Interactive Custom Range Slider */}
@@ -225,30 +226,20 @@ export function Cars() {
                 })}
               </div>
 
-              {/* Mobile Ticks/Steps: Dedicated responsive mobile layout (Show 4 values, evenly spaced, centered, no overlap, touch-friendly) */}
-              <div className="flex md:hidden justify-between items-center w-full mt-6 select-none font-sans gap-2">
-                {[
-                  { label: '40', index: 1 },
-                  { label: '60', index: 3 },
-                  { label: '80', index: 5 },
-                  { label: '100+', index: 7 }
-                ].map((item) => {
-                  const isCurrent = budgetIndex === item.index || 
-                    (item.index === 1 && budgetIndex === 0) || 
-                    (item.index === 3 && budgetIndex === 2) || 
-                    (item.index === 5 && budgetIndex === 4) || 
-                    (item.index === 7 && budgetIndex === 6);
+              {/* Mobile Ticks/Steps: Dedicated responsive mobile layout showing ALL values for extreme convenience */}
+              <div className="grid grid-cols-4 md:hidden w-full mt-4 select-none font-sans gap-1.5 sm:gap-2">
+                {BUDGET_STEPS.map((step, idx) => {
+                  const isCurrent = budgetIndex === idx;
                   return (
                     <button
-                      key={item.index}
-                      onClick={() => setBudgetIndex(item.index)}
-                      className={`flex-1 font-sans font-black transition-all duration-200 cursor-pointer focus:outline-none text-xs sm:text-sm py-2 px-1 rounded-xl border text-center whitespace-nowrap ${
-                        isCurrent 
-                          ? 'border-[#7CC242] bg-[#7CC242]/10 text-[#7CC242] scale-105 shadow-xs font-bold' 
-                          : 'border-slate-100 bg-slate-50 text-slate-600 hover:text-[#7CC242] hover:border-[#7CC242]/30'
-                      }`}
+                      key={idx}
+                      onClick={() => setBudgetIndex(idx)}
+                      className={`font-sans font-black transition-all duration-150 cursor-pointer focus:outline-none text-[11px] py-2 rounded-lg border text-center whitespace-nowrap ${isCurrent
+                        ? 'border-[#7CC242] bg-[#7CC242]/10 text-[#7CC242] scale-[1.03] shadow-xs font-black'
+                        : 'border-slate-100 bg-slate-50 text-slate-500 hover:text-[#7CC242]'
+                        }`}
                     >
-                      £{item.label}
+                      £{step}{idx === BUDGET_STEPS.length - 1 ? '+' : ''}
                     </button>
                   );
                 })}

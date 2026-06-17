@@ -133,6 +133,18 @@ export const api = {
     }),
   },
 
+  // Real-time Database Notifications
+  notifications: {
+    getByEmail: (email) => apiRequest(`/notifications?email=${encodeURIComponent(email)}`),
+    markRead: (id) => apiRequest(`/notifications/${id}/read`, {
+      method: 'PUT',
+    }),
+    markAllRead: (email) => apiRequest('/notifications/read-all', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
+  },
+
   // Admin dedicated utilities
   admin: {
     getAllRecords: () => apiRequest('/admin/all-records'),

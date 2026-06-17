@@ -9,6 +9,7 @@ import * as authController from '../controllers/authController.js';
 import * as carController from '../controllers/carController.js';
 import * as applyController from '../controllers/applyController.js';
 import * as adminController from '../controllers/adminController.js';
+import * as notificationController from '../controllers/notificationController.js';
 
 // Configure Multer storage to use memory storage (buffers) for seamless performance in ephemeral environments like Railway
 const storage = multer.memoryStorage();
@@ -82,6 +83,13 @@ router.post('/applications', applyController.createApplication);
 router.get('/applications/track', applyController.trackApplication);
 router.put('/applications/:id/step', applyController.updateApplicationStep);
 router.put('/applications/:id/documents', applyController.updateApplicationDocuments);
+
+// ==========================================
+// 4b. NOTIFICATIONS ENDPOINTS
+// ==========================================
+router.get('/notifications', notificationController.getNotifications);
+router.put('/notifications/:id/read', notificationController.markRead);
+router.post('/notifications/read-all', notificationController.markAllRead);
 
 // ==========================================
 // 5. WEEKLY LEASE PAYMENTS & CONTACT

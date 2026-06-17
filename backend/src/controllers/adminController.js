@@ -5,6 +5,7 @@ import { Agreement } from '../models/Aggreement.js';
 import { Payment } from '../models/Payment.js';
 import { Email } from '../models/Email.js';
 import { Inquiry } from '../models/Inquiry.js';
+import { Notification } from '../models/Notification.js';
 import { 
   sendApplicationApproved, 
   sendApplicationRejected, 
@@ -134,16 +135,46 @@ export const adminUpdateApplicationStatus = async (req, res) => {
       return res.status(404).json({ error: "Underwriting folders index target invalid." });
     }
 
-    if (status) app.status = status;
-    if (step) app.step = Number(step);
+    const STAGES = [
+      "Documents Uploaded",      // Step 1
+      "Application Submitted",   // Step 2
+      "Application Under Review",// Step 3
+      "Approved",                // Step 4
+      "Deposit Paid",            // Step 5
+      "Insurance Uploaded",      // Step 6
+      "Vehicle Ready",           // Step 7
+      "Collection Scheduled"     // Step 8
+    ];
+
+    let targetStep = Number(step);
+    let targetStatus = status;
+
+    if (targetStep && !targetStatus) {
+      const idx = targetStep - 1;
+      if (idx >= 0 && idx < STAGES.length) {
+        targetStatus = STAGES[idx];
+      }
+    } else if (targetStatus && !targetStep) {
+      const idx = STAGES.indexOf(targetStatus);
+      if (idx !== -1) {
+        targetStep = idx + 1;
+      }
+    } else if (!targetStatus && !targetStep) {
+      targetStatus = app.status;
+      targetStep = app.step;
+    }
+
+    // Assign mapped values back to database document
+    app.status = targetStatus;
+    app.step = targetStep;
+
     if (documentChecks) app.documentChecks = documentChecks; 
     if (notes) app.notes = notes;
 
-    if (status === "Approved" || Number(step) === 4) {
-      app.status = "Approved";
-      app.step = 4;
-      
-      const emailQuery = app.userEmail.toLowerCase().trim();
+    const emailQuery = app.userEmail.toLowerCase().trim();
+
+    // Trigger workflows for key stages
+    if (targetStatus === "Approved" || targetStep === 4) {
       let targetAgr = await Agreement.findOne({ userEmail: emailQuery });
       if (!targetAgr) {
         const parts = app.carName ? app.carName.split(" - ") : [];
@@ -160,12 +191,25 @@ export const adminUpdateApplicationStatus = async (req, res) => {
       const autoEmail = new Email({
         userEmail: emailQuery,
         subject: "HEATHROW INBOX: Rent-to-Own Application Approved!",
-        content: `Dear Applicant, your driving credentials validation and Soft Credit review are complete. Your underwriting application status is APPROVED.\n\nDeposit requirement is activated. Please pay your refundable lease deposit of £150 in the driver portal to initiate EV key logistics delivery schedules. Your temporary motor cover documents will be generated within 1 hour.`,
+        content: `Dear Applicant, your driving credentials validation and Soft Credit review are complete. Your underwriting application status is APPROVED.\n\nDeposit requirement is activated. Please pay your refundable lease deposit of £250 in the driver portal to initiate EV key logistics delivery schedules. Your temporary motor cover documents will be generated within 1 hour.`,
         attachmentUrl: null
       });
       await autoEmail.save();
 
-      // Trigger actual user emails & schedule reminders in background
+      // Save persistent user-facing notification in database
+      try {
+        const approvedNote = new Notification({
+          userId: app.userId,
+          userEmail: emailQuery,
+          title: "Application Approved",
+          content: "Your application has been approved. Please proceed with deposit payment.",
+          type: "success"
+        });
+        await approvedNote.save();
+      } catch (noteErr) {
+        console.error("Failed to save Approved notification:", noteErr);
+      }
+
       setImmediate(() => {
         const p1 = sendApplicationApproved({
           to: emailQuery,
@@ -175,7 +219,6 @@ export const adminUpdateApplicationStatus = async (req, res) => {
           weeklyRate: targetAgr.weeklyRate
         });
 
-        // Booking confirmation email (on booking creation)
         const p2 = sendBookingConfirmation({
           to: emailQuery,
           userName: app.fullName || "Lease Driver",
@@ -185,7 +228,6 @@ export const adminUpdateApplicationStatus = async (req, res) => {
           bookingDate: new Date().toISOString().split('T')[0]
         });
 
-        // Admin Notification: New Booking Created
         const p3 = sendAdminNewBookingAlert({
           adminEmail: process.env.ADMIN_EMAIL,
           userName: app.fullName || "Lease Driver",
@@ -197,22 +239,120 @@ export const adminUpdateApplicationStatus = async (req, res) => {
         });
 
         Promise.all([p1, p2, p3])
-          .then(() => {
-            console.log('[ADMIN-STATUS-FLOW] Email success: Approved & booking notifications delivered.');
-          })
-          .catch((emailErr) => {
-            console.error('[ADMIN-STATUS-FLOW] Email failed: Failed to deliver approved/booking notifications:', emailErr);
-          });
-
-        // Schedule the payment reminders (after application approved)
-        scheduleReminders(emailQuery, app.id).catch((err) => {
-          console.error('[ADMIN-STATUS-FLOW] Schedule reminders failed:', err);
-        });
+          .then(() => console.log('[ADMIN-STATUS-FLOW] Email success: Approved & booking notifications delivered.'))
+          .catch((emailErr) => console.error('[ADMIN-STATUS-FLOW] Email failed: Approved notifications failed:', emailErr));
       });
     }
 
-    if (status === "Rejected") {
-      const emailQuery = app.userEmail.toLowerCase().trim();
+    if (targetStatus === "Deposit Paid" || targetStep === 5) {
+      let targetAgr = await Agreement.findOne({ userEmail: emailQuery });
+      if (targetAgr) {
+        targetAgr.depositStatus = "Paid";
+        await targetAgr.save();
+      }
+      
+      const confirmEmail = new Email({
+        userEmail: emailQuery,
+        subject: "HEATHROW INBOX: Refundable Lease Deposit Received",
+        content: `Dear Applicant, we have processed and verified your refundable Rent-to-Buy lease deposit downpayment successfully. Your application status is updated to DEPOSIT PAID.\n\nYour temporary motor fleet cover documents are being prepared.`,
+        attachmentUrl: null
+      });
+      await confirmEmail.save();
+
+      // Save persistent user-facing notification in database
+      try {
+        const depositNote = new Notification({
+          userId: app.userId,
+          userEmail: emailQuery,
+          title: "Deposit Paid",
+          content: "Your deposit has been received successfully.",
+          type: "success"
+        });
+        await depositNote.save();
+      } catch (noteErr) {
+        console.error("Failed to save Deposit Paid notification:", noteErr);
+      }
+    }
+
+    if (targetStatus === "Insurance Uploaded" || targetStep === 6) {
+      let targetAgr = await Agreement.findOne({ userEmail: emailQuery });
+      if (targetAgr && !targetAgr.insuranceCopyUrl) {
+        targetAgr.insuranceCopyUrl = "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?auto=format&fit=crop&q=80&w=800";
+        await targetAgr.save();
+      }
+
+      const certEmail = new Email({
+        userEmail: emailQuery,
+        subject: "HEATHROW INBOX: Motor Fleet Insurance Cover Is Linked!",
+        content: `Dear Applicant, your comprehensive driver motor cover policy is now live and linked to your contract dossier. Your status is updated to INSURANCE UPLOADED.\n\nOur team is finalizing your vehicle pre-dispatch checks.`,
+        attachmentUrl: null
+      });
+      await certEmail.save();
+
+      // Save persistent user-facing notification in database
+      try {
+        const docsNote = new Notification({
+          userId: app.userId,
+          userEmail: emailQuery,
+          title: "Documents Approved",
+          content: "Your documents have been approved.",
+          type: "success"
+        });
+        await docsNote.save();
+      } catch (noteErr) {
+        console.error("Failed to save Documents Approved notification:", noteErr);
+      }
+    }
+
+    if (targetStatus === "Vehicle Ready" || targetStep === 7) {
+      const dispatchEmail = new Email({
+        userEmail: emailQuery,
+        subject: "HEATHROW INBOX: Vehicle Pre-Dispatch Check Complete",
+        content: `Dear Applicant, your allocated vehicle has cleared our mechanical & cleanliness inspections successfully. The status is updated to VEHICLE READY.\n\nWe will schedule your London collection appointment shortly.`,
+        attachmentUrl: null
+      });
+      await dispatchEmail.save();
+
+      // Save persistent user-facing notification in database
+      try {
+        const readyNote = new Notification({
+          userId: app.userId,
+          userEmail: emailQuery,
+          title: "Vehicle Ready",
+          content: "Your vehicle is ready for collection.",
+          type: "success"
+        });
+        await readyNote.save();
+      } catch (noteErr) {
+        console.error("Failed to save Vehicle Ready notification:", noteErr);
+      }
+    }
+
+    if (targetStatus === "Collection Scheduled" || targetStep === 8) {
+      const scheduleEmail = new Email({
+        userEmail: emailQuery,
+        subject: "HEATHROW INBOX: Delivery Key Hand-off Scheduled",
+        content: `Dear Applicant, congratulations! Your vehicle collection appointment is finalized. Please check your workspace dashboard for date and collection instructions.\n\nLet's get you on the road!`,
+        attachmentUrl: null
+      });
+      await scheduleEmail.save();
+
+      // Save persistent user-facing notification in database
+      try {
+        const scheduleNote = new Notification({
+          userId: app.userId,
+          userEmail: emailQuery,
+          title: "Collection Scheduled",
+          content: "Your vehicle collection is scheduled. Please check pickup coordinates.",
+          type: "success"
+        });
+        await scheduleNote.save();
+      } catch (noteErr) {
+        console.error("Failed to save Collection Scheduled notification:", noteErr);
+      }
+    }
+
+    if (targetStatus === "Rejected") {
       const rejectEmail = new Email({
         userEmail: emailQuery,
         subject: "HEATHROW INBOX: Application Underwriting Status Update",
@@ -221,7 +361,6 @@ export const adminUpdateApplicationStatus = async (req, res) => {
       });
       await rejectEmail.save();
 
-      // Trigger actual rejection email in background
       setImmediate(() => {
         sendApplicationRejected({
           to: emailQuery,
@@ -229,17 +368,12 @@ export const adminUpdateApplicationStatus = async (req, res) => {
           applicationId: app.id,
           reason: notes || app.notes
         })
-        .then(() => {
-          console.log('[ADMIN-STATUS-FLOW] Email success: Rejection notification delivered.');
-        })
-        .catch((emailErr) => {
-          console.error('[ADMIN-STATUS-FLOW] Email failed: Failed to deliver rejection notification:', emailErr);
-        });
+        .then(() => console.log('[ADMIN-STATUS-FLOW] Email success: Rejection notification delivered.'))
+        .catch((emailErr) => console.error('[ADMIN-STATUS-FLOW] Email failed: Rejection notification failed:', emailErr));
       });
     }
 
     if (status === "Awaiting Payment") {
-      const emailQuery = app.userEmail.toLowerCase().trim();
       const awaitEmail = new Email({
         userEmail: emailQuery,
         subject: "HEATHROW INBOX: Application Approved - Awaiting Payment",
@@ -248,7 +382,6 @@ export const adminUpdateApplicationStatus = async (req, res) => {
       });
       await awaitEmail.save();
 
-      // Trigger awaiting payment email in background
       setImmediate(() => {
         const parts = app.carName ? app.carName.split(" - ") : [];
         sendApplicationAwaitingPayment({
@@ -258,17 +391,8 @@ export const adminUpdateApplicationStatus = async (req, res) => {
           carName: app.carName || parts[0],
           weeklyRate: 45
         })
-        .then(() => {
-          console.log('[ADMIN-STATUS-FLOW] Email success: Awaiting payment notification delivered.');
-        })
-        .catch((emailErr) => {
-          console.error('[ADMIN-STATUS-FLOW] Email failed: Failed to deliver awaiting payment notification:', emailErr);
-        });
-
-        // Schedule the payment reminders (after application status is set to Awaiting Payment)
-        scheduleReminders(emailQuery, app.id).catch((err) => {
-          console.error('[ADMIN-STATUS-FLOW] Schedule reminders failed:', err);
-        });
+        .then(() => console.log('[ADMIN-STATUS-FLOW] Email success: Awaiting payment notification delivered.'))
+        .catch((emailErr) => console.error('[ADMIN-STATUS-FLOW] Email failed: Awaiting payment notification failed:', emailErr));
       });
     }
 

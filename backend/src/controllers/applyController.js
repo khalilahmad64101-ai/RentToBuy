@@ -1,4 +1,4 @@
- import fs from 'fs';
+import fs from 'fs';
 import { uploadToCloudinary } from '../config/cloudinary.js';
 import { User } from '../models/User.js';
 import { Car } from '../models/Car.js';
@@ -6,6 +6,7 @@ import { Application } from '../models/Application.js';
 import { Agreement } from '../models/Aggreement.js';
 import { Payment } from '../models/Payment.js';
 import { Inquiry } from '../models/Inquiry.js';
+import { Notification } from '../models/Notification.js';
 import { 
   sendApplicationSubmitted, 
   sendAdminNewApplicationAlert, 
@@ -50,8 +51,8 @@ export const createApplication = async (req, res) => {
       carId: carId,
       carName: `${targetCar.name} - ${targetCar.model}`,
       submissionDateTime: new Date(),
-      step: 1,
-      status: "Pending",
+      step: 2,
+      status: "Application Submitted",
       creditCheckStatus: "PASSED (SOFT INCOME VERIFY)",
       userId: userId,
       fullName: currentFullName,
@@ -76,6 +77,20 @@ export const createApplication = async (req, res) => {
 
     await newApp.save();
     console.log('[SUBMISSION-FLOW] Application saved: Application data saved to MongoDB successfully:', newApp?.id);
+
+    // Save a persistent notification to the database
+    try {
+      const initNote = new Notification({
+        userId: userId,
+        userEmail: finalEmail,
+        title: "Application Submitted",
+        content: "Your application has been submitted successfully.",
+        type: "success"
+      });
+      await initNote.save();
+    } catch (noteErr) {
+      console.error("[SUBMISSION-FLOW] Failed to write initial notification to database:", noteErr);
+    }
 
     res.status(201).json(newApp);
     console.log('[SUBMISSION-FLOW] Response sent: Return success response to the frontend immediately.');
@@ -178,7 +193,7 @@ export const updateApplicationDocuments = async (req, res) => {
 
 export const submitPayment = async (req, res) => {
   try {
-    const { userEmail, email, amount, method, carName } = req.body;
+    const { userEmail, email, amount, method, carName, applicationId, isDeposit } = req.body;
     const activeEmailVal = userEmail || email;
     if (!activeEmailVal || !amount) {
       return res.status(400).json({ error: "Empty payment payload rejected" });
@@ -202,7 +217,82 @@ export const submitPayment = async (req, res) => {
       await agreement.save();
     }
 
-    res.status(201).json(newTxn);
+    // Check if this payment is a deposit (£250 or explicitly flagged)
+    const isActuallyDeposit = isDeposit || Number(amount) === 250;
+    let applicationUpdated = false;
+    let matchedAppId = "";
+
+    if (isActuallyDeposit) {
+      // Find the approved application for this user
+      let app = null;
+      if (applicationId) {
+        app = await Application.findOne({ id: applicationId });
+      } else {
+        app = await Application.findOne({ userEmail: activeEmail, step: 4 });
+        if (!app) {
+          app = await Application.findOne({ userEmail: activeEmail }).sort({ createdAt: -1 });
+        }
+      }
+
+      if (app) {
+        app.step = 5;
+        app.status = "Deposit Paid";
+        await app.save();
+        applicationUpdated = true;
+        matchedAppId = app.id;
+
+        // Also update Agreement depositStatus
+        let targetAgr = await Agreement.findOne({ userEmail: activeEmail });
+        if (targetAgr) {
+          targetAgr.depositStatus = "Paid";
+          await targetAgr.save();
+        } else {
+          targetAgr = new Agreement({
+            userEmail: activeEmail,
+            carName: app.carName ? app.carName.split(" - ")[0] : "TOYOTA PRIUS",
+            weeklyRate: 45,
+            depositStatus: "Paid",
+            insuranceCopyUrl: null
+          });
+          await targetAgr.save();
+        }
+
+        // Save persistent notification for the user
+        try {
+          const userNote = new Notification({
+            userId: app.userId,
+            userEmail: activeEmail,
+            title: "Deposit Paid",
+            content: "Your deposit has been received successfully.",
+            type: "success"
+          });
+          await userNote.save();
+        } catch (dbErr) {
+          console.error("Failed to save deposit notification for user:", dbErr);
+        }
+
+        // Save persistent notification for the admin
+        try {
+          const adminEmail = (process.env.ADMIN_EMAIL || "khalilahmad64101@gmail.com").toLowerCase().trim();
+          const adminNote = new Notification({
+            userEmail: adminEmail,
+            title: "Deposit Payment Received",
+            content: `Deposit of £${amount} cleared by driver ${activeEmail} for application ${app.id}.`,
+            type: "info"
+          });
+          await adminNote.save();
+        } catch (dbErr) {
+          console.error("Failed to save deposit notification for admin:", dbErr);
+        }
+      }
+    }
+
+    res.status(201).json({
+      success: true,
+      payment: newTxn,
+      applicationUpdated,
+      applicationId: matchedAppId
+    });
 
     // Trigger Email Notifications (User Receipt, Admin Alert, Stop Reminders)
     setImmediate(() => {

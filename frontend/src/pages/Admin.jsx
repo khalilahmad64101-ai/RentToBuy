@@ -232,13 +232,17 @@ export function Admin() {
   };
 
   // Underwrite application action saves
-  const handleUnderwritingAction = async (appId, decision, notes, checklistsObj) => {
+  const handleUnderwritingAction = async (appId, decision, notes, checklistsObj, step) => {
     setActionLoading(true);
+    let resolvedStep = step;
+    if (!resolvedStep) {
+      resolvedStep = decision === 'Approved' ? 4 : (decision === 'Rejected' ? 2 : 2);
+    }
     try {
       try {
         await api.admin.updateApplicationStatus(appId, {
           status: decision,
-          step: decision === 'Approved' ? 4 : 2, // 4 for cleared/paid driver, 2 for pending review decisions
+          step: resolvedStep,
           underwritingNotes: notes,
           validationChecklists: checklistsObj
         });
@@ -256,9 +260,7 @@ export function Admin() {
             userId: app.userId,
             userEmail: app.userEmail,
             subject: `Underwriting Decision: Vehicle licensing application status - ${decision.toUpperCase()}`,
-            content: decision === 'Approved' 
-              ? `Congratulations! Your underwriting check has been cleared. The status is now APPROVED. Log in to reserve your Heathrow vehicle collection date. Notes: ${notes}`
-              : `Dear Driver, your Rent-to-Buy dossier has been updated with review requirements. Present Status: REJECTED. Underwriter Notes: ${notes}`
+            content: `Dear Driver, your Rent-to-Buy dossier has been updated. Present Status: ${decision.toUpperCase()}. Underwriter Notes: ${notes}`
           });
         }
       } catch (emailErr) {
@@ -267,9 +269,7 @@ export function Admin() {
         // continue as application is saved
       }
 
-      const successText = decision === 'Approved' 
-        ? "Your application has been approved." 
-        : "Your application has been rejected.";
+      const successText = `Application status updated with decision: ${decision}.`;
 
       setAlertBanner({ type: 'success', text: successText });
       setInspectedAppForFullView(null);
@@ -1424,6 +1424,101 @@ export function Admin() {
                       </button>
                     </div>
                   </form>
+                </div>
+
+                {/* SMTP Connection Diagnostics */}
+                <div className="bg-white border border-gray-150 p-6 rounded-2xl shadow-sm space-y-4">
+                  <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                    <h3 className="font-sans font-black text-xs text-[#1F3F7A] uppercase tracking-wider">Brevo SMTP Gate Diagnostics</h3>
+                    <span className="text-[10px] font-mono text-gray-400">Nodemailer Real-time Trace</span>
+                  </div>
+                  
+                  <p className="text-xs text-gray-500 leading-relaxed font-sans">
+                    Run real-time diagnostics on outbound connection channels (DNS resolving, TCP socket handshake, and SMTP AUTH validation layer) to verify mail delivery health.
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={runSmtpDiagnosticsCheck}
+                    disabled={diagnosticsLoading}
+                    className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition shadow flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    {diagnosticsLoading ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Running Diagnostics Suite...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Shield className="w-3.5 h-3.5 text-white/90" />
+                        <span>Run Full SMTP Channel Audit</span>
+                      </>
+                    )}
+                  </button>
+
+                  {smtpDiagnosticsResult && (
+                    <div className="space-y-3 font-sans pt-1 animate-fade-in text-xs">
+                      {/* Metric Traffic Lights */}
+                      <div className="grid grid-cols-2 gap-2 text-[11px]">
+                        <div className="p-2.5 bg-gray-50 border rounded-xl flex flex-col justify-between">
+                          <span className="text-gray-400 uppercase tracking-tight text-[10px] font-bold">1. Env Load</span>
+                          <span className="font-black mt-1 flex items-center gap-1">
+                            {smtpDiagnosticsResult.envLoad?.status === "SUCCESS" ? "🟢 OK" : "🟡 Simulation"}
+                          </span>
+                        </div>
+                        <div className="p-2.5 bg-gray-50 border rounded-xl flex flex-col justify-between">
+                          <span className="text-gray-400 uppercase tracking-tight text-[10px] font-bold">2. DNS Lookup</span>
+                          <span className="font-black mt-1 flex items-center gap-1">
+                            {smtpDiagnosticsResult.dnsLookup?.status === "SUCCESS" ? "🟢 Success" : smtpDiagnosticsResult.dnsLookup?.status === "FAILED" ? "🔴 DNS Error" : "⚪ Skip"}
+                          </span>
+                        </div>
+                        <div className="p-2.5 bg-gray-50 border rounded-xl flex flex-col justify-between">
+                          <span className="text-gray-400 uppercase tracking-tight text-[10px] font-bold">3. Socket Handshake</span>
+                          <span className="font-black mt-1 flex items-center gap-1">
+                            {smtpDiagnosticsResult.tcpConnect?.status === "SUCCESS" ? "🟢 Unblocked" : smtpDiagnosticsResult.tcpConnect?.status === "FAILED" ? "🔴 Port Blocked" : "⚪ Skip"}
+                          </span>
+                        </div>
+                        <div className="p-2.5 bg-gray-50 border rounded-xl flex flex-col justify-between">
+                          <span className="text-gray-400 uppercase tracking-tight text-[10px] font-bold">4. Auth Channel</span>
+                          <span className="font-black mt-1 flex items-center gap-1">
+                            {smtpDiagnosticsResult.nodemailerVerify?.status === "SUCCESS" ? "🟢 Validated" : smtpDiagnosticsResult.nodemailerVerify?.status === "FAILED" ? "🔴 No Auth" : "⚪ Skip"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Diagnostic summary advisory code */}
+                      <div className={`p-3 rounded-xl border font-sans leading-relaxed text-[11px] ${
+                        smtpDiagnosticsResult.nodemailerVerify?.status === "SUCCESS" 
+                          ? "bg-emerald-50 border-emerald-100 text-emerald-800" 
+                          : "bg-amber-50 border-amber-100 text-amber-900"
+                      }`}>
+                        <div className="font-black flex items-center gap-1.5 uppercase tracking-wide text-[10px] mb-1">
+                          📋 Audit Report Digest
+                        </div>
+                        <p className="font-medium">
+                          {smtpDiagnosticsResult.nodemailerVerify?.status === "SUCCESS" 
+                            ? "SMTP relay connection verified cleanly. Direct admin notifications and automated user update dispatch alerts are active."
+                            : (smtpDiagnosticsResult.tcpConnect?.status === "FAILED"
+                                ? "Outbound network connection timed out (ETIMEDOUT). The current port is likely blocked by outbound hosting egress guidelines. Consider switching ports!"
+                                : "TCP socket is reachable, but the authentication query or protocol handshake failed. Please verify the username or master Brevo API SMTP passwords."
+                              )
+                          }
+                        </p>
+                      </div>
+
+                      {/* Protocol stream */}
+                      {smtpDiagnosticsResult.nodemailerVerify?.consoleLogs?.length > 0 && (
+                        <div className="space-y-1">
+                          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Handshake Transcript Sequence</span>
+                          <div className="p-3 bg-gray-950 text-emerald-400 font-mono text-[10.5px] rounded-xl max-h-48 overflow-y-auto leading-normal whitespace-pre-wrap divide-y divide-gray-800/20">
+                            {smtpDiagnosticsResult.nodemailerVerify.consoleLogs.map((logStr, lIdx) => (
+                              <div key={lIdx} className="py-0.5 first:pt-0 last:pb-0">{logStr}</div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Insurance Policy dispatch */}

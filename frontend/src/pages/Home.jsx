@@ -55,11 +55,11 @@ export function Home() {
   };
 
   return (
-    <div className="space-y-12 pb-16 bg-gray-50/30 w-full" id="home-page-view">
+    <div className="space-y-6 md:space-y-12 pb-16 bg-gray-50/30 w-full" id="home-page-view">
 
       {/* 1. Large Integrated Full Screen Hero + Affordability Meter Section */}
       <section
-        className="w-full relative overflow-hidden pt-12 md:pt-16 pb-12 md:pb-20 border-b-4 border-gray-400 select-none text-left"
+        className="w-full relative overflow-hidden pt-6 md:pt-16 pb-6 md:pb-20 border-b-4 border-gray-400 select-none text-left"
         style={{
           background: 'linear-gradient(to bottom, #B8DC82, #619921, #BFDF8C)'
         }}
@@ -76,7 +76,7 @@ export function Home() {
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 1, ease: "easeOut" }}
-              className="font-sans font-[900] text-[3.5rem] md:text-[6rem] xl:text-[6.5rem] text-black leading-[0.95] tracking-[-0.05em] "
+              className="font-sans font-[900] text-[2.25rem] sm:text-[3.5rem] md:text-[6rem] xl:text-[6.5rem] text-black leading-[0.95] tracking-[-0.05em] "
             >
               Let's find <br /> your car!
             </motion.h1>
@@ -93,7 +93,7 @@ export function Home() {
               src="https://r2-buy-car.vercel.app/hero-car1.png"
               alt="Hero Car"
               referrerPolicy="no-referrer"
-              className="w-full max-h-[300px] sm:max-h-[250px] lg:max-h-none scale-120 pt-10 sm:pt-0 lg:scale-140 object-contain xl:mt-[-70px] xl:ml-[-110px] drop-shadow-[0_25px_30px_rgba(0,0,0,0.35)] transform transition-transform duration-300 pointer-events-auto"
+              className="w-full max-h-[110px] sm:max-h-[250px] lg:max-h-none scale-100 lg:scale-140 object-contain xl:mt-[-70px] xl:ml-[-110px] drop-shadow-[0_25px_30px_rgba(0,0,0,0.35)] transform transition-transform duration-300 pointer-events-auto"
             />
           </motion.div>
 
@@ -103,14 +103,15 @@ export function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.4, ease: "easeOut" }}
             id="budget-card"
-            className="relative z-20 mt-4 md:mt-16 lg:mt-96 xl:mt-[25rem] w-full xl:w-[90%] mx-auto bg-white rounded-3xl p-5 md:p-12 xl:p-14 shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-gray-100/40"
+            className="relative z-20 mt-3 md:mt-16 lg:mt-96 xl:mt-[25rem] w-full xl:w-[90%] mx-auto bg-white rounded-2xl md:rounded-3xl p-4 sm:p-6 md:p-12 xl:p-14 shadow-[0_15px_40px_rgba(0,0,0,0.08)] border border-gray-100/40"
           >
-            <h2 className="text-center md:text-left font-sans font-extrabold text-[1.75rem] md:text-[2.25rem] text-[#374151] tracking-tight leading-tight mb-10 uppercase">
-              Select your weekly budget
+            <h2 className="text-center md:text-left font-sans font-extrabold text-[1.25rem] sm:text-[1.75rem] md:text-[2.25rem] text-[#374151] tracking-tight leading-tight mb-4 md:mb-10 uppercase flex flex-col md:flex-row md:justify-between items-center gap-2">
+              <span>Select your weekly budget</span>
+              <span className="text-[#1F3F7A] font-black text-lg md:text-2xl bg-[#7CC242]/15 px-3.5 py-1 rounded-xl">£{selectedBudget}{isMaxBudget ? '+' : ''}/wk</span>
             </h2>
 
             {/* Interactive Custom Range Slider */}
-            <div className="relative mt-8 mb-6 max-w-5xl mx-auto px-4">
+            <div className="relative mt-4 md:mt-8 mb-4 md:mb-6 max-w-5xl mx-auto px-2 md:px-4">
               <input
                 type="range"
                 min="0"
@@ -155,25 +156,20 @@ export function Home() {
                 })}
               </div>
 
-              {/* Mobile Ticks/Steps: Dedicated responsive mobile layout */}
-              <div className="flex lg:hidden justify-between items-center w-full mt-6 select-none font-sans gap-2">
-                {[
-                  { label: '40', index: 1 },
-                  { label: '60', index: 3 },
-                  { label: '80', index: 5 },
-                  { label: '100+', index: 7 }
-                ].map((item) => {
-                  const isCurrent = budgetIndex === item.index;
+              {/* Mobile Ticks/Steps: Dedicated responsive mobile layout showing ALL values for extreme convenience */}
+              <div className="grid grid-cols-4 lg:hidden w-full mt-4 select-none font-sans gap-1.5 md:gap-2">
+                {BUDGET_STEPS.map((step, idx) => {
+                  const isCurrent = budgetIndex === idx;
                   return (
                     <button
-                      key={item.index}
-                      onClick={() => setBudgetIndex(item.index)}
-                      className={`flex-grow font-sans font-black transition-all duration-200 cursor-pointer focus:outline-none text-xs sm:text-sm py-2.5 px-2 rounded-xl border text-center whitespace-nowrap ${isCurrent
-                        ? 'border-[#76b82a] bg-[#76b82a]/10 text-[#76b82a] scale-105 shadow-sm font-black'
-                        : 'border-slate-100 bg-slate-50 text-slate-500 hover:text-[#76b82a] hover:border-[#76b82a]/30'
+                      key={idx}
+                      onClick={() => setBudgetIndex(idx)}
+                      className={`font-sans font-black transition-all duration-150 cursor-pointer focus:outline-none text-[11px] py-2 rounded-lg border text-center whitespace-nowrap ${isCurrent
+                        ? 'border-[#7CC242] bg-[#7CC242]/10 text-[#7CC242] scale-[1.03] shadow-xs font-black'
+                        : 'border-slate-100 bg-slate-50 text-slate-500 hover:text-[#7CC242]'
                         }`}
                     >
-                      £{item.label}
+                      £{step}{idx === BUDGET_STEPS.length - 1 ? '+' : ''}
                     </button>
                   );
                 })}
@@ -184,14 +180,14 @@ export function Home() {
             {/* Bottom Button */}
             <button
               onClick={handleUrlScroll}
-              className="lg:absolute lg:bottom-[-2.5rem] lg:left-1/2 lg:-translate-x-1/2 bg-gradient-to-b from-[#444] to-[#000] text-white font-[800] hover:scale-[1.03] transition-all duration-200 active:scale-95 py-4 px-12 rounded-full text-base lg:text-[2rem] tracking-tight whitespace-nowrap shadow-[0_10px_30px_rgba(0,0,0,0.4)] flex items-center justify-center cursor-pointer border-2 border-white w-full lg:w-auto uppercase font-sans shrink-0"
+              className="lg:absolute lg:bottom-[-2.5rem] lg:left-1/2 lg:-translate-x-1/2 bg-gradient-to-b from-[#444] to-[#000] text-white font-[800] hover:scale-[1.03] transition-all duration-200 active:scale-95 py-3 px-8 md:py-4 md:px-12 rounded-full text-xs sm:text-base lg:text-[2.25rem] tracking-tight whitespace-nowrap shadow-[0_10px_30px_rgba(0,0,0,0.4)] flex items-center justify-center cursor-pointer border-2 border-white w-full lg:w-auto uppercase font-sans shrink-0 mt-3 lg:mt-0"
             >
               Search for your car
             </button>
           </motion.div>
 
-          {/* Bullet Points */}
-          <div className="mt-16 xl:mt-24 w-full max-w-[64rem] xl:w-[75%] mx-auto flex justify-center text-left select-none">
+          {/* Bullet Points (Hidden on mobile to draw car grid directly below budget card) */}
+          <div className="hidden md:flex mt-16 xl:mt-24 w-full max-w-[64rem] xl:w-[75%] mx-auto justify-center text-left select-none">
             <div className="grid grid-cols-1 md:grid-cols-2 md:gap-x-16 md:gap-y-2 px-6 w-full">
               {[
                 "No deposit",
@@ -214,17 +210,17 @@ export function Home() {
       </section>
 
       {/* 2. MATCHING FLEET RESULTS */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6" id="perfect-matches-grid">
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-3 border-b border-gray-100 pb-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-10 space-y-4 md:space-y-6" id="perfect-matches-grid">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-2 border-b border-gray-100 pb-3 md:pb-4">
           <div className="text-left w-full sm:w-auto">
-            <h3 className="font-extrabold text-lg text-brand-secondary uppercase tracking-tight">
+            <h3 className="font-extrabold text-sm sm:text-lg text-brand-secondary uppercase tracking-tight">
               Perfect Affordability Matches
             </h3>
-            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">
+            <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider">
               Select a car underneath to begin your quick online application instantly
             </p>
           </div>
-          <span className="px-3.5 py-1.5 text-xs font-black bg-brand-secondary text-white rounded-full uppercase tracking-wider whitespace-nowrap self-start sm:self-auto">
+          <span className="px-3 py-1 text-[10px] sm:text-xs font-black bg-brand-secondary text-white rounded-full uppercase tracking-wider whitespace-nowrap self-start sm:self-auto">
             {filteredCars.length} Car{filteredCars.length === 1 ? '' : 's'} Matched
           </span>
         </div>
@@ -236,7 +232,7 @@ export function Home() {
           <AnimatePresence mode="popLayout animate-fade-in">
             <motion.div
               layout
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
             >
               {filteredCars.map((car) => (
                 <motion.div
