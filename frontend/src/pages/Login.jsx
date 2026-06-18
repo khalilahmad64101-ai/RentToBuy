@@ -25,6 +25,7 @@ export function Login() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
 
   // Real Google Sign-In Integration hook
   useEffect(() => {
@@ -49,8 +50,9 @@ export function Login() {
                 setLoading(true);
                 setErrorMsg('');
                 setSuccessMsg('');
+                setFieldErrors({});
                 await googleLogin(response.credential);
-                setSuccessMsg("Login successful.");
+                setSuccessMsg("Welcome! Secure session active.");
                 setTimeout(() => {
                   navigate(redirectUrl);
                 }, 1000);
@@ -64,11 +66,13 @@ export function Login() {
 
           const container = document.getElementById("login-google-btn-wrapper");
           if (container) {
+            const clientW = container.clientWidth || (window.innerWidth < 400 ? 270 : 320);
+            const computedWidth = Math.max(200, Math.min(clientW, 320));
             window.google.accounts.id.renderButton(container, {
               theme: "outline",
               size: "large",
               shape: "pill",
-              width: 320,
+              width: computedWidth,
             });
           }
 
@@ -89,9 +93,33 @@ export function Login() {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
+    setFieldErrors({});
 
-    if (!email || !email.includes('@')) {
-      setErrorMsg("Please enter a valid email address.");
+    const errors = {};
+    if (!email) {
+      errors.email = "Email Address is required.";
+    } else if (!email.includes('@')) {
+      errors.email = "Please enter a valid email address.";
+    }
+
+    if (!password) {
+      errors.password = "Password is required.";
+    } else if (password.length < 6) {
+      errors.password = "Password must be at least 6 characters.";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      
+      // Auto Scroll to the first error and focus related input
+      const firstField = Object.keys(errors)[0];
+      const element = document.getElementById(`login-${firstField}-input`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => {
+          element.focus();
+        }, 150);
+      }
       return;
     }
 
@@ -99,12 +127,19 @@ export function Login() {
 
     try {
       await login({ email, password });
-      setSuccessMsg("Login successful.");
+      setSuccessMsg("Welcome! Secure session active.");
       setTimeout(() => {
         navigate(redirectUrl);
       }, 1000);
     } catch (err) {
       setErrorMsg(mapFriendlyFeedback(err));
+      // Scroll to the top error alert box for quick reference
+      const alertContainer = document.getElementById("login-error-alert-wrapper");
+      if (alertContainer) {
+        alertContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     } finally {
       setLoading(false);
     }
@@ -116,10 +151,11 @@ export function Login() {
     setPassword(selectedPassword);
     setErrorMsg('');
     setSuccessMsg('');
+    setFieldErrors({});
     setLoading(true);
     try {
       await login({ email: selectedEmail, password: selectedPassword });
-      setSuccessMsg("Login successful.");
+      setSuccessMsg("Welcome! Secure session active.");
       setTimeout(() => {
         navigate(redirectUrl);
       }, 1000);
@@ -131,8 +167,8 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12 bg-gray-50" id="login-form-view">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl border border-gray-150 shadow-sm relative">
+    <div className="min-h-[85vh] flex items-center justify-center px-4 py-4 sm:py-12 bg-gray-50/50" id="login-form-view">
+      <div className="max-w-md w-full space-y-4 sm:space-y-6 bg-white p-5 sm:p-8 rounded-2xl border border-gray-150 shadow-sm relative">
         <div className="absolute top-4 right-4 text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded text-[10px] font-semibold flex items-center space-x-1">
           <Sparkles className="w-3.5 h-3.5" />
           <span>Session Encrypted</span>
@@ -141,16 +177,17 @@ export function Login() {
         {/* Branding header */}
         <div className="text-center space-y-1">
           <div className="flex justify-center text-indigo-600 mb-2">
-            <Car className="h-10 w-10 stroke-[2.5]" />
+            <Car className="h-9 w-9 stroke-[2.5]" />
           </div>
-          <h2 className="font-sans font-bold text-2xl text-gray-950 tracking-tight">Well Come Back</h2>
+          <h2 className="font-sans font-black text-2xl text-gray-950 tracking-tight leading-none">Welcome Back</h2>
           <p className="text-xs text-gray-500 font-sans">
-            Access your secure Rent2Buy driver workspace.
+            Access your driver account.
           </p>
         </div>
 
+        {/* Global form error box */}
         {errorMsg && (
-          <div className="bg-red-50 text-red-700 text-xs p-3.5 rounded-xl border border-red-100 font-medium">
+          <div id="login-error-alert-wrapper" className="bg-red-50 text-red-700 text-xs p-3.5 rounded-xl border border-red-100 font-medium">
             {errorMsg}
           </div>
         )}
@@ -162,38 +199,57 @@ export function Login() {
           </div>
         )}
 
-        <form onSubmit={handleLoginSubmit} className="space-y-4">
+        <form onSubmit={handleLoginSubmit} className="space-y-4" noValidate>
           <div>
-            <label className="block text-xs text-gray-400 font-semibold mb-1">Email Address</label>
+            <label htmlFor="login-email-input" className="block text-xs text-slate-500 font-bold mb-1">Email Address</label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+              <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-3.5" />
               <input
+                id="login-email-input"
                 type="email"
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (fieldErrors.email) {
+                    setFieldErrors(prev => ({ ...prev, email: '' }));
+                  }
+                }}
                 placeholder="driver@example.com"
-                className="w-full text-xs pl-10 pr-3 py-2.5 border border-gray-250 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-505"
+                className={`w-full text-xs pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  fieldErrors.email ? 'border-red-500 bg-red-50/10 focus:ring-red-500' : 'border-gray-250'
+                }`}
               />
             </div>
+            {fieldErrors.email && (
+              <span className="text-[10px] text-red-600 font-medium mt-1 block px-1 animate-fade-in">{fieldErrors.email}</span>
+            )}
           </div>
 
           <div>
-            <label className="block text-xs text-gray-400 font-semibold mb-1">Pass Word</label>
+            <label htmlFor="login-password-input" className="block text-xs text-slate-500 font-bold mb-1">Password</label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+              <Lock className="w-4 h-4 text-gray-400 absolute left-3 top-3.5" />
               <input
+                id="login-password-input"
                 type={showPassword ? "text" : "password"}
                 required
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (fieldErrors.password) {
+                    setFieldErrors(prev => ({ ...prev, password: '' }));
+                  }
+                }}
                 placeholder="••••••••"
-                className="w-full text-xs pl-10 pr-10 py-2.5 border border-gray-250 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-505"
+                className={`w-full text-xs pl-10 pr-10 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  fieldErrors.password ? 'border-red-500 bg-red-50/10 focus:ring-red-500' : 'border-gray-250'
+                }`}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 focus:outline-none flex items-center justify-center"
+                className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 focus:outline-none flex items-center justify-center cursor-pointer"
                 id="login-password-toggle-btn"
               >
                 {showPassword ? (
@@ -203,6 +259,9 @@ export function Login() {
                 )}
               </button>
             </div>
+            {fieldErrors.password && (
+              <span className="text-[10px] text-red-600 font-medium mt-1 block px-1 animate-fade-in">{fieldErrors.password}</span>
+            )}
           </div>
 
           <div className="pt-2">
@@ -210,9 +269,9 @@ export function Login() {
               type="submit"
               variant="primary"
               disabled={loading}
-              className="w-full font-bold py-2.5 shadow"
+              className="w-full font-bold py-3 shadow justify-center flex items-center"
             >
-              {loading ? 'Authenticating with core db...' : 'Sign In to Driver Workspace'}
+              {loading ? 'Authenticating...' : 'Sign In'}
             </Button>
           </div>
         </form>
@@ -221,16 +280,16 @@ export function Login() {
         <div className="border-t border-gray-150 pt-4 flex flex-col items-center space-y-2.5">
           <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Or sign in with Google</span>
           
-          <div className="flex justify-center w-full" id="login-google-btn-wrapper" style={{ minHeight: '44px' }}>
+          <div className="flex justify-center w-full max-w-full overflow-hidden" id="login-google-btn-wrapper" style={{ minHeight: '44px' }}>
             <span className="text-xs text-slate-400 animate-pulse py-2">Loading Google Securing Services...</span>
           </div>
         </div>
 
         {/* Redirect sign up */}
-        <div className="text-center text-md text-gray-500 pt-2 pb-1">
-          New to are fleet?{' '}
+        <div className="text-center text-xs text-gray-500 pt-2 pb-1">
+          New to our fleet?{' '}
           <Link to="/signup" className="text-brand-primary font-bold hover:underline">
-            Register here
+            Register Here
           </Link>
         </div>
       </div>
