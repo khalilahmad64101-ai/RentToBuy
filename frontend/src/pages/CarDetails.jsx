@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { Loader } from '../components/ui/Loader';
 import { Button } from '../components/ui/Button';
-import { Fuel, Orbit, ShieldCheck, CheckCircle2, ChevronLeft, CalendarClock, PenTool, CheckSquare } from 'lucide-react';
+import { Fuel, Orbit, ShieldCheck, CheckCircle2, ChevronLeft, CalendarClock, PenTool, CheckSquare, ChevronRight, Sparkles, Gauge, User, Info, FileText, Calendar } from 'lucide-react';
 import { getFeatureIcon } from '../components/cars/CarCard';
 import { useSEO } from '../hooks/useSEO';
 
@@ -88,162 +88,176 @@ export function CarDetails() {
       </div>
 
       {/* MOBILE PORTRAIT COMPACT LAYOUT (lg:hidden) */}
-      <div className="block lg:hidden space-y-3.5 animate-fade-in" id="mobile-car-details">
-        {/* 1. Header block */}
-        <div className="flex justify-between items-start gap-4">
-          <div>
-            <span className="text-[10px] text-[#7CC242] font-[900] uppercase tracking-wider block">Lease to Own</span>
-            <h1 className="font-sans font-black text-lg text-[#1F3F7A] tracking-tight leading-none uppercase">{name}</h1>
-            <p className="text-xs text-slate-500 font-extrabold mt-0.5">Model {model}</p>
-          </div>
-          <div className="text-right shrink-0">
-            <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-widest block leading-none mb-1">Weekly</span>
-            <span className="text-xl font-[900] text-slate-900 leading-none">£{displayWeekly}</span>
-            <span className="text-[10px] font-semibold text-slate-400 block leading-none mt-0.5">per week</span>
-          </div>
-        </div>
-
-        {/* 2. Car Image with Tested & Sanitized Badge */}
-        <div className="relative aspect-[16/10] bg-gray-100 rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+      <div className="block lg:hidden space-y-4 animate-fade-in" id="mobile-car-details">
+        {/* 1. Optimized Mobile Image Gallery Slider */}
+        <div className="relative aspect-[16/10] bg-slate-900 rounded-xl overflow-hidden shadow-xs group">
           <img
             src={galleryImages[activeImgIndex] || baseImage}
             alt={`${name} ${model}`}
             referrerPolicy="no-referrer"
             className="w-full h-full object-cover"
           />
-          <div className="absolute top-2.5 left-2.5 bg-emerald-600 text-white font-sans text-[9px] font-extrabold px-2 py-0.5 rounded shadow-sm uppercase tracking-wide">
-            Tested & Sanitized
+          {/* Top minimal status labels */}
+          <div className="absolute top-2.5 left-2.5 flex gap-1 items-center">
+            <span className="bg-emerald-600 text-white font-sans text-[8px] font-extrabold px-1.5 py-0.5 rounded shadow-xs uppercase tracking-wider">
+              Tested & Sanitised
+            </span>
+            <span className="bg-[#1F3F7A]/90 text-white font-sans text-[8px] font-extrabold px-1.5 py-0.5 rounded shadow-xs uppercase tracking-wider">
+              ULEZ Free
+            </span>
           </div>
-          <div className="absolute bottom-2.5 right-2.5 bg-black/70 text-white font-mono text-[9px] px-1.5 py-0.5 rounded shadow-sm">
-            {activeImgIndex + 1} / {galleryImages.length}
+
+          <div className="absolute bottom-2.5 right-2.5 bg-black/60 text-white font-mono text-[9px] px-1.5 py-0.5 rounded">
+            {activeImgIndex + 1} of {galleryImages.length}
           </div>
+
+          {/* Overlaid Navigation Arrows */}
+          <button
+            onClick={() => setActiveImgIndex((prev) => (prev === 0 ? galleryImages.length - 1 : prev - 1))}
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/45 text-white p-1 rounded-full focus:outline-none hover:bg-black/60 active:scale-90 transition-transform"
+            aria-label="Previous image"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          
+          <button
+            onClick={() => setActiveImgIndex((prev) => (prev === galleryImages.length - 1 ? 0 : prev + 1))}
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/45 text-white p-1 rounded-full focus:outline-none hover:bg-black/60 active:scale-90 transition-transform"
+            aria-label="Next image"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* 3. Smaller Gallery Thumbnails Selector */}
-        <div className="grid grid-cols-5 gap-1.5">
-          {galleryImages.slice(0, 5).map((imgUrl, index) => (
+        {/* 2. Micro DOT indicators */}
+        <div className="flex justify-center gap-1.5 py-0.5">
+          {galleryImages.slice(0, 8).map((_, idx) => (
             <button
-               key={index}
-               onClick={() => setActiveImgIndex(index)}
-               className={`aspect-[16/10] rounded-lg overflow-hidden border bg-gray-50 focus:outline-none transition-all duration-150 relative ${
-                 activeImgIndex === index
-                   ? 'border-[#7CC242] ring-1 ring-[#7CC242]/20'
-                   : 'border-gray-200 opacity-60'
-               }`}
-            >
-              <img
-                src={imgUrl}
-                alt={`Angle ${index + 1}`}
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-cover"
-              />
-            </button>
+              key={idx}
+              onClick={() => setActiveImgIndex(idx)}
+              className={`h-1 rounded-full transition-all ${activeImgIndex === idx ? 'w-4 bg-[#7CC242]' : 'w-1 bg-slate-300'}`}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
           ))}
         </div>
 
-        {/* 4. Action Buttons (Details & Apply) */}
-        <div className="grid grid-cols-2 gap-2 pt-1 font-sans">
-          <button
-            onClick={() => {
-              const el = document.getElementById('mobile-specifications-panel');
-              if (el) el.scrollIntoView({ behavior: 'smooth' });
-            }}
-            className="w-full h-10 text-[11px] font-[900] uppercase tracking-wider bg-white hover:bg-[#7CC242]/5 text-[#7CC242] border-2 border-[#7CC242] rounded-xl transition-all duration-150 cursor-pointer text-center flex items-center justify-center active:scale-98"
-          >
-            Details
-          </button>
-          <Link to={`/apply?carId=${car.id}`} className="block w-full">
-            <button className="w-full h-10 text-[11px] font-[900] uppercase tracking-wider bg-[#7CC242] hover:bg-[#6db334] text-white border-2 border-[#7CC242] hover:border-[#6db334] rounded-xl shadow-sm transition-all duration-150 cursor-pointer text-center flex items-center justify-center active:scale-95">
-              Apply
-            </button>
-          </Link>
-        </div>
-
-        {/* 5. Key Info specifications in 2-column compact grid */}
-        <div className="bg-white rounded-xl border border-gray-150 p-3 shadow-xs space-y-2.5 animate-fade-in" id="mobile-specifications-panel">
-          <h4 className="font-sans font-extrabold text-[10px] text-[#1F3F7A] uppercase tracking-wider border-b border-gray-100 pb-1">Key Specifications</h4>
-          <div className="grid grid-cols-2 gap-1.5 text-xs">
-            <div className="bg-slate-50 p-2 rounded-lg border border-slate-100 flex items-center space-x-2">
-              <Fuel className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              <div className="min-w-0">
-                <span className="text-[9px] text-slate-400 block font-bold leading-none uppercase">Fuel Type</span>
-                <strong className="text-slate-700 font-extrabold text-[10.5px] truncate block mt-0.5">{fuel || 'Petrol'}</strong>
-              </div>
+        {/* 3. Main header: Name & Weekly Price */}
+        <div className="pt-1.5 border-b border-slate-100 pb-3">
+          <div className="flex justify-between items-baseline gap-2">
+            <div>
+              <span className="text-[9px] text-[#7CC242] font-black uppercase tracking-wider block">Lease to Own Fleet</span>
+              <h1 className="font-sans font-black text-lg text-[#1F3F7A] leading-snug uppercase tracking-tight">
+                {name} <span className="text-slate-500 font-extrabold text-sm">{model}</span>
+              </h1>
             </div>
-            <div className="bg-slate-50 p-2 rounded-lg border border-slate-100 flex items-center space-x-2">
-              <Orbit className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              <div className="min-w-0">
-                <span className="text-[9px] text-slate-400 block font-bold leading-none uppercase">Transmission</span>
-                <strong className="text-slate-700 font-extrabold text-[10.5px] truncate block mt-0.5">{transmission || 'Manual'}</strong>
-              </div>
-            </div>
-            <div className="bg-slate-50 p-2 rounded-lg border border-slate-100 flex items-center space-x-2">
-              <CheckSquare className="w-3.5 h-3.5 text-[#7CC242] shrink-0" />
-              <div className="min-w-0">
-                <span className="text-[9px] text-slate-400 block font-bold leading-none uppercase">Consumption</span>
-                <strong className="text-slate-700 font-extrabold text-[10.5px] truncate block mt-0.5">{displayEconomy}</strong>
-              </div>
-            </div>
-            <div className="bg-slate-50 p-2 rounded-lg border border-slate-100 flex items-center space-x-2">
-              <ShieldCheck className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-              <div className="min-w-0">
-                <span className="text-[9px] text-slate-400 block font-bold leading-none uppercase">Compliance</span>
-                <strong className="text-slate-700 font-extrabold text-[10.5px] truncate block mt-0.5">PCO Checked</strong>
-              </div>
-            </div>
-            <div className="bg-slate-50 p-2 rounded-lg border border-slate-100 flex items-center space-x-2 col-span-2">
-              <PenTool className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              <div className="min-w-0 flex-1 flex justify-between items-center pr-1">
-                <div>
-                  <span className="text-[9px] text-slate-400 block font-bold leading-none uppercase">Engine specs</span>
-                  <strong className="text-slate-700 font-extrabold text-[10.5px] block mt-0.5">{engine || '1.0L Economy'}</strong>
-                </div>
-                <div className="text-right">
-                  <span className="text-[9px] text-slate-400 block font-bold leading-none uppercase">Color Variant</span>
-                  <strong className="text-slate-700 font-extrabold text-[10.5px] block mt-0.5">{color || 'Midnight Quartz'}</strong>
-                </div>
-              </div>
+            <div className="text-right shrink-0">
+              <span className="text-[18px] font-black text-slate-900 leading-none">£{displayWeekly}</span>
+              <span className="text-[9px] font-bold text-slate-400 block mt-0.5">per week</span>
             </div>
           </div>
         </div>
 
-        {/* 6. Description Block - shortened/collapsed by default */}
-        <div className="bg-white rounded-xl border border-gray-150 p-3 shadow-xs space-y-2">
-          <button
-            onClick={() => setDescExpanded(!descExpanded)}
-            className="w-full flex justify-between items-center focus:outline-none"
-          >
-            <h4 className="font-sans font-extrabold text-[10px] text-[#1F3F7A] uppercase tracking-wide">Vehicle Info & Inclusions</h4>
-            <span className="text-[10px] font-bold text-[#7CC242] uppercase tracking-wider">
-              {descExpanded ? 'Collapse' : 'Expand details'}
-            </span>
-          </button>
-          {descExpanded ? (
-            <div className="space-y-3.5 pt-2 border-t border-gray-100 animate-fade-in text-[11px] leading-relaxed text-slate-600">
-              <p>
-                {description || `Pristine condition ${name} ${model} ready for direct underwriting. Every component has been fully tested, sanitised, and ready with active London low emission zones clearances.`}
-              </p>
-              <div className="space-y-2 bg-slate-50 p-2.5 rounded-lg border border-slate-100 text-[10.5px]">
-                <span className="text-[9.5px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Weekly Rate Includes:</span>
-                <div className="flex items-center space-x-2 text-slate-700">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                  <span>Routine Servicing and MOT renewals</span>
-                </div>
-                <div className="flex items-center space-x-2 text-slate-700">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                  <span>Manufacturer Powertrain Warranty Coverage</span>
-                </div>
-                <div className="flex items-center space-x-2 text-slate-700">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                  <span>Routine Road Tax management handles</span>
-                </div>
-              </div>
+        {/* 4. Key Specifications bar (aligned & elegant, no borders everywhere) */}
+        <div className="grid grid-cols-4 gap-2 text-center py-2.5 border-b border-slate-100 text-[#1F3F7A]">
+          <div>
+            <span className="text-[8px] text-slate-400 block font-bold uppercase tracking-wider">Fuel Type</span>
+            <strong className="text-slate-800 font-black text-[11px] block mt-0.5 truncate">{fuel || 'Petrol'}</strong>
+          </div>
+          <div>
+            <span className="text-[8px] text-slate-400 block font-bold uppercase tracking-wider">Gearbox</span>
+            <strong className="text-slate-800 font-black text-[11px] block mt-0.5 truncate">{transmission || 'Manual'}</strong>
+          </div>
+          <div>
+            <span className="text-[8px] text-slate-400 block font-bold uppercase tracking-wider">Economy</span>
+            <strong className="text-slate-800 font-black text-[11px] block mt-0.5 truncate">{displayEconomy}</strong>
+          </div>
+          <div>
+            <span className="text-[8px] text-slate-400 block font-bold uppercase tracking-wider">PCO Status</span>
+            <strong className="text-emerald-600 font-black text-[11px] block mt-0.5 truncate">Compliant</strong>
+          </div>
+        </div>
+
+        {/* 5. Complete Technical Specifications (aligned, clean, 2-column label/value layout) */}
+        <div className="py-2.5 border-b border-slate-100 space-y-2">
+          <h4 className="font-sans font-black text-[10px] text-[#1F3F7A] uppercase tracking-wider">Technical Specifications</h4>
+          <div className="space-y-1.5 text-[11px] text-slate-700">
+            <div className="flex justify-between items-baseline py-1 border-b border-slate-50">
+              <span className="text-slate-400 font-bold uppercase text-[8.5px] tracking-wider shrink-0 mr-4">Make</span>
+              <span className="text-slate-800 font-extrabold text-right">{car.make || (name ? name.split(' ')[0] : 'Standard')}</span>
             </div>
-          ) : (
-            <p className="text-[11px] text-slate-500 leading-normal line-clamp-2">
-              {description || `Pristine condition ${name} ${model} ready for direct underwriting. Every component has been fully tested, sanitised, and ready with active London low emission zones clearances.`}
-            </p>
-          )}
+            <div className="flex justify-between items-baseline py-1 border-b border-slate-50">
+              <span className="text-slate-400 font-bold uppercase text-[8.5px] tracking-wider shrink-0 mr-4">Model</span>
+              <span className="text-slate-800 font-extrabold text-right">{model || 'Comfort'}</span>
+            </div>
+            <div className="flex justify-between items-baseline py-1 border-b border-slate-50">
+              <span className="text-slate-400 font-bold uppercase text-[8.5px] tracking-wider shrink-0 mr-4">Year</span>
+              <span className="text-slate-800 font-extrabold text-right">{car.year || '2022'}</span>
+            </div>
+            <div className="flex justify-between items-baseline py-1 border-b border-slate-50">
+              <span className="text-slate-400 font-bold uppercase text-[8.5px] tracking-wider shrink-0 mr-4">Colour</span>
+              <span className="text-slate-800 font-extrabold text-right">{color || 'Silver/Grey'}</span>
+            </div>
+            <div className="flex justify-between items-baseline py-1 border-b border-slate-50">
+              <span className="text-slate-400 font-bold uppercase text-[8.5px] tracking-wider shrink-0 mr-4">Engine Size</span>
+              <span className="text-slate-800 font-extrabold text-right">{engine || '1.0L Economy'}</span>
+            </div>
+            <div className="flex justify-between items-baseline py-1 border-b border-slate-50">
+              <span className="text-slate-400 font-bold uppercase text-[8.5px] tracking-wider shrink-0 mr-4">Mileage</span>
+              <span className="text-slate-800 font-extrabold text-right">{car.mileage || '28,450 mi'}</span>
+            </div>
+            <div className="flex justify-between items-baseline py-1 border-b border-slate-50">
+              <span className="text-slate-400 font-bold uppercase text-[8.5px] tracking-wider shrink-0 mr-4">Body Type</span>
+              <span className="text-slate-800 font-extrabold text-right">{car.category || car.bodyType || 'Hatchback'}</span>
+            </div>
+            <div className="flex justify-between items-baseline py-1 border-b border-slate-50">
+              <span className="text-slate-400 font-bold uppercase text-[8.5px] tracking-wider shrink-0 mr-4">Seats / Doors</span>
+              <span className="text-slate-800 font-extrabold text-right">{car.seats || '5 Seats'} / {car.doors || '5 Doors'}</span>
+            </div>
+            <div className="flex justify-between items-baseline py-1 border-b border-slate-50">
+              <span className="text-slate-400 font-bold uppercase text-[8.5px] tracking-wider shrink-0 mr-4">Condition</span>
+              <span className="text-[#7CC242] font-extrabold text-right">{car.condition || 'Excellent'}</span>
+            </div>
+            <div className="flex justify-between items-baseline py-1 border-b border-slate-50">
+              <span className="text-slate-400 font-bold uppercase text-[8.5px] tracking-wider shrink-0 mr-4">MOT Status</span>
+              <span className="text-slate-800 font-extrabold text-right">{car.motStatus || 'Passed & Valid'}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 6. Short Description */}
+        <div className="py-2.5 border-b border-slate-100 space-y-1">
+          <h4 className="font-sans font-black text-[10px] text-[#1F3F7A] uppercase tracking-wider">Short Description</h4>
+          <p className="text-xs text-slate-600 leading-relaxed">
+            {description || `Pristine condition ${name} ${model} ready for direct underwriting. Every component has been fully tested, sanitised, and ready with active London low emission zones clearances.`}
+          </p>
+        </div>
+
+        {/* 7. Features & Options Highlights */}
+        {displayFeatures.length > 0 && (
+          <div className="py-2.5 space-y-2">
+            <h4 className="font-sans font-black text-[10px] text-[#1F3F7A] uppercase tracking-wider">Vehicle Features & Options Fitted</h4>
+            <div className="flex flex-wrap gap-1.5 align-middle">
+              {displayFeatures.map((feat, index) => (
+                <span key={index} className="inline-flex items-center space-x-1.5 bg-slate-50 text-slate-700 font-semibold px-2.5 py-1 rounded border border-slate-100 text-[10px]">
+                  {getFeatureIcon(feat)}
+                  <span>{feat}</span>
+                </span>
+              ))}
+              <span className="inline-flex items-center space-x-1 bg-emerald-50 text-emerald-800 font-bold px-2.5 py-1 rounded border border-emerald-100 text-[10px]">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#7CC242]" />
+                <span>ULEZ Compliant</span>
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* 8. Conversion focused primary Apply CTA Button */}
+        <div className="pt-2">
+          <Link to={`/apply?carId=${car.id}`} className="block w-full">
+            <button className="w-full h-11 text-xs font-black uppercase tracking-wider bg-[#7CC242] hover:bg-[#6db334] text-white rounded-xl shadow-xs transition-colors cursor-pointer text-center flex items-center justify-center active:scale-98">
+              Apply to Lease This Vehicle
+            </button>
+          </Link>
         </div>
       </div>
 
