@@ -143,9 +143,7 @@ export function Navbar() {
 
         {/* Top White Strip for Client Actions (Kept only as a clean white background height for circular logo layout) */}
         <div className="bg-white h-11 w-full flex items-center justify-between px-12 border-b border-gray-100">
-          <div className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest">
-            LICENSED RENT-TO-BUY PROVIDER
-          </div>
+          
         </div>
 
         {/* Black Horizontal Band */}
