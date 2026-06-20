@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button';
 import { Loader } from '../components/ui/Loader';
 import { mapFriendlyFeedback } from '../utils/feedbackHelper.js';
 import { 
+  ArrowLeft,
   LayoutDashboard, 
   FileText, 
   FolderOpen, 
@@ -315,357 +316,309 @@ export function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans" id="user-dashboard-root">
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans" id="user-dashboard-root">
       
-      {/* Mobile Header Nav */}
-      <div className="md:hidden bg-slate-900 border-b border-slate-800 text-white p-4 flex justify-between items-center z-40 sticky top-0">
-        <div className="flex items-center space-x-2.5">
-          <div className="w-8 h-8 rounded-lg bg-brand-secondary flex items-center justify-center font-black text-sm">R</div>
-          <span className="font-extrabold tracking-tight text-sm">Rent2Buy Drivers Dashboard</span>
+      {/* 1. Dashboard Fixed Compact Header Area (64px Height, Logo Left, Menu Icon Right) */}
+      <header className="fixed top-0 left-0 right-0 h-16 bg-[#000000] text-white flex items-center justify-between px-4 z-50 border-b border-slate-800 shadow-md">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => {
+              if (selectedApp) {
+                setSelectedApp(null);
+              } else if (activeTab !== 'dashboard') {
+                setActiveTab('dashboard');
+              } else {
+                navigate('/');
+              }
+            }}
+            type="button"
+            className="p-1 text-slate-300 hover:text-white transition focus:outline-none cursor-pointer"
+            title="Go back"
+          >
+            <ArrowLeft className="w-5 h-5 text-[#7CC242] stroke-[2.5]" />
+          </button>
+
+          <div className="flex items-center space-x-2">
+            <div className="w-7 h-7 rounded-full overflow-hidden border border-white shrink-0 bg-white">
+              <img
+                src="https://r2-buy-car.vercel.app/logo.jpeg"
+                alt="R2 BuyCar Logo"
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <span className="font-extrabold tracking-tight text-xs xs:text-sm text-white">Rent2Buy Dashboard</span>
+          </div>
         </div>
+
         <button 
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
-          className="p-1 text-slate-400 hover:text-white transition focus:outline-none"
+          className="p-1.5 text-slate-300 hover:text-white transition focus:outline-none cursor-pointer"
+          aria-label="Toggle Menu"
         >
-          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          {mobileMenuOpen ? <X className="w-5 h-5 text-red-400" /> : <Menu className="w-5 h-5 text-[#7CC242]" />}
         </button>
-      </div>
+      </header>
 
-      {/* Sidebar Layout */}
-      <aside className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-slate-950 text-slate-300 border-r border-slate-900 flex flex-col transition-transform duration-300 ease-in-out md:sticky md:top-0 md:h-screen md:translate-x-0
-        ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
-        {/* Brand Container */}
-        <div className="p-6 border-b border-slate-900 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-lg bg-brand-secondary flex items-center justify-center font-black text-white text-base shadow-lg shadow-brand-secondary/30">
-              R
+      {/* Outer Flex Container for Sidebar and Main Content with pt-16 padding layout */}
+      <div className="flex flex-1 pt-16" id="dashboard-outer-container">
+        
+        {/* Sidebar Navigation Drawer */}
+        <aside className={`
+          fixed inset-y-0 left-0 z-40 w-64 bg-[#0a0f1d] text-slate-300 border-r border-[#1e293b] flex flex-col transition-transform duration-300 ease-in-out md:sticky md:top-16 md:h-[calc(100vh-64px)] md:translate-x-0 pt-16 md:pt-0
+          ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}>
+          {/* Driver Profile Summary inside sidebar */}
+          <div className="p-4 border-b border-slate-900 bg-slate-950/60 flex items-center space-x-3">
+            <div className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-black text-brand-primary text-xs shrink-0">
+              {user.fullName ? user.fullName.substring(0, 2).toUpperCase() : 'DR'}
             </div>
-            <div>
-              <span className="block font-black tracking-tight text-white leading-none text-sm uppercase">Rent2Buy Leases</span>
-              <span className="block text-[10px] text-slate-500 font-medium tracking-wider mt-1">DRIVER DASHBOARD</span>
+            <div className="overflow-hidden min-w-0">
+              <h4 className="font-bold text-xs text-white truncate leading-none mb-1">{user.fullName || 'Heathrow Driver'}</h4>
+              <p className="text-[10px] text-slate-500 truncate lowercase font-mono leading-none">{user.email}</p>
             </div>
           </div>
-          {/* Close Menu Button on Mobile */}
-          <button onClick={() => setMobileMenuOpen(false)} className="md:hidden text-slate-400 hover:text-white">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
 
-        {/* Driver Profile Summary */}
-        <div className="p-5 border-b border-slate-900/80 bg-slate-950/60 flex items-center space-x-3.5">
-          <div className="w-10 h-10 rounded-full bg-slate-800/80 border border-slate-700 flex items-center justify-center font-black text-brand-primary text-sm">
-            {user.fullName ? user.fullName.substring(0, 2).toUpperCase() : 'DR'}
-          </div>
-          <div className="overflow-hidden min-w-0">
-            <h4 className="font-bold text-xs text-white truncate leading-none mb-1">{user.fullName || 'Heathrow Driver'}</h4>
-            <p className="text-[10px] text-slate-500 truncate lowercase font-mono">{user.email}</p>
-          </div>
-        </div>
+          {/* Sidebar Nav items */}
+          <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    setMobileMenuOpen(false);
+                    setSelectedApp(null);
+                  }}
+                  className={`
+                    w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-colors text-left group
+                    ${isActive 
+                      ? 'bg-[#7CC242] text-black font-black shadow-md shadow-[#7CC242]/10' 
+                      : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+                    }
+                  `}
+                >
+                  <div className="flex items-center space-x-3">
+                    <Icon className={`w-4 h-4 transition-transform group-hover:scale-105 ${isActive ? 'text-black' : 'text-slate-500 group-hover:text-slate-300'}`} />
+                    <span>{item.label}</span>
+                  </div>
+                  {item.badge && (
+                    <span className={`text-[9.5px] font-black px-1.5 py-0.5 rounded-full leading-none ${
+                      isActive ? 'bg-black text-[#7CC242]' : 'bg-slate-900 text-[#7CC242]'
+                    }`}>
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
 
-        {/* Nav Items List */}
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id);
-                  setMobileMenuOpen(false);
-                  setSelectedApp(null);
-                }}
-                className={`
-                  w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-colors text-left group
-                  ${isActive 
-                    ? 'bg-brand-primary text-brand-secondary font-black shadow-md shadow-brand-primary/10' 
-                    : 'text-slate-400 hover:bg-slate-900 hover:text-white'
-                  }
-                `}
+            {user.role === 'admin' && (
+              <Link
+                to="/admin"
+                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-colors text-left text-amber-400 hover:bg-amber-950/40 hover:text-amber-300 mt-4 border border-amber-900/35"
               >
                 <div className="flex items-center space-x-3">
-                  <Icon className={`w-4 h-4 transition-transform group-hover:scale-105 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-slate-300'}`} />
-                  <span>{item.label}</span>
+                  <ShieldCheck className="w-4 h-4 text-amber-400" />
+                  <span>Go to Admin Panel</span>
                 </div>
-                {item.badge && (
-                  <span className={`text-[9.5px] font-black px-2 py-0.5 rounded-full uppercase leading-none ${
-                    isActive ? 'bg-brand-secondary text-brand-primary font-bold' : 'bg-slate-900 text-brand-primary'
-                  }`}>
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+              </Link>
+            )}
+          </nav>
 
-          {user.role === 'admin' && (
-            <Link
-              to="/admin"
-              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-colors text-left text-amber-400 hover:bg-amber-950/40 hover:text-amber-300 mt-4 border border-amber-900/35"
-            >
-              <div className="flex items-center space-x-3">
-                <ShieldCheck className="w-4 h-4 text-amber-400" />
-                <span>Go to Admin Panel</span>
-              </div>
-            </Link>
-          )}
-        </nav>
-
-        {/* Logout widget */}
-        <div className="p-4 border-t border-slate-900">
-          <button
-            onClick={triggerLogout}
-            className="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-lg text-xs font-bold text-red-400 hover:bg-red-500/10 hover:text-white transition-all text-left"
-          >
-            <LogOut className="w-4 h-4 text-red-400" />
-            <span>Sign Out Profile</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Right Area */}
-      <main className="flex-1 p-6 md:p-8 space-y-6 max-w-7xl mx-auto w-full overflow-hidden">
-        
-        {/* Sync & Support Header Panel */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-5 bg-white border border-gray-150 rounded-2xl shadow-xs gap-4 animate-fade-in" id="workspace-sub-header">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold text-brand-secondary bg-brand-primary/10 px-2 py-0.5 rounded uppercase tracking-wider">Heathrow Terminus</span>
-              <span className="text-xs text-gray-400">• Fully Underwritten Plan</span>
-            </div>
-            <h2 className="text-xl font-bold text-gray-900 tracking-tight mt-1 font-sans">
-              Driver Hub: {navItems.find(n => n.id === activeTab)?.label}
-            </h2>
-          </div>
-          <div className="flex items-center gap-2">
+          {/* Sign out */}
+          <div className="p-3 border-t border-slate-900">
             <button
-              onClick={() => {
-                syncDriverData();
-                setPayMessage(null);
-                setDocMessage(null);
-                setProfileMessage(null);
-              }}
-              className="flex items-center text-xs font-bold bg-white text-gray-700 border border-gray-250 hover:bg-gray-50 focus:outline-none transition-colors px-3 py-1.5 rounded-xl cursor-pointer"
+              onClick={triggerLogout}
+              className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-xs font-bold text-red-400 hover:bg-red-500/10 hover:text-white transition-all text-left"
             >
-              <RefreshCw className="w-3.5 h-3.5 mr-1.5 text-brand-primary" />
-              Pulse Re-sync
+              <LogOut className="w-4 h-4 text-red-400" />
+              <span>Sign Out Profile</span>
             </button>
-            <Link to="/apply">
-              <button className="flex items-center text-xs font-bold bg-slate-950 text-white hover:bg-slate-900 focus:outline-none transition-all px-4 py-1.5 rounded-xl cursor-pointer shadow-xs">
-                <Plus className="w-3.5 h-3.5 mr-1" />
-                Apply Car
-              </button>
-            </Link>
           </div>
-        </div>
+        </aside>
 
-        {/* REAL-TIME DYNAMIC AUTO-ALERTS NOTIFICATION BLOCK */}
-        {applications.some(a => a.step === 3) && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 text-amber-900 text-xs animate-fade-in">
-            <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
-            <div className="space-y-1">
-              <strong className="block font-bold">Lease Verification Action Needed: Welcome Premium Approved</strong>
-              <span>
-                Your rent-to-buy application requires a downpayment guarantee. Visit the <button onClick={() => setActiveTab('payments')} className="underline font-bold text-amber-950">Payments Section</button> to pay the lease deposit of £250.00 and release your vehicle.
-              </span>
+        {/* Main Content Area */}
+        <main className="flex-1 p-4 sm:p-5 md:p-6 lg:p-8 space-y-4 max-w-7xl mx-auto w-full overflow-hidden">
+          
+          {/* REAL-TIME DYNAMIC AUTO-ALERTS NOTIFICATION BLOCK */}
+          {applications.some(a => a.step === 3) && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 flex gap-3 text-amber-900 text-xs animate-fade-in -mx-0">
+              <AlertCircle className="w-4.5 h-4.5 text-amber-500 shrink-0" />
+              <div className="space-y-0.5">
+                <strong className="block font-bold">Lease Verification Action Needed</strong>
+                <span>
+                  Your application requires a downpayment guarantee. Visit the <button onClick={() => setActiveTab('payments')} className="underline font-bold text-amber-950">Payments Section</button> to pay the deposit of £250.00.
+                </span>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {applications.some(a => a.step === 4) && (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex gap-3 text-emerald-900 text-xs animate-fade-in">
-            <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-            <div className="space-y-1">
-              <strong className="block font-bold">Rent-to-Buy Agreement Live & Fully Active!</strong>
-              <span>
-                Congratulations! Standard motor insurance covers have been dispatched to your files folder. Download certificates directly inside the <button onClick={() => setActiveTab('insurance')} className="underline font-bold text-emerald-950">Motor Insurance Tab</button>.
-              </span>
+          {applications.some(a => a.step === 4) && (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 flex gap-3 text-emerald-950 text-xs animate-fade-in -mx-0">
+              <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
+              <div className="space-y-0.5">
+                <strong className="block font-bold">Rent-to-Buy Agreement Live & Active!</strong>
+                <span>
+                  Motor insurance cover successfully logged. Download files in the <button onClick={() => setActiveTab('insurance')} className="underline font-bold text-emerald-950">Motor Insurance Tab</button>.
+                </span>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* CORE CONDITIONAL VIEWS */}
-        
-        {/* TAB 1: DASHBOARD OVERVIEW HOME */}
-        {activeTab === 'dashboard' && (
-          <div className="space-y-6">
+          {/* CORE CONDITIONAL VIEWS */}
+          
+          {/* TAB 1: DASHBOARD OVERVIEW HOME */}
+          {activeTab === 'dashboard' && (
+            <div className="space-y-4">
 
-            {/* Real-time rent-to-buy application timeline tracking banner */}
-            {applications.length > 0 && (
-              <div className="bg-white border border-gray-150 rounded-2xl p-6 shadow-xs space-y-6 animate-fade-in" id="dashboard-timeline-tracker-container">
-                <div className="flex justify-between items-center flex-wrap gap-3">
-                  <div className="space-y-1">
-                    <span className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-650 text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
-                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse"></span>
-                      Active Lease Application Progress
+              {/* 2. Compact Welcome Card (Height < 100px) */}
+              <div className="bg-gradient-to-r from-slate-900 to-indigo-950 text-white rounded-xl p-3 flex flex-row items-center justify-between gap-3 shadow-xs -mx-0">
+                <div className="space-y-0.5">
+                  <span className="text-[9px] uppercase tracking-widest text-[#7CC242] font-mono leading-none">Heathrow Hub</span>
+                  <h1 className="text-sm sm:text-base font-black tracking-tight text-white leading-none">Driver Hub Dashboard</h1>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => {
+                      syncDriverData();
+                      setPayMessage(null);
+                      setDocMessage(null);
+                      setProfileMessage(null);
+                    }}
+                    className="flex items-center text-[10.5px] font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-colors px-2.5 py-1.5 rounded-lg cursor-pointer"
+                    title="Refresh Status"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5 mr-1" />
+                    <span>Refresh</span>
+                  </button>
+                  <Link to="/apply">
+                    <button className="flex items-center text-[10.5px] font-extrabold bg-[#7CC242] hover:bg-[#6cb135] text-black transition-all px-3 py-1.5 rounded-lg cursor-pointer shadow-xs">
+                      <Plus className="w-3.5 h-3.5 mr-1" />
+                      <span>Apply Car</span>
+                    </button>
+                  </Link>
+                </div>
+              </div>
+
+              {/* 3. Current Application Status & Progress Tracker */}
+              {applications.length > 0 ? (
+                <div className="bg-white border border-gray-150 rounded-xl p-3.5 shadow-3xs space-y-3 animate-fade-in">
+                  <div className="flex justify-between items-center text-xs pb-2 border-b border-gray-100">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
+                      <span className="font-bold text-slate-800">Status: {applications[0].carName}</span>
+                    </div>
+                    <span className="font-mono text-indigo-650 font-black">
+                      {Math.min(100, Math.max(12, Math.round((applications[0].step / 8) * 100)))}%
                     </span>
-                    <h3 className="font-sans font-black text-base text-gray-900 uppercase">
-                      My Program Status Tracker ({applications[0].carName})
-                    </h3>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Application Reference</span>
-                    <strong className="text-sm font-mono text-[#1F3F7A] font-black">{applications[0].id}</strong>
-                  </div>
-                </div>
-
-                {/* The 8 Professional progress timeline tracker stages */}
-                <div className="relative pt-3 pb-2 select-none">
-                  {/* Progress Connector Line */}
-                  <div className="absolute top-[31px] left-4 right-4 h-1 bg-slate-100 hidden sm:block z-0">
-                    <div 
-                      className="h-full bg-gradient-to-r from-[#7CC242] to-indigo-600 transition-all duration-500"
-                      style={{ width: `${Math.min(100, Math.max(0, ((applications[0].step - 1) / 7) * 100))}%` }}
-                    ></div>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 relative z-10">
-                    {[
-                      { step: 1, label: 'Documents Uploaded', short: 'Docs' },
-                      { step: 2, label: 'Application Submitted', short: 'Submitted' },
-                      { step: 3, label: 'Application Under Review', short: 'Reviewing' },
-                      { step: 4, label: 'Approved', short: 'Approved' },
-                      { step: 5, label: 'Deposit Paid', short: 'Deposit' },
-                      { step: 6, label: 'Insurance Uploaded', short: 'Insurance' },
-                      { step: 7, label: 'Vehicle Ready', short: 'Prepared' },
-                      { step: 8, label: 'Collection Scheduled', short: 'Collected' }
-                    ].map((st) => {
-                      const isPassed = st.step < applications[0].step;
-                      const isCurrent = st.step === applications[0].step;
-                      const isUpcoming = st.step > applications[0].step;
+                  <div className="space-y-2">
+                    <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                      <div 
+                        className="bg-indigo-650 h-full transition-all duration-500 rounded-full" 
+                        style={{ width: `${Math.min(100, Math.max(12, Math.round((applications[0].step / 8) * 100)))}%` }}
+                      ></div>
+                    </div>
+                    
+                    <div className="flex justify-between text-[9px] text-slate-400 font-mono font-bold leading-none">
+                      <span>Docs</span>
+                      <span>Review</span>
+                      <span>Approved</span>
+                      <span>Ready</span>
+                    </div>
+                  </div>
 
-                      return (
-                        <div key={st.step} className="flex flex-col items-center">
-                          {/* Circle indicator */}
-                          <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 font-extrabold text-xs ${
-                            isCurrent 
-                              ? 'bg-[#7CC242] text-white shadow-md shadow-[#7CC242]/20 ring-4 ring-[#7CC242]/10 scale-105 font-black' 
-                              : isPassed 
-                              ? 'bg-indigo-600 text-white' 
-                              : 'bg-slate-50 text-slate-400 border border-slate-100'
-                          }`}>
-                            {isPassed ? '✓' : st.step}
-                          </div>
+                  <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-lg text-xs flex flex-row justify-between items-center gap-2">
+                    <p className="text-[11px] text-slate-600 leading-snug">
+                      <b>Current Stage:</b> {getStepDescription(applications[0].step, applications[0].status)}
+                    </p>
 
-                          <div className="mt-2 text-center text-[10px] font-black uppercase tracking-tight">
-                            <span className={
-                              isCurrent ? 'text-[#7CC242]' : isPassed ? 'text-indigo-600' : 'text-slate-400'
-                            }>
-                              {st.short}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
+                    {/* Immediate CTA Action Buttons (Apply / Pay / Upload Insurance) */}
+                    <div className="shrink-0 flex items-center gap-2">
+                      {applications[0].step === 4 && (
+                        <button
+                          onClick={() => setActiveTab('payments')}
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[10.5px] uppercase tracking-wider px-3.5 py-1.5 rounded-lg cursor-pointer shadow-3xs transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                        >
+                          💳 Pay Deposit (£250)
+                        </button>
+                      )}
+
+                      {applications[0].step === 5 && (
+                        <button
+                          onClick={() => setActiveTab('insurance')}
+                          className="bg-indigo-650 hover:bg-indigo-700 text-white font-extrabold text-[10.5px] uppercase tracking-wider px-3.5 py-1.5 rounded-lg cursor-pointer shadow-3xs transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                        >
+                          🛡️ Upload Insurance
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
-
-                <div className="p-4 bg-slate-50/70 rounded-xl border border-slate-100 text-xs text-slate-600 flex justify-between items-center flex-wrap gap-3">
-                  <div className="space-y-0.5">
-                    <strong className="text-slate-900 block font-bold">Current Stage Status:</strong>
-                    <p className="text-[11.5px] text-slate-500">
-                      {getStepDescription(applications[0].step, applications[0].status)}
+              ) : (
+                /* If no applications yet, show a nice quick action card to apply quickly */
+                <div className="bg-indigo-50 border border-indigo-150 rounded-xl p-4 text-center space-y-2.5 animate-fade-in">
+                  <div className="max-w-md mx-auto">
+                    <h3 className="font-extrabold text-sm text-indigo-950">Buy Quickly, Apply Quickly!</h3>
+                    <p className="text-xs text-indigo-850 mt-1">
+                      Get approved under 24 hours. Start verification by submitting your driver documents of taxi dispatch.
                     </p>
                   </div>
+                  <Link to="/apply" className="inline-block">
+                    <button className="bg-indigo-650 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-2 rounded-lg cursor-pointer shadow-3xs transition">
+                      Apply Fast Now
+                    </button>
+                  </Link>
+                </div>
+              )}
 
-                  {/* Immediate Actions depending on application step */}
-                  <div className="shrink-0 flex items-center gap-2">
-                    {applications[0].step === 4 && (
-                      <button
-                        onClick={() => setActiveTab('payments')}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[10.5px] uppercase tracking-wider px-4 py-2.5 rounded-xl cursor-pointer shadow-md transition-all active:scale-95 flex items-center gap-1 animate-pulse"
-                      >
-                        💳 Pay Deposit Now
-                      </button>
-                    )}
-
-                    {applications[0].step === 5 && (
-                      <button
-                        onClick={() => setActiveTab('insurance')}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-[10.5px] uppercase tracking-wider px-4 py-2.5 rounded-xl cursor-pointer shadow-md transition-all active:scale-95 flex items-center gap-1"
-                      >
-                        🛡️ Upload Insurance Document
-                      </button>
-                    )}
+              {/* 4. Mini Stats Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                {[
+                  { label: 'Apps', val: submittedCount, color: 'text-indigo-600', bg: 'bg-indigo-50/40' },
+                  { label: 'Lease', val: agreements.length, color: 'text-emerald-600', bg: 'bg-emerald-50/40' },
+                  { label: 'Review', val: pendingCount, color: 'text-amber-600', bg: 'bg-amber-50/40' },
+                  { label: 'Wait', val: actionRequiredCount, color: 'text-rose-600', bg: 'bg-rose-50/40' },
+                ].map((card, idx) => (
+                  <div key={idx} className="bg-white border border-gray-150 p-2.5 rounded-xl flex items-center gap-3 shadow-3xs">
+                    <div className={`w-8 h-8 rounded-lg ${card.bg} flex items-center justify-center font-black text-xs ${card.color} shrink-0`}>
+                      {card.val}
+                    </div>
+                    <div className="leading-none">
+                      <span className="block text-[10px] uppercase font-bold tracking-widest text-[#94a3b8]">{card.label}</span>
+                    </div>
                   </div>
-                </div>
-              </div>
-            )}
-            
-            {/* Stats Cards Section */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white border border-gray-150 p-5 rounded-2xl shadow-xs space-y-2">
-                <div className="flex justify-between items-center text-gray-400">
-                  <span className="text-[10px] uppercase font-bold tracking-wider font-sans">Applications Submitted</span>
-                  <FileText className="w-4 h-4 text-slate-400" />
-                </div>
-                <div className="text-2xl font-black text-slate-900">{submittedCount}</div>
-                <div className="text-[11px] text-slate-500">Global applied files</div>
+                ))}
               </div>
 
-              <div className="bg-white border border-gray-150 p-5 rounded-2xl shadow-xs space-y-2">
-                <div className="flex justify-between items-center text-emerald-500">
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-slate-450 font-sans">Approved Leases</span>
-                  <ShieldCheck className="w-4 h-4 text-emerald-500" />
+              {/* 5. Active Vehicle Section */}
+              <div className="bg-white border border-gray-150 p-3.5 rounded-xl shadow-3xs space-y-2">
+                <div className="flex justify-between items-center pb-1.5 border-b border-gray-100">
+                  <h4 className="text-[10px] uppercase font-bold tracking-widest text-slate-400">My Vehicle</h4>
+                  {agreements.length > 0 && (
+                    <span className="text-[9px] font-mono text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded font-bold">Active Lease</span>
+                  )}
                 </div>
-                <div className="text-2xl font-black text-emerald-600">{approvedCount}</div>
-                <div className="text-[11px] text-slate-500">Approved agreements</div>
-              </div>
-
-              <div className="bg-white border border-gray-150 p-5 rounded-2xl shadow-xs space-y-2">
-                <div className="flex justify-between items-center text-indigo-500">
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-slate-450 font-sans">Processing Folders</span>
-                  <Activity className="w-4 h-4 text-indigo-500" />
-                </div>
-                <div className="text-2xl font-black text-indigo-600">{pendingCount}</div>
-                <div className="text-[11px] text-slate-500">Under review indices</div>
-              </div>
-
-              <div className="bg-white border border-gray-150 p-5 rounded-2xl shadow-xs space-y-2">
-                <div className="flex justify-between items-center text-amber-500">
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-slate-455 font-sans">Action Prone</span>
-                  <AlertCircle className="w-4 h-4 text-amber-500" />
-                </div>
-                <div className="text-2xl font-black text-amber-600">{actionRequiredCount}</div>
-                <div className="text-[11px] text-slate-500">Awaiting deposit</div>
-              </div>
-            </div>
-
-            {/* Split layout: Selected Active Car Detail and Latest status audit */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-              
-              {/* Primary Active Lease View */}
-              <div className="lg:col-span-8 bg-white border border-gray-150 rounded-2xl p-6 shadow-xs space-y-5">
-                <h3 className="text-sm font-bold text-gray-900 border-b border-gray-100 pb-3 flex items-center justify-between">
-                  <span>My Active Vehicle Leases ({agreements.length})</span>
-                  <Link to="/cars" className="text-xs text-indigo-600 hover:underline">Browse fleet stock</Link>
-                </h3>
 
                 {agreements.length === 0 ? (
-                  <div className="text-center py-10 space-y-4">
-                    <div className="w-14 h-14 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-400 border border-slate-100">
-                      <Layers className="w-6 h-6" />
-                    </div>
-                    <div className="max-w-md mx-auto space-y-1">
-                      <h4 className="font-bold text-sm text-gray-800">No live Rent-to-Buy lease assigned yet.</h4>
-                      <p className="text-xs text-gray-500 leading-normal">
-                        Submit a lease application to get accredited by our underwriting team. Once approved, your active vehicle lease shows up here.
-                      </p>
-                    </div>
+                  <div className="flex items-center justify-between text-xs py-1">
+                    <span className="text-slate-500 font-medium">No vehicle assigned</span>
                     <Link to="/apply">
-                      <button className="bg-indigo-600 text-white font-bold text-xs px-5 py-2 rounded-xl mt-2 hover:bg-indigo-700 transition">
-                        Start New Underwriting Apply
+                      <button className="bg-indigo-650 hover:bg-indigo-700 transition text-white font-bold text-[10px] px-3 py-1.5 rounded-lg shadow-3xs cursor-pointer">
+                        Apply Now
                       </button>
                     </Link>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     {agreements.map((agr) => (
-                      <div key={agr.id} className="border border-gray-150 rounded-2xl p-5 bg-gradient-to-r from-white to-slate-50/50 flex flex-col md:flex-row gap-5 items-start md:items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-20 h-14 bg-slate-100 border border-slate-200 rounded-xl overflow-hidden shrink-0">
+                      <div key={agr.id} className="flex items-center justify-between gap-3 text-xs">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-11 h-8 rounded bg-slate-100 border border-slate-200 overflow-hidden shrink-0">
                             <img 
                               src={agr.carImage || "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&q=80&w=800"} 
                               alt={agr.carName} 
@@ -673,26 +626,14 @@ export function Dashboard() {
                               className="w-full h-full object-cover" 
                             />
                           </div>
-                          <div className="space-y-1">
-                            <span className="text-[10px] font-mono text-indigo-650 bg-indigo-50 font-black px-2 py-0.5 rounded leading-none uppercase inline-block">Rent-to-Buy Agreement Active</span>
-                            <h4 className="font-black text-sm text-gray-900 font-sans tracking-tight">{agr.carName}</h4>
-                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-gray-405 text-slate-500 font-medium font-sans">
-                              <span className="flex items-center"><Calendar className="w-3 h-3 mr-1 text-slate-400" /> Term: <b>{agr.durationMonths || 12} Mos</b></span>
-                              <span>•</span>
-                              <span>Started: <b>{agr.startDate}</b></span>
-                            </div>
+                          <div className="min-w-0">
+                            <h5 className="font-bold text-slate-900 truncate leading-tight">{agr.carName}</h5>
+                            <span className="text-[9.5px] text-slate-450 text-slate-500 block">Term: {agr.durationMonths || 12} Mos • £{agr.weeklyRate}/wk</span>
                           </div>
                         </div>
-
-                        <div className="flex md:flex-col justify-between w-full md:w-auto md:text-right border-t md:border-t-0 border-slate-100 pt-3 md:pt-0">
-                          <div>
-                            <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">Weekly Rates</span>
-                            <strong className="block text-indigo-650 text-base font-black font-mono">£{agr.weeklyRate || 45}/wk</strong>
-                          </div>
-                          <div className="md:mt-2 text-right">
-                            <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">Total Cleared</span>
-                            <span className="block text-emerald-600 font-bold text-xs">£{agr.paidContributions || 45} Paid</span>
-                          </div>
+                        <div className="text-right shrink-0">
+                          <span className="block font-mono font-bold text-indigo-650 leading-none mb-0.5">£{agr.weeklyRate || 45}/wk</span>
+                          <span className="block text-[9.5px] text-emerald-600 font-bold leading-none">Cleared: £{agr.paidContributions || 45}</span>
                         </div>
                       </div>
                     ))}
@@ -700,65 +641,56 @@ export function Dashboard() {
                 )}
               </div>
 
-              {/* Recent Activity Log & Notifications panel */}
-              <div className="lg:col-span-4 space-y-6">
-                
-                {/* Underwriter Advisory Contact Desk */}
-                <div className="bg-slate-900 border border-slate-950 text-white p-5 rounded-2xl relative overflow-hidden space-y-3 shadow-md shadow-slate-950/20">
-                  <span className="text-[9px] uppercase tracking-wider font-extrabold text-indigo-400 block bg-indigo-950/60 font-mono w-max px-2.5 py-0.5 rounded">Advisory Hotline</span>
-                  <h4 className="font-sans font-black text-sm tracking-tight">Heathrow Processing Desk</h4>
-                  <p className="text-[11px] text-slate-400 leading-normal">
-                    Do you have enquiries about your rent-to-buy lease eligibility or want to process manual documents uploads? Talk directly to processing desks.
-                  </p>
-                  <div className="border-t border-slate-800/80 pt-3 flex justify-between items-center text-[11px] text-slate-300">
-                    <span className="font-mono">Inquiries Line</span>
-                    <strong className="text-white bg-indigo-650 px-2.5 py-1 rounded">+44 7700 900222</strong>
-                  </div>
-                </div>
-
-                {/* Notifications Module */}
-                <div className="bg-white border border-gray-150 p-5 rounded-2xl shadow-xs space-y-3.5">
-                  <h4 className="font-bold text-xs text-gray-800 uppercase tracking-wider font-sans flex items-center justify-between">
-                    <span>Recent Activity Feed</span>
-                    <Bell className="w-3.5 h-3.5 text-indigo-600" />
+              {/* 6. Recent Activity Section */}
+              <div className="bg-white border border-gray-150 p-3.5 rounded-xl shadow-3xs space-y-2.5" id="recent-activity-card">
+                <div className="flex items-center justify-between border-b border-gray-100 pb-1.5">
+                  <h4 className="text-[10px] uppercase font-bold tracking-widest text-slate-400">
+                    Recent Activity
                   </h4>
-
-                  <div className="space-y-3">
-                    <div className="flex gap-2.5 items-start text-xs text-gray-600 border-b border-gray-50 pb-2.5">
-                      <div className="w-2 h-2 rounded-full bg-indigo-600 mt-1.5 shrink-0"></div>
-                      <div>
-                        <p className="font-semibold text-gray-900">Driver registration record created</p>
-                        <span className="text-[10px] text-gray-400 font-mono mt-0.5 block">Status: Completed</span>
-                      </div>
-                    </div>
-
-                    {applications.length > 0 && (
-                      <div className="flex gap-2.5 items-start text-xs text-gray-600 border-b border-gray-50 pb-2.5">
-                        <div className="w-2 h-2 rounded-full bg-emerald-600 mt-1.5 shrink-0"></div>
-                        <div>
-                          <p className="font-semibold text-gray-900">Application applied: {applications[0].carName}</p>
-                          <span className="text-[10px] text-gray-400 font-mono mt-0.5 block">Logged on standard files</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {payments.length > 0 && (
-                      <div className="flex gap-2.5 items-start text-xs text-gray-600">
-                        <div className="w-2 h-2 rounded-full bg-indigo-500 mt-1.5 shrink-0"></div>
-                        <div>
-                          <p className="font-semibold text-gray-900">Secured rent billing contribution: £{payments[0].amount}</p>
-                          <span className="text-[10px] text-gray-400 font-mono mt-0.5 block">{payments[0].method}</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  <span className="text-[9px] uppercase font-bold tracking-widest text-slate-400">Latest Logs</span>
                 </div>
 
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-xs text-slate-700">
+                    <span className="text-emerald-600 text-xs font-bold shrink-0">✓</span>
+                    <span className="truncate flex-1 font-semibold text-slate-800 text-[11px]">Driver Record Created</span>
+                  </div>
+
+                  {applications.length > 0 && (
+                    <div className="flex items-center gap-2 text-xs text-slate-700">
+                      <span className="text-emerald-600 text-xs font-bold shrink-0">✓</span>
+                      <span className="truncate flex-1 font-semibold text-slate-800 text-[11px]">{applications[0].carName} Submitted</span>
+                    </div>
+                  )}
+
+                  {payments.length > 0 ? (
+                    <div className="flex items-center gap-2 text-xs text-slate-700">
+                      <span className="text-emerald-600 text-xs font-bold shrink-0">✓</span>
+                      <span className="truncate flex-1 font-semibold text-slate-800 text-[11px]">Payment Received: £{payments[0].amount}</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-xs text-slate-400">
+                      <span className="text-slate-400 text-xs font-bold shrink-0">•</span>
+                      <span className="truncate flex-1 text-slate-400 text-[11px]">No payments issued yet</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 7. Need Help Section */}
+              <div className="bg-[#0c111d] border border-slate-800 text-white p-3.5 rounded-xl relative overflow-hidden flex items-center justify-between shadow-xs" id="advisory-hotline-card">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-indigo-500/10 rounded-full blur-xl pointer-events-none"></div>
+                <div className="space-y-0.5 relative z-10">
+                  <span className="block text-[9.5px] uppercase tracking-wider font-extrabold text-[#7CC242] font-mono leading-none">Need Help?</span>
+                  <strong className="block text-xs font-mono tracking-tight text-white leading-tight">+44 7700 900222</strong>
+                </div>
+                <a href="tel:+447700900222" className="bg-[#7CC242] hover:bg-[#6cb135] text-black text-[10.5px] font-bold px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap shadow-3xs relative z-10">
+                  Call Now
+                </a>
               </div>
 
             </div>
-          </div>
-        )}
+          )}
 
         {/* TAB 2: MY APPLICATIONS LIST & DETAILED SECTION */}
         {activeTab === 'applications' && (
@@ -1678,5 +1610,6 @@ export function Dashboard() {
       </main>
 
     </div>
+  </div>
   );
 }

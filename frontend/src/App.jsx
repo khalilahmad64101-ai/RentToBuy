@@ -4,11 +4,12 @@ import { AuthProvider } from './context/AuthContext';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { BackToTop } from './components/layout/BackToTop';
+import { BackButton } from './components/ui/BackButton';
 
 // Page declarations
 import { Home } from './pages/Home.jsx';
 import { Cars } from './pages/Cars.jsx';
-import { CarDetails } from './pages/CarDetails';
+import { CarDetails } from './pages/CarDetails.jsx';
 import { Apply } from './pages/Apply';
 import { Login } from './pages/Login';
 import { Signup } from './pages/Signup';
@@ -31,8 +32,11 @@ function AppContent() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50/50" id="main-reactive-app">
-      {/* Global Header */}
-      <Navbar />
+      {/* Global Header (Excluded on Dashboard/Admin paths to prevent duplicates/layout overlap) */}
+      {!['/dashboard', '/admin'].some(path => location.pathname.toLowerCase().startsWith(path)) && <Navbar />}
+
+      {/* Global Back Navigation */}
+      <BackButton />
 
       {/* Core Layout Content */}
       <main className="flex-1 pb-16 lg:pb-0">

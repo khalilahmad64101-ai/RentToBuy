@@ -61,10 +61,74 @@ export function Home() {
       <section
         className="w-full relative overflow-hidden pt-16 md:pt-16 pb-4 md:pb-20 border-b-4 border-gray-400 select-none text-left"
         style={{
-          background: 'linear-gradient(to bottom, #B8DC82, #619921, #BFDF8C)'
+          background: 'linear-gradient(180deg, #8FD63D 0%, #A6D94F 35%, #BFEA69 70%, #CFF28D 100%)'
         }}
         id="integrated-homepage-hero"
       >
+
+        {/* Dynamic layered gradients, smooth transitions, and multiple radial glow shapes */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+          {/* Soft horizontal glow in the middle */}
+          <div 
+            className="absolute top-1/3 left-0 right-0 h-[25%] opacity-70"
+            style={{ 
+              background: 'linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.45) 50%, transparent)',
+              filter: 'blur(30px)' 
+            }} 
+          />
+
+          {/* Radial Gradient Glow Circle 1 (Top Left) */}
+          <div 
+            className="absolute -top-20 -left-20 w-96 h-96 rounded-full opacity-60"
+            style={{ 
+              background: 'radial-gradient(circle, #D9F7A1 0%, transparent 70%)',
+              filter: 'blur(60px)' 
+            }}
+          />
+
+          {/* Radial Gradient Glow Circle 2 (Middle Right) */}
+          <div 
+            className="absolute top-1/4 -right-10 w-[30rem] h-[30rem] rounded-full opacity-50"
+            style={{ 
+              background: 'radial-gradient(circle, #CFF28D 0%, transparent 70%)',
+              filter: 'blur(80px)' 
+            }}
+          />
+
+          {/* Radial Gradient Glow Circle 3 (Bottom Left) */}
+          <div 
+            className="absolute -bottom-20 -left-10 w-[24rem] h-[24rem] rounded-full opacity-75"
+            style={{ 
+              background: 'radial-gradient(circle, #BFEA69 0%, transparent 70%)',
+              filter: 'blur(50px)' 
+            }}
+          />
+
+          {/* Large blurred green glow behind the vehicle (layered right-aligned) */}
+          <div 
+            className="absolute top-10 right-[5%] lg:right-[10%] w-[45rem] h-[30rem] rounded-full opacity-80 mix-blend-screen hidden md:block"
+            style={{ 
+              background: 'radial-gradient(circle, rgba(255, 255, 255, 0.45) 0%, #D9F7A1 40%, #CFF28D 70%, transparent 100%)',
+              filter: 'blur(70px)' 
+            }}
+          />
+
+          {/* Layered waves styling for horizontal transition depths */}
+          <div 
+            className="absolute bottom-0 left-0 right-0 h-40 opacity-50"
+            style={{
+              background: 'linear-gradient(170deg, transparent 40%, #D9F7A1 100%)',
+              filter: 'blur(15px)'
+            }}
+          />
+          <div 
+            className="absolute bottom-0 left-0 right-0 h-24 opacity-75"
+            style={{
+              background: 'linear-gradient(185deg, transparent 30%, #CFF28D 100%)',
+              filter: 'blur(5px)'
+            }}
+          />
+        </div>
 
         {/* Subtle grid pattern overlay */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:24px_24px] opacity-15 pointer-events-none z-0"></div>
@@ -76,7 +140,7 @@ export function Home() {
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 1, ease: "easeOut" }}
-              className="font-sans font-[900] text-[2.5rem] sm:text-[3.5rem] md:text-[6rem] xl:text-[6.5rem] text-black leading-[0.95] tracking-[-0.05em] "
+              className="font-sans xl:ms-28 font-[700] text-[2.5rem] sm:text-[3.5rem] md:text-[6rem] xl:text-[5.2rem] text-black leading-[0.95] tracking-[-0.05em] "
             >
               Let's find <br /> your car!
             </motion.h1>
@@ -89,11 +153,23 @@ export function Home() {
             transition={{ type: "spring", stiffness: 45, damping: 11, delay: 0.15 }}
             className="relative lg:absolute lg:right-[0%] w-full max-w-[52rem] mx-auto lg:m-0 flex justify-center items-center select-none z-40 pointer-events-none mt-2 lg:mt-0"
           >
+            {/* Smooth glowing green background aura directly behind the car */}
+            <div 
+              className="absolute w-[85%] h-[80%] rounded-full opacity-70 z-0 pointer-events-none"
+              style={{
+                background: 'radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, #D9F7A1 40%, #CFF28D 75%, transparent 100%)',
+                filter: 'blur(50px)',
+                transform: 'translate(-50%, -50%)',
+                left: '50%',
+                top: '50%',
+              }}
+            />
+
             <img
               src="https://r2-buy-car.vercel.app/hero-car1.png"
               alt="Hero Car"
               referrerPolicy="no-referrer"
-              className="w-full max-h-[225px] sm:max-h-[290px] lg:max-h-none scale-100 lg:scale-140 object-contain xl:mt-[-70px] xl:ml-[-110px] drop-shadow-[0_25px_30px_rgba(0,0,0,0.35)] transform transition-transform duration-300 pointer-events-auto"
+              className="w-full max-h-[225px] sm:max-h-[290px] lg:max-h-none scale-100 lg:scale-110 object-contain xl:mt-[-200px] xl:ml-[-10px] drop-shadow-[0_25px_30px_rgba(0,0,0,0.35)] transform transition-transform duration-300 pointer-events-auto relative z-10"
             />
           </motion.div>
 
@@ -103,7 +179,7 @@ export function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.4, ease: "easeOut" }}
             id="budget-card"
-            className="relative z-20 mt-3 md:mt-16 lg:mt-96 xl:mt-[25rem] w-full xl:w-[90%] mx-auto bg-white rounded-2xl md:rounded-3xl p-3.5 sm:p-6 md:p-12 xl:p-14 shadow-[0_15px_40px_rgba(0,0,0,0.08)] border border-gray-100/40"
+            className="relative z-20 mt-3 md:mt-16 lg:mt-96 xl:mt-[16rem] w-full xl:w-[90%] mx-auto bg-white rounded-2xl md:rounded-3xl p-3.5 sm:p-6 md:p-12 xl:p-8 shadow-[0_15px_40px_rgba(0,0,0,0.08)] border border-gray-100/40"
           >
             <h2 className="text-center md:text-left font-sans font-extrabold text-[1.25rem] sm:text-[1.75rem] md:text-[2.25rem] text-[#374151] tracking-tight leading-tight mb-3 md:mb-10 uppercase flex flex-col md:flex-row md:justify-between items-center gap-2">
               <span>Select your weekly budget</span>
@@ -180,7 +256,7 @@ export function Home() {
             {/* Bottom Button */}
             <button
               onClick={handleUrlScroll}
-              className="lg:absolute lg:bottom-[-2.5rem] lg:left-1/2 lg:-translate-x-1/2 bg-gradient-to-b from-[#444] to-[#000] text-white font-[800] hover:scale-[1.03] transition-all duration-200 active:scale-95 py-3 px-8 md:py-4 md:px-12 rounded-full text-xs sm:text-base lg:text-[2.25rem] tracking-tight whitespace-nowrap shadow-[0_10px_30px_rgba(0,0,0,0.4)] flex items-center justify-center cursor-pointer border-2 border-white w-full lg:w-auto uppercase font-sans shrink-0 mt-3 lg:mt-0"
+              className="lg:absolute lg:bottom-[-2.5rem] lg:left-1/2 lg:-translate-x-1/2 bg-gradient-to-b from-[#444] to-[#000] text-white font-[800] hover:scale-[1.03] transition-all duration-200 active:scale-95 py-3 px-8 md:py-4 md:px-12 rounded-full text-xs sm:text-base lg:text-[2rem] tracking-wider whitespace-nowrap shadow-[0_10px_30px_rgba(0,0,0,0.4)] flex items-center justify-center cursor-pointer border-2 border-white w-full lg:w-auto font-sans shrink-0 mt-3 lg:mt-0"
             >
               Search for your car
             </button>
@@ -191,19 +267,14 @@ export function Home() {
       </section>
       
       {/* 2. MATCHING FLEET RESULTS */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-10 space-y-4 md:space-y-6" id="perfect-matches-grid">
+      <div className="w-11/12 mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-10 space-y-4 md:space-y-6" id="perfect-matches-grid">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-2 border-b border-gray-100 pb-3 md:pb-4">
           <div className="text-left w-full sm:w-auto">
-            <h3 className="font-extrabold text-sm sm:text-lg text-brand-secondary uppercase tracking-tight">
-              Perfect Affordability Matches
+            <h3 className="font-extrabold  text-sm sm:text-lg xl:text-4xl text-black tracking-tight">
+              Cars currently avaiable
             </h3>
-            <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider">
-              Select a car underneath to begin your quick online application instantly
-            </p>
+            
           </div>
-          <span className="px-3 py-1 text-[10px] sm:text-xs font-black bg-brand-secondary text-white rounded-full uppercase tracking-wider whitespace-nowrap self-start sm:self-auto">
-            {filteredCars.length} Car{filteredCars.length === 1 ? '' : 's'} Matched
-          </span>
         </div>
 
         {/* Cars matching grid */}
@@ -213,7 +284,7 @@ export function Home() {
           <AnimatePresence mode="popLayout animate-fade-in">
             <motion.div
               layout
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
+              className="grid  grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
             >
               {filteredCars.map((car) => (
                 <motion.div
@@ -223,6 +294,7 @@ export function Home() {
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.3 }}
                   key={car.id}
+                  className="max-w-[370px] mx-auto w-full"
                 >
                   <CarCard car={car} />
                 </motion.div>
@@ -243,171 +315,89 @@ export function Home() {
       </div>
 
       {/* 3. Customer Journey Section */}
-      <section className="bg-white border-y border-gray-100 py-10 sm:py-16 w-full animate-fade-in" id="customer-journey-section">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-          <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-16">
-            <h2 className="font-sans font-black text-2xl sm:text-3xl text-[#1F3F7A] tracking-tight uppercase">
-              Your Journey to Vehicle Ownership
+      <section 
+        className="w-full relative xl:py-10 my-0 overflow-hidden select-none animate-fade-in  flex items-center" 
+        style={{
+          background: 'radial-gradient(circle at center, rgba(255,255,255,0.12) 0%, transparent 60%), linear-gradient(180deg, #4CAF32 0%, #65C340 20%, #84D85A 45%, #A6E572 70%, #BFF08A 100%)'
+        }}
+        id="customer-journey-section"
+      >
+        <div className="w-full max-w-7xl mx-auto pt-[30px] pb-[40px] px-4 md:px-6 relative z-10 flex flex-col justify-center h-full">
+          
+          {/* Header block with 100% exact reference text hierarchy */}
+          <div className="text-center mb-[30px]">
+            <h2 className="font-sans font-bold text-[14px] md:text-[16px] xl:text-4xl text-[#123c03] tracking-normal mb-1">
+              Your journey to ownership
             </h2>
-            <div className="h-1.5 w-24 bg-[#7CC242] mx-auto my-2.5 sm:my-4 rounded-full"></div>
-            <p className="text-xs sm:text-sm text-slate-500 font-bold uppercase tracking-wider text-slate-400">
-              Follow these simple steps to find your vehicle and complete your application.
+            <p className="font-sans font-bold text-[24px] md:text-[28px] xl:text-5xl text-white leading-[1.2]">
+              in 5 easy steps!
             </p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-8 relative">
-
+          {/* 5-Step Horizontal Cards Layout */}
+          <div className="flex overflow-x-auto md:overflow-x-visible md:flex-wrap lg:flex-nowrap justify-start md:justify-center items-center gap-[12px] md:gap-[16px] xl:gap-[25px] pb-4 md:pb-0 px-4 md:px-0 scrollbar-none snap-x w-full">
+            
             {/* Step 1 */}
-            <div className="relative p-3 sm:p-6 bg-slate-50 border border-slate-100 rounded-2xl sm:rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
-              <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 font-mono font-black transition-colors">
-                <span className="block sm:hidden text-[#7CC242] text-[13px] font-[900]">01</span>
-                <span className="hidden sm:block text-[10px] text-slate-300 group-hover:text-[#7CC242]/40">STEP 01</span>
-              </div>
-              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-[#7CC242]/10 rounded-xl sm:rounded-2xl flex items-center justify-center text-[#7CC242] mb-3 sm:mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
-                <Sliders className="w-4 h-4 sm:w-6 sm:h-6" />
-              </div>
-              <h3 className="font-extrabold text-[#1F3F7A] mb-1 sm:mb-2 tracking-tight uppercase text-xs sm:text-sm leading-tight">
-                <span className="block sm:hidden">Budget</span>
-                <span className="hidden sm:block">Set Your Budget</span>
-              </h3>
-              <p className="text-slate-400 leading-relaxed max-w-[220px] text-[10px] sm:text-xs">
-                <span className="block sm:hidden">Set your weekly limit.</span>
-                <span className="hidden sm:block">Use the affordability meter to choose your weekly budget.</span>
-              </p>
+            <div className="bg-white rounded-[30px] border border-[#EAEAEA] shadow-[0_8px_18px_rgba(0,0,0,0.18)] flex items-center justify-center text-center w-[95px] h-[85px] md:w-[150px] md:h-[150px] p-2.5 md:p-[12px] hover:-translate-y-[5px] transition-all duration-300 ease-in-out shrink-0 snap-center select-none cursor-default">
+              <span className="font-sans font-semibold text-[11px] md:text-[18px] text-[#222222] leading-[1.3] text-center">
+                Set your budget and browse the vehicles
+              </span>
+            </div>
+
+            {/* Accent Chevron between cards */}
+            <div className="hidden md:flex items-center justify-center shrink-0 text-white">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
             </div>
 
             {/* Step 2 */}
-            <div className="relative p-3 sm:p-6 bg-slate-50 border border-slate-100 rounded-2xl sm:rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
-              <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 font-mono font-black transition-colors">
-                <span className="block sm:hidden text-[#7CC242] text-[13px] font-[900]">02</span>
-                <span className="hidden sm:block text-[10px] text-slate-300 group-hover:text-[#7CC242]/40">STEP 02</span>
-              </div>
-              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-[#1F3F7A]/10 rounded-xl sm:rounded-2xl flex items-center justify-center text-[#1F3F7A] mb-3 sm:mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
-                <Car className="w-4 h-4 sm:w-6 sm:h-6" />
-              </div>
-              <h3 className="font-extrabold text-[#1F3F7A] mb-1 sm:mb-2 tracking-tight uppercase text-xs sm:text-sm leading-tight">
-                <span className="block sm:hidden">Browse Cars</span>
-                <span className="hidden sm:block">Browse Matching Vehicles</span>
-              </h3>
-              <p className="text-slate-400 leading-relaxed max-w-[220px] text-[10px] sm:text-xs">
-                <span className="block sm:hidden">View matching vehicles.</span>
-                <span className="hidden sm:block">View vehicles that match your selected budget.</span>
-              </p>
+            <div className="bg-white rounded-[22px] border border-[#EAEAEA] shadow-[0_8px_18px_rgba(0,0,0,0.18)] flex items-center justify-center text-center w-[95px] h-[85px] md:w-[150px] md:h-[150px] p-2.5 md:p-[12px] hover:-translate-y-[5px] transition-all duration-300 ease-in-out shrink-0 snap-center select-none cursor-default">
+              <span className="font-sans font-semibold text-[11px] md:text-[18px] text-[#222222] leading-[1.3] text-center">
+                Select your vehicle
+              </span>
+            </div>
+
+            {/* Accent Chevron between cards */}
+            <div className="hidden md:flex items-center justify-center shrink-0 text-white">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
             </div>
 
             {/* Step 3 */}
-            <div className="relative p-3 sm:p-6 bg-slate-50 border border-slate-100 rounded-2xl sm:rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
-              <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 font-mono font-black transition-colors">
-                <span className="block sm:hidden text-[#7CC242] text-[13px] font-[900]">03</span>
-                <span className="hidden sm:block text-[10px] text-slate-300 group-hover:text-[#7CC242]/40">STEP 03</span>
-              </div>
-              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-[#7CC242]/10 rounded-xl sm:rounded-2xl flex items-center justify-center text-[#7CC242] mb-3 sm:mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
-                <CheckSquare className="w-4 h-4 sm:w-6 sm:h-6" />
-              </div>
-              <h3 className="font-extrabold text-[#1F3F7A] mb-1 sm:mb-2 tracking-tight uppercase text-xs sm:text-sm leading-tight">
-                <span className="block sm:hidden">Choose Vehicle</span>
-                <span className="hidden sm:block">Choose Your Vehicle</span>
-              </h3>
-              <p className="text-slate-400 leading-relaxed max-w-[220px] text-[10px] sm:text-xs">
-                <span className="block sm:hidden">Select your perfect ride.</span>
-                <span className="hidden sm:block">Select the car that best suits your needs.</span>
-              </p>
+            <div className="bg-white rounded-[22px] border border-[#EAEAEA] shadow-[0_8px_18px_rgba(0,0,0,0.18)] flex items-center justify-center text-center w-[95px] h-[85px] md:w-[150px] md:h-[150px] p-2.5 md:p-[12px] hover:-translate-y-[5px] transition-all duration-300 ease-in-out shrink-0 snap-center select-none cursor-default">
+              <span className="font-sans font-semibold text-[11px] md:text-[18px] text-[#222222] leading-[1.3] text-center">
+                Submit your documents
+              </span>
+            </div>
+
+            {/* Accent Chevron between cards */}
+            <div className="hidden md:flex items-center justify-center shrink-0 text-white">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
             </div>
 
             {/* Step 4 */}
-            <div className="relative p-3 sm:p-6 bg-slate-50 border border-slate-100 rounded-2xl sm:rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
-              <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 font-mono font-black transition-colors">
-                <span className="block sm:hidden text-[#7CC242] text-[13px] font-[900]">04</span>
-                <span className="hidden sm:block text-[10px] text-slate-300 group-hover:text-[#7CC242]/40">STEP 04</span>
-              </div>
-              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-[#1F3F7A]/10 rounded-xl sm:rounded-2xl flex items-center justify-center text-[#1F3F7A] mb-3 sm:mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
-                <FileText className="w-4 h-4 sm:w-6 sm:h-6" />
-              </div>
-              <h3 className="font-extrabold text-[#1F3F7A] mb-1 sm:mb-2 tracking-tight uppercase text-xs sm:text-sm leading-tight">
-                <span className="block sm:hidden">Apply Online</span>
-                <span className="hidden sm:block">Start Your Application</span>
-              </h3>
-              <p className="text-slate-400 leading-relaxed max-w-[220px] text-[10px] sm:text-xs">
-                <span className="block sm:hidden">Submit application form.</span>
-                <span className="hidden sm:block">Complete the online application form.</span>
-              </p>
+            <div className="bg-white rounded-[22px] border border-[#EAEAEA] shadow-[0_8px_18px_rgba(0,0,0,0.18)] flex items-center justify-center text-center w-[95px] h-[85px] md:w-[150px] md:h-[150px] p-2.5 md:p-[12px] hover:-translate-y-[5px] transition-all duration-300 ease-in-out shrink-0 snap-center select-none cursor-default">
+              <span className="font-sans font-semibold text-[11px] md:text-[18px] text-[#222222] leading-[1.3] text-center">
+                Await approval
+              </span>
+            </div>
+
+            {/* Accent Chevron between cards */}
+            <div className="hidden md:flex items-center justify-center shrink-0 text-white">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
             </div>
 
             {/* Step 5 */}
-            <div className="relative p-3 sm:p-6 bg-slate-50 border border-slate-100 rounded-2xl sm:rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
-              <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 font-mono font-black transition-colors">
-                <span className="block sm:hidden text-[#7CC242] text-[13px] font-[900]">05</span>
-                <span className="hidden sm:block text-[10px] text-slate-300 group-hover:text-[#7CC242]/40">STEP 05</span>
-              </div>
-              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-[#7CC242]/10 rounded-xl sm:rounded-2xl flex items-center justify-center text-[#7CC242] mb-3 sm:mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
-                <Upload className="w-4 h-4 sm:w-6 sm:h-6" />
-              </div>
-              <h3 className="font-extrabold text-[#1F3F7A] mb-1 sm:mb-2 tracking-tight uppercase text-xs sm:text-sm leading-tight">
-                <span className="block sm:hidden">Upload Docs</span>
-                <span className="hidden sm:block">Upload Required Documents</span>
-              </h3>
-              <p className="text-slate-400 leading-relaxed max-w-[220px] text-[10px] sm:text-xs">
-                <span className="block sm:hidden">Verify licence & identity.</span>
-                <span className="hidden sm:block">Submit your driving licence, selfie, and required verification documents.</span>
-              </p>
-            </div>
-
-            {/* Step 6 */}
-            <div className="relative p-3 sm:p-6 bg-slate-50 border border-slate-100 rounded-2xl sm:rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
-              <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 font-mono font-black transition-colors">
-                <span className="block sm:hidden text-[#7CC242] text-[13px] font-[900]">06</span>
-                <span className="hidden sm:block text-[10px] text-slate-300 group-hover:text-[#7CC242]/40">STEP 06</span>
-              </div>
-              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-[#1F3F7A]/10 rounded-xl sm:rounded-2xl flex items-center justify-center text-[#1F3F7A] mb-3 sm:mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
-                <Clock className="w-4 h-4 sm:w-6 sm:h-6" />
-              </div>
-              <h3 className="font-extrabold text-[#1F3F7A] mb-1 sm:mb-2 tracking-tight uppercase text-xs sm:text-sm leading-tight">
-                <span className="block sm:hidden">Review</span>
-                <span className="hidden sm:block">Application Review</span>
-              </h3>
-              <p className="text-slate-400 leading-relaxed max-w-[220px] text-[10px] sm:text-xs">
-                <span className="block sm:hidden">Fast underwriting check.</span>
-                <span className="hidden sm:block">Our team reviews and verifies your application.</span>
-              </p>
-            </div>
-
-            {/* Step 7 */}
-            <div className="relative p-3 sm:p-6 bg-slate-50 border border-slate-100 rounded-2xl sm:rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
-              <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 font-mono font-black transition-colors">
-                <span className="block sm:hidden text-[#7CC242] text-[13px] font-[900]">07</span>
-                <span className="hidden sm:block text-[10px] text-slate-300 group-hover:text-[#7CC242]/40">STEP 07</span>
-              </div>
-              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-[#7CC242]/10 rounded-xl sm:rounded-2xl flex items-center justify-center text-[#7CC242] mb-3 sm:mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
-                <CreditCard className="w-4 h-4 sm:w-6 sm:h-6" />
-              </div>
-              <h3 className="font-extrabold text-[#1F3F7A] mb-1 sm:mb-2 tracking-tight uppercase text-xs sm:text-sm leading-tight">
-                <span className="block sm:hidden">Payment</span>
-                <span className="hidden sm:block">Approval & Payment</span>
-              </h3>
-              <p className="text-slate-400 leading-relaxed max-w-[220px] text-[10px] sm:text-xs">
-                <span className="block sm:hidden">Pay security deposit.</span>
-                <span className="hidden sm:block">Once approved, complete the required payment.</span>
-              </p>
-            </div>
-
-            {/* Step 8 */}
-            <div className="relative p-3 sm:p-6 bg-slate-50 border border-slate-100 rounded-2xl sm:rounded-3xl hover:border-[#7CC242]/30 hover:bg-white hover:shadow-xl transition-all duration-300 group flex flex-col items-center text-center">
-              <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 font-mono font-black transition-colors">
-                <span className="block sm:hidden text-[#7CC242] text-[13px] font-[900]">08</span>
-                <span className="hidden sm:block text-[10px] text-slate-300 group-hover:text-[#7CC242]/40">STEP 08</span>
-              </div>
-              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-[#1F3F7A]/10 rounded-xl sm:rounded-2xl flex items-center justify-center text-[#1F3F7A] mb-3 sm:mb-6 group-hover:scale-110 transition-transform animate-bounce-slow">
-                <Key className="w-4 h-4 sm:w-6 sm:h-6" />
-              </div>
-              <h3 className="font-extrabold text-[#1F3F7A] mb-1 sm:mb-2 tracking-tight uppercase text-xs sm:text-sm leading-tight">
-                <span className="block sm:hidden">Collect & Drive</span>
-                <span className="hidden sm:block">Collect & Drive</span>
-              </h3>
-              <p className="text-slate-400 leading-relaxed max-w-[220px] text-[10px] sm:text-xs">
-                <span className="block sm:hidden">Get keys and hit the road.</span>
-                <span className="hidden sm:block">Receive your vehicle and start your journey.</span>
-              </p>
+            <div className="bg-white rounded-[22px] border border-[#EAEAEA] shadow-[0_8px_18px_rgba(0,0,0,0.18)] flex items-center justify-center text-center w-[95px] h-[85px] md:w-[150px] md:h-[150px] p-2.5 md:p-[12px] hover:-translate-y-[5px] transition-all duration-300 ease-in-out shrink-0 snap-center select-none cursor-default">
+              <span className="font-sans font-semibold text-[11px] md:text-[18px] text-[#222222] leading-[1.3] text-center">
+                Collect and drive
+              </span>
             </div>
 
           </div>
