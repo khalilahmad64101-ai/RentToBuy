@@ -80,7 +80,7 @@ export function CarCard({ car }) {
   return (
     <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-[0_10px_24px_rgba(0,0,0,0.20)] hover:shadow-[0_10px_24px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 transition-all duration-300 flex flex-col h-full w-full group" id={`car-${id}`}>
       {/* 1. Reduced height Image Block with Link to Detail Page */}
-      <Link to={`/cars/${id}`} className="relative block h-[220px] w-full bg-slate-50 overflow-hidden shrink-0">
+      <Link to={`/cars/${id}`} className="relative block xl:h-[220px] w-full bg-slate-50 overflow-hidden shrink-0">
         <img
           src={image}
           alt={`${name} ${model}`}
