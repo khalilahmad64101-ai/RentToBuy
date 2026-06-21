@@ -192,10 +192,10 @@ export function HeroSection({
               />
 
               <img
-                src="https://r2-buy-car.vercel.app/hero-car1.png"
+                src="https://rent2-buy-images.vercel.app/Citroen_C5_Aircross-01.png"
                 alt="Hero Car"
                 referrerPolicy="no-referrer"
-                className="w-full h-auto max-h-[110px] sm:max-h-[135px] scale-140 sm:scale-100 mt-7 sm:mt-0 object-contain drop-shadow-[0_12px_18px_rgba(0,0,0,0.18)] relative z-10 -translate-x-[30px] translate-y-[20px] lg:translate-x-0 lg:translate-y-0"
+                className="w-full h-auto max-h-[110px] sm:max-h-[135px] scale-160 sm:scale-100 mt-7 sm:mt-0 object-contain drop-shadow-[0_12px_18px_rgba(0,0,0,0.18)] relative z-10 -translate-x-[35px] translate-y-[35px] lg:translate-x-0 lg:translate-y-0"
               />
             </motion.div>
           </div>

@@ -21,14 +21,14 @@ export function TestimonialsSection() {
     <section className="bg-white py-12 relative overflow-hidden text-slate-900 border-t border-gray-100" id="driver-testimonials-section">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808003_1px,transparent_1px),linear-gradient(to_bottom,#80808003_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none z-0"></div>
 
-      <div className="relative max-w-[1100px] mx-auto px-6 z-10 space-y-8">
+      <div className="relative max-w-[1100px] mx-auto px-4 sm:px-6 z-10 space-y-8 font-sans">
         <div className="text-center">
           <h2 className="font-sans font-[700] text-[22px] md:text-[28px] tracking-tight text-[#0B1320]">
             Customer reviews
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-22">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-12 lg:gap-22">
           {reviews.map((r, index) => (
             <div 
               key={index} 
