@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Button } from '../components/ui/Button';
-import { Mail, Lock, Car, Sparkles, Eye, EyeOff, CheckCircle } from 'lucide-react';
+import { Car } from 'lucide-react';
 import { api } from '../services/api';
 import { useSEO } from '../hooks/useSEO';
 import { mapFriendlyFeedback } from '../utils/feedbackHelper.js';
+
+// Reusable auth section import
+import { LoginForm } from '../sections/auth/LoginForm';
 
 export function Login() {
   useSEO({
@@ -167,131 +169,32 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center px-4 py-4 sm:py-12 bg-gray-50/50" id="login-form-view">
-      <div className="max-w-md w-full space-y-4 sm:space-y-6 bg-white p-5 sm:p-8 rounded-2xl border border-gray-150 shadow-sm relative">
-        <div className="absolute top-4 right-4 text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded text-[10px] font-semibold flex items-center space-x-1">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Session Encrypted</span>
-        </div>
+    <div className="min-h-[85vh] flex flex-col items-center justify-center px-4 py-4 sm:py-12 bg-gray-50/50" id="login-form-view">
+      <div className="flex justify-center text-indigo-600 mb-4 h-9">
+        <Car className="h-9 w-9 stroke-[2.5]" />
+      </div>
 
-        {/* Branding header */}
-        <div className="text-center space-y-1">
-          <div className="flex justify-center text-indigo-600 mb-2">
-            <Car className="h-9 w-9 stroke-[2.5]" />
-          </div>
-          <h2 className="font-sans font-black text-2xl text-gray-950 tracking-tight leading-none">Welcome Back</h2>
-          <p className="text-xs text-gray-500 font-sans">
-            Access your driver account.
-          </p>
-        </div>
+      <LoginForm
+        email={email}
+        setEmail={setEmail}
+        password={password}
+        setPassword={setPassword}
+        showPassword={showPassword}
+        setShowPassword={setShowPassword}
+        loading={loading}
+        errorMsg={errorMsg}
+        successMsg={successMsg}
+        fieldErrors={fieldErrors}
+        handleLoginSubmit={handleLoginSubmit}
+        handleFastLogin={handleFastLogin}
+      />
 
-        {/* Global form error box */}
-        {errorMsg && (
-          <div id="login-error-alert-wrapper" className="bg-red-50 text-red-700 text-xs p-3.5 rounded-xl border border-red-100 font-medium">
-            {errorMsg}
-          </div>
-        )}
-
-        {successMsg && (
-          <div className="bg-emerald-50 text-emerald-800 text-xs p-3.5 rounded-xl border border-emerald-100 font-semibold flex items-center space-x-2">
-            <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-            <span>{successMsg}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleLoginSubmit} className="space-y-4" noValidate>
-          <div>
-            <label htmlFor="login-email-input" className="block text-xs text-slate-500 font-bold mb-1">Email Address</label>
-            <div className="relative">
-              <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-3.5" />
-              <input
-                id="login-email-input"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (fieldErrors.email) {
-                    setFieldErrors(prev => ({ ...prev, email: '' }));
-                  }
-                }}
-                placeholder="driver@example.com"
-                className={`w-full text-xs pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                  fieldErrors.email ? 'border-red-500 bg-red-50/10 focus:ring-red-500' : 'border-gray-250'
-                }`}
-              />
-            </div>
-            {fieldErrors.email && (
-              <span className="text-[10px] text-red-600 font-medium mt-1 block px-1 animate-fade-in">{fieldErrors.email}</span>
-            )}
-          </div>
-
-          <div>
-            <label htmlFor="login-password-input" className="block text-xs text-slate-500 font-bold mb-1">Password</label>
-            <div className="relative">
-              <Lock className="w-4 h-4 text-gray-400 absolute left-3 top-3.5" />
-              <input
-                id="login-password-input"
-                type={showPassword ? "text" : "password"}
-                required
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  if (fieldErrors.password) {
-                    setFieldErrors(prev => ({ ...prev, password: '' }));
-                  }
-                }}
-                placeholder="••••••••"
-                className={`w-full text-xs pl-10 pr-10 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                  fieldErrors.password ? 'border-red-500 bg-red-50/10 focus:ring-red-500' : 'border-gray-250'
-                }`}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 focus:outline-none flex items-center justify-center cursor-pointer"
-                id="login-password-toggle-btn"
-              >
-                {showPassword ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
-              </button>
-            </div>
-            {fieldErrors.password && (
-              <span className="text-[10px] text-red-600 font-medium mt-1 block px-1 animate-fade-in">{fieldErrors.password}</span>
-            )}
-          </div>
-
-          <div className="pt-2">
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={loading}
-              className="w-full font-bold py-3 shadow justify-center flex items-center"
-            >
-              {loading ? 'Authenticating...' : 'Sign In'}
-            </Button>
-          </div>
-        </form>
-
-        {/* Real Google Sign-In button container wrapper */}
-        <div className="border-t border-gray-150 pt-4 flex flex-col items-center space-y-2.5">
-          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Or sign in with Google</span>
-          
-          <div className="flex justify-center w-full max-w-full overflow-hidden" id="login-google-btn-wrapper" style={{ minHeight: '44px' }}>
-            <span className="text-xs text-slate-400 animate-pulse py-2">Loading Google Securing Services...</span>
-          </div>
-        </div>
-
-        {/* Redirect sign up */}
-        <div className="text-center text-xs text-gray-500 pt-2 pb-1">
-          New to our fleet?{' '}
-          <Link to="/signup" className="text-brand-primary font-bold hover:underline">
-            Register Here
-          </Link>
-        </div>
+      {/* Redirect sign up */}
+      <div className="text-center text-xs text-slate-500 pt-4 pb-1">
+        New to our fleet?{' '}
+        <Link to="/signup" className="text-[#7CC242] font-semibold hover:underline">
+          Register your driver license
+        </Link>
       </div>
     </div>
   );

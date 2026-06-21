@@ -11,83 +11,16 @@ export function HeroSection({
 }) {
   return (
     <section
-      className="w-full relative overflow-hidden pt-8 pb-4 sm:pt-12 md:pt-16 lg:pt-16 lg:pb-20 border-b-4 border-gray-400 select-none text-left"
+      className="w-full relative overflow-hidden pt-8 pb-4 sm:pt-12 md:pt-16 lg:pt-16 lg:pb-20 border-b-4 border-gray-400 select-none text-left bg-cover bg-center bg-no-repeat"
       style={{
-        background: 'linear-gradient(180deg, #8FD63D 0%, #A6D94F 35%, #BFEA69 70%, #CFF28D 100%)'
+        backgroundImage: 'url("public/bg.png")'
       }}
       id="integrated-homepage-hero"
     >
-      {/* Dynamic layered gradients, smooth transitions, and multiple radial glow shapes */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        {/* Soft horizontal glow in the middle */}
-        <div 
-          className="absolute top-1/3 left-0 right-0 h-[25%] opacity-70"
-          style={{ 
-            background: 'linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.45) 50%, transparent)',
-            filter: 'blur(30px)' 
-          }} 
-        />
-
-        {/* Radial Gradient Glow Circle 1 (Top Left) */}
-        <div 
-          className="absolute -top-20 -left-20 w-96 h-96 rounded-full opacity-60"
-          style={{ 
-            background: 'radial-gradient(circle, #D9F7A1 0%, transparent 70%)',
-            filter: 'blur(60px)' 
-          }}
-        />
-
-        {/* Radial Gradient Glow Circle 2 (Middle Right) */}
-        <div 
-          className="absolute top-1/4 -right-10 w-[30rem] h-[30rem] rounded-full opacity-50"
-          style={{ 
-            background: 'radial-gradient(circle, #CFF28D 0%, transparent 70%)',
-            filter: 'blur(80px)' 
-          }}
-        />
-
-        {/* Radial Gradient Glow Circle 3 (Bottom Left) */}
-        <div 
-          className="absolute -bottom-20 -left-10 w-[24rem] h-[24rem] rounded-full opacity-75"
-          style={{ 
-            background: 'radial-gradient(circle, #BFEA69 0%, transparent 70%)',
-            filter: 'blur(50px)' 
-          }}
-        />
-
-        {/* Large blurred green glow behind the vehicle (layered right-aligned) */}
-        <div 
-          className="absolute top-10 right-[5%] lg:right-[10%] w-[45rem] h-[30rem] rounded-full opacity-80 mix-blend-screen hidden md:block"
-          style={{ 
-            background: 'radial-gradient(circle, rgba(255, 255, 255, 0.45) 0%, #D9F7A1 40%, #CFF28D 70%, transparent 100%)',
-            filter: 'blur(70px)' 
-          }}
-        />
-
-        {/* Layered waves styling for horizontal transition depths */}
-        <div 
-          className="absolute bottom-0 left-0 right-0 h-40 opacity-50"
-          style={{
-            background: 'linear-gradient(170deg, transparent 40%, #D9F7A1 100%)',
-            filter: 'blur(15px)'
-          }}
-        />
-        <div 
-          className="absolute bottom-0 left-0 right-0 h-24 opacity-75"
-          style={{
-            background: 'linear-gradient(185deg, transparent 30%, #CFF28D 100%)',
-            filter: 'blur(5px)'
-          }}
-        />
-      </div>
-
-      {/* Subtle grid pattern overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:24px_24px] opacity-15 pointer-events-none z-0"></div>
-
       <div className="w-full max-w-[80rem] mx-auto px-4 md:px-12 relative z-10">
 
         {/* ================= DESKTOP ONLY HERO LAYOUT ================= */}
-        <div className="hidden lg:block relative w-full pb-10">
+        <div className="hidden lg:block relative w-full">
           <div className="w-full text-center lg:text-left lg:max-w-[36rem]">
             <motion.h1
               initial={{ opacity: 0, x: -30 }}
@@ -106,23 +39,19 @@ export function HeroSection({
             transition={{ type: "spring", stiffness: 45, damping: 11, delay: 0.15 }}
             className="relative lg:absolute lg:right-[0%] w-full max-w-[52rem] mx-auto lg:m-0 flex justify-center items-center select-none z-40 pointer-events-none mt-2 lg:mt-0"
           >
-            {/* Smooth glowing green background aura directly behind the car */}
-            <div 
-              className="absolute w-[85%] h-[80%] rounded-full opacity-70 z-0 pointer-events-none"
+            {/* Ground Green Shadow beneath the desktop car */}
+            <div
+              className="absolute bottom-[-5px] xl:bottom-[-202px] left-[50%] xl:left-[64%] -translate-x-1/2 w-[72%] h-[20px] md:h-[35px] rounded-[100%] z-0 bg-[#7CC242]/50 pointer-events-none blur-md"
               style={{
-                background: 'radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, #D9F7A1 40%, #CFF28D 75%, transparent 100%)',
-                filter: 'blur(50px)',
-                transform: 'translate(-50%, -50%)',
-                left: '50%',
-                top: '50%',
+                mixBlendMode: 'multiply'
               }}
             />
 
             <img
-              src="/public/Citroen_C5_Aircross-01.png"
+              src="public/Citroen_C5_Aircross-01.png"
               alt="Hero Car"
               referrerPolicy="no-referrer"
-              className="w-full max-h-[225px] sm:max-h-[290px] lg:max-h-none scale-100 lg:scale-110 object-contain xl:mt-[-200px] xl:ml-[120px] drop-shadow-[0_25px_30px_rgba(0,0,0,0.35)] transform transition-transform duration-300 pointer-events-auto relative z-10"
+              className="w-full max-h-[225px] sm:max-h-[290px] lg:max-h-none scale-100 lg:scale-110 xl:scale-125 object-contain xl:mt-[-120px] xl:ml-[120px] drop-shadow-[0_25px_30px_rgba(0,0,0,0.35)] transform transition-transform duration-300 pointer-events-auto relative z-10"
             />
           </motion.div>
 
@@ -132,7 +61,7 @@ export function HeroSection({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.4, ease: "easeOut" }}
             id="budget-card"
-            className="relative z-20 mt-3 md:mt-16 lg:mt-96 xl:mt-[16rem] w-full xl:w-[90%] mx-auto bg-white rounded-2xl md:rounded-3xl p-3.5 sm:p-6 md:p-12 xl:p-8 shadow-[0_15px_40px_rgba(0,0,0,0.08)] border border-gray-100/40"
+            className="relative z-20 mt-3 md:mt-16 lg:mt-96 xl:mt-[18rem] w-full xl:w-[90%] mx-auto bg-white rounded-2xl md:rounded-3xl p-3.5 sm:p-6 md:p-12 xl:p-8 shadow-[0_15px_40px_rgba(0,0,0,0.08)] border border-gray-100/40"
           >
             <h2 className="text-center md:text-left font-sans font-extrabold text-[1.25rem] sm:text-[1.75rem] md:text-[2.25rem] text-[#374151] tracking-tight leading-tight mb-3 md:mb-10 uppercase flex flex-col md:flex-row md:justify-between items-center gap-2">
               <span>Select your weekly budget</span>
@@ -194,6 +123,40 @@ export function HeroSection({
               Search for your car
             </button>
           </motion.div>
+
+          {/* Bullet-points checklist block below the budget card on desktop limit */}
+          <div className="mt-16 xl:mt-[5rem] mx-auto grid grid-cols-3 gap-16 text-black font-sans font-extrabold text-xs sm:text-sm lg:text-[1.125rem] select-none px-4">
+            <div className="flex flex-col items-start gap-3 mx-auto">
+              <div className="flex items-center gap-2">
+                <span className="text-xl leading-none font-black text-black select-none">•</span>
+                <span className="tracking-tight">No deposit</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xl leading-none font-black text-black select-none">•</span>
+                <span className="tracking-tight">No credit checks</span>
+              </div>
+            </div>
+            <div className="flex flex-col items-start gap-3 mx-auto">
+              <div className="flex items-center gap-2">
+                <span className="text-xl leading-none font-black text-black select-none">•</span>
+                <span className="tracking-tight">Vehicles have Tax + MOT</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xl leading-none font-black text-black select-none">•</span>
+                <span className="tracking-tight">Multiple price points</span>
+              </div>
+            </div>
+            <div className="flex flex-col items-start gap-3 mx-auto">
+              <div className="flex items-center gap-2">
+                <span className="text-xl leading-none font-black text-black select-none">•</span>
+                <span className="tracking-tight">Option to upgrade</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xl leading-none font-black text-black select-none">•</span>
+                <span className="tracking-tight">Quick and simple</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* ================= MOBILE ONLY HERO LAYOUT ================= */}
@@ -220,15 +183,11 @@ export function HeroSection({
               transition={{ duration: 0.8, ease: "easeOut" }}
               className="w-[45%] flex justify-end items-center relative select-none pointer-events-none"
             >
-              {/* Smooth glowing green background aura directly behind the car */}
-              <div 
-                className="absolute w-[90%] h-[90%] rounded-full opacity-60 z-0 pointer-events-none"
+              {/* Ground Green Shadow beneath the mobile car */}
+              <div
+                className="absolute bottom-[5px] left-[32%] -translate-x-1/2 w-[70%] h-[12px] rounded-[100%] bg-[#7CC242]/50 pointer-events-none blur-sm z-0"
                 style={{
-                  background: 'radial-gradient(circle, rgba(255, 255, 255, 0.45) 0%, #D9F7A1 40%, #CFF28D 75%, transparent 100%)',
-                  filter: 'blur(20px)',
-                  transform: 'translate(-50%, -50%)',
-                  left: '50%',
-                  top: '50%',
+                  mixBlendMode: 'multiply'
                 }}
               />
 
