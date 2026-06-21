@@ -5,8 +5,8 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-[#050C16] text-gray-300 py-12 md:py-16 select-none border-t border-slate-900" id="main-footer-layout">
-      <div className="max-w-[100%px] mx-auto px-6">
+    <footer className="bg-[#050C16] text-gray-300 -mt-40 sm:mt-0 py-12 md:py-16 select-none border-t border-slate-900" id="main-footer-layout">
+      <div className="max-w-[100%] mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
           {/* Column 1 */}
           <div className="flex flex-col items-start md:items-center">
