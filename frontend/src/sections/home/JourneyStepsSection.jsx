@@ -5,7 +5,7 @@ export function JourneyStepsSection() {
     <section 
       className="w-full relative xl:py-16 my-0 overflow-hidden select-none animate-fade-in flex items-center bg-cover bg-center bg-no-repeat" 
       style={{
-        backgroundImage: 'url("public/bg2.png")'
+        backgroundImage: 'url("https://rent2-buy-images.vercel.app/bg2.png")'
       }}
       id="customer-journey-section"
     >

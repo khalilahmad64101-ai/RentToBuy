@@ -13,7 +13,7 @@ export function HeroSection({
     <section
       className="w-full relative overflow-hidden pt-8 pb-4 sm:pt-12 md:pt-16 lg:pt-16 lg:pb-20 border-b-4 border-gray-400 select-none text-left bg-cover bg-center bg-no-repeat"
       style={{
-        backgroundImage: 'url("public/bg.png")'
+        backgroundImage: 'url("https://rent2-buy-images.vercel.app/bg.png")'
       }}
       id="integrated-homepage-hero"
     >
@@ -48,7 +48,7 @@ export function HeroSection({
             />
 
             <img
-              src="public/Citroen_C5_Aircross-01.png"
+              src="https://rent2-buy-images.vercel.app/Citroen_C5_Aircross-01.png"
               alt="Hero Car"
               referrerPolicy="no-referrer"
               className="w-full max-h-[225px] sm:max-h-[290px] lg:max-h-none scale-100 lg:scale-110 xl:scale-125 object-contain xl:mt-[-120px] xl:ml-[120px] drop-shadow-[0_25px_30px_rgba(0,0,0,0.35)] transform transition-transform duration-300 pointer-events-auto relative z-10"
