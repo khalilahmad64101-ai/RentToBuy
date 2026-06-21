@@ -3,11 +3,11 @@ import { api } from '../services/api';
 import { useSEO } from '../hooks/useSEO';
 
 // Importing Modularized Sub-sections
-import { HeroSection } from './Contact/HeroSection';
-import { InfoSection } from './Contact/InfoSection';
-import { FormSection } from './Contact/FormSection';
-import { WhyContactSection } from './Contact/WhyContactSection';
-import { MapSection } from './Contact/MapSection';
+import { HeroSection } from './contact/HeroSection';
+import { InfoSection } from './contact/InfoSection';
+import { FormSection } from './contact/FormSection';
+import { WhyContactSection } from './contact/WhyContactSection';
+import { MapSection } from './contact/MapSection';
 
 export function Contact() {
   useSEO({
