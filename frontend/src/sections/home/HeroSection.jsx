@@ -70,7 +70,7 @@ export function HeroSection({
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 1, ease: "easeOut" }}
-              className="font-sans -mt-10 sm:mt-0 xl:ms-28 font-[950] text-[20px] xs:text-[30px] sm:text-[42px] md:text-[5.5rem] xl:text-[5.2rem] text-black leading-[1.05] tracking-[-0.04em] lg:tracking-[-0.05em]"
+              className="font-sans -mt-10 sm:mt-0 lg:ms-16 xl:ms-28 xl:mt-10 font-[950] text-[20px] xs:text-[30px] sm:text-[42px] md:text-[5.5rem] xl:text-[5.2rem] text-black leading-[1.05] tracking-[-0.04em] lg:tracking-[-0.05em]"
             >
               Let's find <br /> your car!
             </motion.h1>
@@ -81,11 +81,11 @@ export function HeroSection({
             initial={{ opacity: 0, x: 120, scale: 0.8 }}
             animate={{ opacity: 1, x: 0, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 45, damping: 11, delay: 0.15 }}
-            className="w-[45%] lg:w-auto relative lg:absolute lg:right-[0%] lg:top-[-20px] max-w-[52rem] mx-auto lg:m-0 flex justify-center lg:justify-end xl:justify-center items-center select-none z-30 pointer-events-none mt-1 lg:mt-0"
+            className="w-[45%] lg:w-auto relative lg:absolute lg:right-[0%] lg:top-[-20px] max-w-[52rem] mx-auto lg:m-0 flex justify-center lg:justify-end xl:justify-center items-center select-none z-30 pointer-events-none mt-1 lg:mt-0 xl:mt-65"
           >
             {/* Multiple shadows to replicate the realistic floor drop shadow */}
             <div
-              className="absolute bottom-[-5px] sm:bottom-[-12px] lg:bottom-[-16px] xl:bottom-[-180px] left-[50%] xl:left-[64%] -translate-x-1/2 z-0 pointer-events-none"
+              className="absolute bottom-[-5px] sm:bottom-[-12px] lg:bottom-[-16px] xl:bottom-[-80px] left-[50%] xl:left-[64%] -translate-x-1/2 z-0 pointer-events-none"
               style={{
                 width: '80%',
                 height: '20px',
@@ -112,14 +112,13 @@ export function HeroSection({
               className="w-full max-h-[115px] xs:max-h-[130px] sm:max-h-[225px] md:max-h-[290px] lg:max-h-none scale-170 lg:scale-110 xl:scale-125 object-contain -translate-x-8 mt-14 xl:mt-[-120px] xl:ml-[120px] drop-shadow-[5px_15px_5px_rgba(0,0,0,0.4)] transform transition-transform duration-300 pointer-events-auto relative z-10"
             />
 
-            {/* Showroom Floor Reflection - exact vertical flip of the car */}
             
           </motion.div>
 
         </div>
 
         {/* Budget Meter Card */}
-        <div className="relative w-full max-w-xl sm:max-w-4xl mx-auto z-20 mt-5 lg:mt-64 xl:mt-[15rem]">
+        <div className="relative w-full max-w-xl sm:max-w-4xl mx-auto z-20 mt-5 lg:mt-64 xl:mt-[17rem]">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -133,7 +132,7 @@ export function HeroSection({
             </h2>
 
             {/* Interactive Custom Range Slider */}
-            <div className="relative mt-2 sm:mt-6 mb-2 sm:mb-4 max-w-5xl mx-auto px-1 sm:px-4">
+            <div className="relative mt-2 sm:mt-6 mb-2  max-w-6xl mx-auto px-1 sm:px-4">
               <input
                 type="range"
                 min="0"
@@ -190,7 +189,7 @@ export function HeroSection({
         </div>
 
         {/* Bullet-points checklist block below the budget card - clean and compact */}
-        <div className="mt-5 sm:mt-10 mx-auto grid grid-cols-2 gap-x-1 sm:gap-x-12 gap-y-1 sm:gap-y-2 text-black font-sans font-bold text-[9px] sm:text-sm md:text-[15px] select-none px-2 max-w-3xl justify-between text-center">
+        <div className="mt-5 sm:mt-10 mx-auto grid grid-cols-2 gap-x-1 sm:gap-x-80 gap-y-1 sm:gap-y-2 text-black font-sans font-bold text-[9px] sm:text-sm md:text-[15px] xl:text-xl select-none px-2 max-w-6xl justify-between text-center">
           {/* Left Column */}
           <div className="flex flex-col items-start gap-1 sm:gap-2">
             <div className="flex items-center gap-1 leading-none">

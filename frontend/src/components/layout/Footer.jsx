@@ -9,7 +9,7 @@ export function Footer() {
       <div className="w-full max-w-6xl mx-auto px-4">
         
         {/* Dark Footer Capsule Card - Matches the screenshot exactly */}
-        <div className="bg-[#0B1320] text-gray-200 rounded-[1.5rem] p-6 sm:p-10 shadow-[0_12px_40px_rgba(0,0,0,0.15)] border border-slate-800 max-w-md md:max-w-4xl mx-auto">
+        <div className="bg-[#0B1320] text-gray-200 rounded-[1.5rem] p-6 sm:p-10 shadow-[0_12px_40px_rgba(0,0,0,0.15)] border border-slate-800 max-w-md md:max-w-4xl xl:max-w-6xl mx-auto">
           
           {/* Responsive Layout: Vertical stack on mobile, 3-column grid on desktop */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-12">
