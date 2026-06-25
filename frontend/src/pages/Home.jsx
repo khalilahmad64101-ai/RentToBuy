@@ -6,7 +6,7 @@ import { VehicleCardsSection } from '../sections/home/VehicleCardsSection';
 import { JourneyStepsSection } from '../sections/home/JourneyStepsSection';
 import { TestimonialsSection } from '../sections/home/TestimonialsSection';
 
-const BUDGET_STEPS = [30, 50, 70, 100];
+const BUDGET_STEPS = [30, 50, 60, 80, 100];
 
 export function Home() {
   useSEO({
@@ -17,7 +17,7 @@ export function Home() {
 
   const [dbCars, setDbCars] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [budgetIndex, setBudgetIndex] = useState(3); // default is £100 (maximum index, which is index 3)
+  const [budgetIndex, setBudgetIndex] = useState(1); // default to index 1 (£50) to match image
 
   // Fetch premium cars from DB to integrate with database entries
   useEffect(() => {

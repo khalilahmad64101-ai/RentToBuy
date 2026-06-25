@@ -11,7 +11,7 @@ export function HeroSection({
 }) {
   return (
     <section
-      className="w-full relative overflow-hidden pt-4 pb-4 sm:pt-8 sm:pb-12 border-b-4 border-gray-400 select-none text-left bg-cover bg-center bg-no-repeat"
+      className="w-full relative overflow-hidden pt-4 pb-5 sm:pt-8 sm:pb-12 border-b-4 border-gray-400 select-none text-left bg-cover bg-center bg-no-repeat"
       style={{
         backgroundImage: 'url("https://rent2-buy-images.vercel.app/bg.png")'
       }}
@@ -19,11 +19,21 @@ export function HeroSection({
     >
       {/* Inline styles for custom slider thumb and custom elements matching the screenshot perfectly */}
       <style dangerouslySetInnerHTML={{__html: `
+        @media (max-width: 639px) {
+          #integrated-homepage-hero {
+            background-color: #7CC242 !important;
+            background-image: url("https://rent2-buy-images.vercel.app/imgs.png") !important;
+            background-size: 100% auto !important;
+            background-position: top center !important;
+            background-repeat: no-repeat !important;
+            padding-top: 0px !important;
+          }
+        }
         .custom-slider-input {
           -webkit-appearance: none;
           appearance: none;
           width: 100%;
-          height: 8px;
+          height: 10px;
           border-radius: 9999px;
           background: #333;
           outline: none;
@@ -32,11 +42,11 @@ export function HeroSection({
         .custom-slider-input::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
-          width: 28px;
-          height: 28px;
+          width: 24px;
+          height: 24px;
           border-radius: 50%;
-          background: #7CC242;
-          border: 4px solid #ffffff;
+          background: #ffffff !important;
+          border: 5px solid #7CC242 !important;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
           cursor: pointer;
           transition: transform 0.1s ease, background-color 0.1s ease;
@@ -48,8 +58,8 @@ export function HeroSection({
           width: 24px;
           height: 24px;
           border-radius: 50%;
-          background: #7CC242;
-          border: 4px solid #ffffff;
+          background: #ffffff !important;
+          border: 5px solid #7CC242 !important;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
           cursor: pointer;
           transition: transform 0.1s ease, background-color 0.1s ease;
@@ -61,8 +71,11 @@ export function HeroSection({
 
       <div className="w-full max-w-[80rem] mx-auto px-4 md:px-12 relative z-10 flex flex-col gap-3 sm:gap-6">
         
+        {/* Spacer for mobile view to create a 140px gap showing the background image */}
+        <div className="block sm:hidden h-[140px] w-full" />
+        
         {/* Row with text on left, car on right */}
-        <div className="relative w-full flex flex-row items-center justify-between sm:mb-2 lg:block">
+        <div className="hidden sm:flex sm:flex-row items-center justify-between sm:mb-2 lg:block">
           
           {/* Left Side: Heading */}
           <div className="w-[52%] lg:w-auto text-left lg:max-w-[36rem]">
@@ -81,7 +94,7 @@ export function HeroSection({
             initial={{ opacity: 0, x: 120, scale: 0.8 }}
             animate={{ opacity: 1, x: 0, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 45, damping: 11, delay: 0.15 }}
-            className="w-[45%] lg:w-auto relative lg:absolute lg:right-[0%] lg:top-[-20px] max-w-[52rem] mx-auto lg:m-0 flex justify-center lg:justify-end xl:justify-center items-center select-none z-30 pointer-events-none mt-1 lg:mt-0 xl:mt-65"
+            className="hidden sm:flex sm:w-[45%] lg:w-auto relative lg:absolute lg:right-[0%] lg:top-[-20px] max-w-[52rem] mx-auto lg:m-0 justify-center lg:justify-end xl:justify-center items-center select-none z-30 pointer-events-none mt-1 lg:mt-0 xl:mt-65"
           >
             {/* Multiple shadows to replicate the realistic floor drop shadow */}
             <div
@@ -119,20 +132,23 @@ export function HeroSection({
 
         {/* Budget Meter Card */}
         <div className="relative w-full max-w-xl sm:max-w-4xl mx-auto z-20 mt-5 lg:mt-64 xl:mt-[17rem]">
+
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
             id="budget-card"
-            className="w-full bg-white rounded-2xl md:rounded-3xl px-5 pt-4 pb-4 sm:px-8 sm:pt-6 sm:pb-16 shadow-[0_12px_36px_rgba(0,0,0,0.12)] border border-gray-150/50 relative"
+            className="w-full bg-white rounded-2xl md:rounded-3xl px-4 pt-2 pb-5 sm:px-8 sm:pt-6 sm:pb-16 shadow-[0_12px_36px_rgba(0,0,0,0.12)] border border-gray-150/50 relative"
           >
             {/* Header Title inside card */}
-            <h2 className="text-left font-sans font-extrabold text-[15px] sm:text-[22px] md:text-[26px] text-gray-800 tracking-tight leading-none mb-3 sm:mb-6 uppercase">
-              Select your weekly budget
-            </h2>
+            <div className=" sm:mb-6 uppercase">
+              <h2 className="text-left font-sans font-extrabold text-[12px] xs:text-[14px] sm:text-[22px] md:text-[26px] text-gray-800 tracking-tight leading-none">
+                Select your weekly budget
+              </h2>
+            </div>
 
             {/* Interactive Custom Range Slider */}
-            <div className="relative mt-2 sm:mt-6 mb-2  max-w-6xl mx-auto px-1 sm:px-4">
+            <div className="relative mt-2 sm:mt-6 max-w-6xl mx-auto px-1 sm:px-4">
               <input
                 type="range"
                 min="0"
@@ -141,7 +157,7 @@ export function HeroSection({
                 onChange={(e) => setBudgetIndex(parseInt(e.target.value))}
                 className="custom-slider-input"
                 style={{
-                  background: `linear-gradient(to right, #7CC242 0%, #7CC242 ${(budgetIndex / (BUDGET_STEPS.length - 1)) * 100}%, #e5e7eb ${(budgetIndex / (BUDGET_STEPS.length - 1)) * 100}%, #e5e7eb 100%)`,
+                  background: `linear-gradient(to right, #7CC242 0%, #7CC242 ${(budgetIndex / (BUDGET_STEPS.length - 1)) * 100}%, #333 ${(budgetIndex / (BUDGET_STEPS.length - 1)) * 100}%, #333 100%)`,
                 }}
               />
 
@@ -155,15 +171,15 @@ export function HeroSection({
                       key={idx}
                       className="absolute -translate-x-1/2"
                       style={{
-                        left: `calc(14px + (100% - 28px) * ${pct})`
+                        left: `calc(12px + (100% - 24px) * ${pct})`
                       }}
                     >
                       <button
                         onClick={() => setBudgetIndex(idx)}
-                        className={`font-sans font-[800] transition-colors duration-150 cursor-pointer focus:outline-none text-[12px] sm:text-[15px] md:text-[17px] whitespace-nowrap text-center ${
+                        className={`font-sans font-[800] transition-colors duration-150 cursor-pointer focus:outline-none text-[11px] sm:text-[15px] md:text-[17px] whitespace-nowrap text-center ${
                           isCurrent
-                            ? 'text-[#7CC242] scale-105'
-                            : 'text-[#9ca3af] hover:text-gray-800'
+                            ? 'text-[#7CC242] scale-105 font-black'
+                            : 'text-[#111111] hover:text-[#7CC242]'
                         }`}
                         style={{ background: 'none', border: 'none', boxShadow: 'none', padding: 0 }}
                       >
@@ -189,35 +205,35 @@ export function HeroSection({
         </div>
 
         {/* Bullet-points checklist block below the budget card - clean and compact */}
-        <div className="mt-5 sm:mt-10 mx-auto grid grid-cols-2 gap-x-1 sm:gap-x-80 gap-y-1 sm:gap-y-2 text-black font-sans font-bold text-[9px] sm:text-sm md:text-[15px] xl:text-xl select-none px-2 max-w-6xl justify-between text-center">
+        <div className="mt-8 sm:mt-12 mx-auto grid grid-cols-2 gap-x-2 sm:gap-x-16 gap-y-1.5 sm:gap-y-2 text-black font-sans font-bold text-[9px] xs:text-[11px] sm:text-sm md:text-[15px] xl:text-xl select-none px-4 w-full max-w-[20rem] xs:max-w-xs sm:max-w-4xl justify-center">
           {/* Left Column */}
           <div className="flex flex-col items-start gap-1 sm:gap-2">
-            <div className="flex items-center gap-1 leading-none">
-              <span className="text-[#3AA51D] text-xs sm:text-sm font-black select-none">•</span>
+            <div className="flex items-center gap-1.5 leading-none">
+              <span className="text-[#7CC242] text-[10px] sm:text-sm font-black select-none">•</span>
               <span className="tracking-tight text-gray-900 font-[800]">Medium price points</span>
             </div>
-            <div className="flex items-center gap-1 leading-none">
-              <span className="text-[#3AA51D] text-xs sm:text-sm font-black select-none">•</span>
+            <div className="flex items-center gap-1.5 leading-none">
+              <span className="text-[#7CC242] text-[10px] sm:text-sm font-black select-none">•</span>
               <span className="tracking-tight text-gray-900 font-[800]">Option to upgrade</span>
             </div>
-            <div className="flex items-center gap-1 leading-none">
-              <span className="text-[#3AA51D] text-xs sm:text-sm font-black select-none">•</span>
+            <div className="flex items-center gap-1.5 leading-none">
+              <span className="text-[#7CC242] text-[10px] sm:text-sm font-black select-none">•</span>
               <span className="tracking-tight text-gray-900 font-[800]">Quick and simple</span>
             </div>
           </div>
           
           {/* Right Column */}
           <div className="flex flex-col items-start gap-1 sm:gap-2">
-            <div className="flex items-center gap-1 leading-none">
-              <span className="text-[#3AA51D] text-xs sm:text-sm font-black select-none">•</span>
+            <div className="flex items-center gap-1.5 leading-none">
+              <span className="text-[#7CC242] text-[10px] sm:text-sm font-black select-none">•</span>
               <span className="tracking-tight text-gray-900 font-[800]">No deposit</span>
             </div>
-            <div className="flex items-center gap-1 leading-none">
-              <span className="text-[#3AA51D] text-xs sm:text-sm font-black select-none">•</span>
+            <div className="flex items-center gap-1.5 leading-none">
+              <span className="text-[#7CC242] text-[10px] sm:text-sm font-black select-none">•</span>
               <span className="tracking-tight text-gray-900 font-[800]">No credit checks</span>
             </div>
-            <div className="flex items-center gap-1 leading-none">
-              <span className="text-[#3AA51D] text-xs sm:text-sm font-black select-none">•</span>
+            <div className="flex items-center gap-1.5 leading-none">
+              <span className="text-[#7CC242] text-[10px] sm:text-sm font-black select-none">•</span>
               <span className="tracking-tight text-gray-900 font-[800]">Vehicles have Tax + MOT</span>
             </div>
           </div>
