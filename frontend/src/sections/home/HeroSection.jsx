@@ -72,7 +72,7 @@ export function HeroSection({
       <div className="w-full max-w-[80rem] mx-auto px-4 md:px-12 relative z-10 flex flex-col gap-3 sm:gap-6">
         
         {/* Spacer for mobile view to create a 140px gap showing the background image */}
-        <div className="block sm:hidden h-[145px] w-full" />
+        <div className="block sm:hidden h-[165px] w-full" />
         
         {/* Row with text on left, car on right */}
         <div className="hidden sm:flex sm:flex-row items-center justify-between sm:mb-2 lg:block">
